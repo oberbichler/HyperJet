@@ -8,6 +8,7 @@ from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
 
+HYPERJET_VERSION = '0.1.0'
 
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
@@ -34,7 +35,8 @@ class CMakeBuild(build_ext):
     def build_extension(self, ext):
         extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
         cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
-                      '-DPYTHON_EXECUTABLE=' + sys.executable]
+                      '-DPYTHON_EXECUTABLE=' + sys.executable,
+                      '-DHYPERJET_VERSION=' + HYPERJET_VERSION]
 
         cfg = 'Debug' if self.debug else 'Release'
         build_args = ['--config', cfg]
@@ -59,7 +61,7 @@ class CMakeBuild(build_ext):
 setup(
     name='HyperJet',
     description='Automatic differentiation with dual numbers',
-    version='0.1.0',
+    version=HYPERJET_VERSION,
     url='',
     author='Thomas Oberbichler',
     author_email='thomas.oberbichler@gmail.com',
