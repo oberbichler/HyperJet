@@ -1,17 +1,20 @@
+#include <Eigen/Core>
+
 #include <string>
 
 template <typename T>
 class HyperJet {
-public:
+public:     // Types
     using Vector = Eigen::Matrix<T, 1, Eigen::Dynamic>;
     using Matrix = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
 
-private:
+private:    // Variables
     T m_v;
     Vector m_g;
     Matrix m_j;
 
-public:
+public:     // Methods
+    EIGEN_STRONG_INLINE
     HyperJet(
         const int size)
     : m_v(0)
@@ -42,12 +45,6 @@ public:
 
     T&
     v()
-    {
-        return m_v;
-    }
-
-    T
-    vc() const
     {
         return m_v;
     }
@@ -253,7 +250,7 @@ public:
         return HyperJet(v, g, j);
     }
 
-    HyperJet
+    inline HyperJet
     sqrt() const
     {
         const auto v = std::sqrt(m_v);
@@ -262,7 +259,7 @@ public:
         return HyperJet(v, g, j);
     }
 
-    HyperJet
+    inline HyperJet
     cos() const
     {
         const auto v = std::cos(m_v);
@@ -271,7 +268,7 @@ public:
         return HyperJet(v, g, j);
     }
 
-    HyperJet
+    inline HyperJet
     sin() const
     {
         const auto v = std::sin(m_v);
@@ -280,7 +277,7 @@ public:
         return HyperJet(v, g, j);
     }
 
-    HyperJet
+    inline HyperJet
     tan() const
     {
         const auto v = std::tan(m_v);
@@ -289,7 +286,7 @@ public:
         return HyperJet(v, g, j);
     }
 
-    HyperJet
+    inline HyperJet
     acos() const
     {
         const auto v = std::acos(m_v);
@@ -299,7 +296,7 @@ public:
         return HyperJet(v, g, j);
     }
 
-    HyperJet
+    inline HyperJet
     asin() const
     {
         const auto v = std::asin(m_v);
@@ -309,7 +306,7 @@ public:
         return HyperJet(v, g, j);
     }
 
-    HyperJet
+    inline HyperJet
     atan() const
     {
         const auto v = std::atan(m_v);
@@ -319,7 +316,7 @@ public:
         return HyperJet(v, g, j);
     }
 
-    static HyperJet
+    static inline HyperJet
     atan2(
         const HyperJet& a,
         const HyperJet& b)
@@ -334,13 +331,6 @@ public:
             tmp * (b.m_v * a.m_j - a.m_v * b.m_j + b.m_g.transpose() * a.m_g -
             a.m_g.transpose() * b.m_g)) / std::pow(tmp, 2);
         return HyperJet(v, g, j);
-
-        // const auto j = (
-        //     2*(f(a, b)*Derivative(f(a, b), b) + g(a, b)*Derivative(g(a, b), b))*f(a, b)*Derivative(g(a, b), a) - 
-        //     2*(f(a, b)*Derivative(f(a, b), b) + g(a, b)*Derivative(g(a, b), b))*g(a, b)*Derivative(f(a, b), a) +
-        //     (f(a, b)**2 + g(a, b)**2)*
-        //     ( + Derivative(g(a, b), b)*Derivative(f(a, b), a) - Derivative(f(a, b), b)*Derivative(g(a, b), a)))
-        //     /(f(a, b)**2 + g(a, b)**2)**2;
     }
 
     bool
