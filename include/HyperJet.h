@@ -330,6 +330,17 @@ public:     // Methods
         return HyperJet(v, g, j);
     }
 
+    inline HyperJet
+    pow(
+        const T b) const
+    {
+        const auto v = std::pow(m_v, b);
+        const auto g = b * std::pow(m_v, b - T(1)) * m_g;
+        const auto j = b * (b * m_g.transpose() * m_g + m_v * m_j - 
+            m_g.transpose() * m_g) * std::pow(m_v, b - 2);
+        return HyperJet(v, g, j);
+    }
+
     bool
     operator==(
         const HyperJet& rhs) const

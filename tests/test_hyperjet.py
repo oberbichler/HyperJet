@@ -90,6 +90,11 @@ class TestHyperJet(unittest.TestCase):
         self.check(HyperJet.atan2(u, v), atan(1/3), [-1/10, 0], [[3/50, 0], [0, 0]])
         self.check(HyperJet.atan2(v, u), atan(3), [1/10, 0], [[-3/50, 0], [0, 0]])
 
+    def test_pow(self):
+        u, v = self.sample()
+        self.check(u**3, 421875, [421875, 506250], [[281250, 506250], [506250, 506250]])
+        self.check(v**(-1/3), 15**(1/3)/15, [-2*15**(1/3)/135, -2*15**(1/3)/225], [[2*15**(1/3)/243, 4*15**(1/3)/2025], [4*15**(1/3)/2025, 2*15**(1/3)/675]])
+
     def test_equal_than(self):
         a = HyperJet(3, [])
 
