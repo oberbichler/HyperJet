@@ -92,7 +92,7 @@ public:     // Methods
     
     HyperJet
     operator-(
-        const HyperJet &rhs) const
+        const HyperJet& rhs) const
     {
         const auto v = m_v - rhs.m_v;
         const auto g = m_g - rhs.m_g;
@@ -112,7 +112,7 @@ public:     // Methods
 
     HyperJet
     operator*(
-        const HyperJet &rhs) const
+        const HyperJet& rhs) const
     {
         const auto v = m_v * rhs.m_v;
         const auto g = m_v * rhs.m_g + rhs.m_v * m_g;
@@ -133,7 +133,7 @@ public:     // Methods
 
     HyperJet
     operator/(
-        const HyperJet &rhs) const
+        const HyperJet& rhs) const
     {
         const auto v = m_v / rhs.m_v;
         const auto g = m_g / rhs.m_v - m_v * rhs.m_g / (rhs.m_v * rhs.m_v);
@@ -155,7 +155,7 @@ public:     // Methods
 
     HyperJet&
     operator+=(
-        const HyperJet &rhs)
+        const HyperJet& rhs)
     {
         m_v += rhs.m_v;
         m_g += rhs.m_g;
@@ -165,7 +165,7 @@ public:     // Methods
 
     HyperJet&
     operator-=(
-        const HyperJet &rhs)
+        const HyperJet& rhs)
     {
         m_v -= rhs.m_v;
         m_g -= rhs.m_g;
@@ -182,8 +182,7 @@ public:     // Methods
     }
 
     HyperJet&
-    operator*=
-    (
+    operator*=(
         const T rhs)
     {
         m_v *= rhs;
@@ -193,8 +192,7 @@ public:     // Methods
     }
 
     HyperJet&
-    operator/=
-    (
+    operator/=(
         const HyperJet& rhs)
     {
         *this = *this / rhs;
@@ -202,8 +200,7 @@ public:     // Methods
     }
 
     HyperJet&
-    operator/=
-    (
+    operator/=(
         const T rhs)
     {
         m_v /= rhs;
