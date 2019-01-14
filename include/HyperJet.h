@@ -9,44 +9,44 @@ public:     // Types
     using Matrix = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
 
 private:    // Variables
-    T m_v;
+    T m_f;
     Vector m_g;
-    Matrix m_j;
+    Matrix m_h;
 
 public:     // Methods
     EIGEN_STRONG_INLINE
     HyperJet(
         const int size)
-    : m_v(0)
+    : m_f(0)
     , m_g(Vector::Zero(size))
-    , m_j(Matrix::Zero(size, size))
+    , m_h(Matrix::Zero(size, size))
     { }
 
     template <typename Derived>
     EIGEN_STRONG_INLINE
     HyperJet(
-        const T v,
+        const T f,
         const Derived g)
-    : m_v(v)
+    : m_f(f)
     , m_g(g)
-    , m_j(Matrix::Zero(g.size(), g.size()))
+    , m_h(Matrix::Zero(g.size(), g.size()))
     { }
 
     template <typename Derived1, typename Derived2>
     EIGEN_STRONG_INLINE
     HyperJet(
-        const T v,
+        const T f,
         const Derived1 g,
-        const Derived2 j)
-    : m_v(v)
+        const Derived2 h)
+    : m_f(f)
     , m_g(g)
-    , m_j(j)
+    , m_h(h)
     { }
 
     T&
-    v()
+    f()
     {
-        return m_v;
+        return m_f;
     }
 
     Eigen::Ref<Vector>
@@ -56,110 +56,110 @@ public:     // Methods
     }
 
     Eigen::Ref<Matrix>
-    j()
+    h()
     {
-        return m_j;
+        return m_h;
     }
     
     HyperJet
     operator-() const
     {
-        const auto v = -m_v;
+        const auto f = -m_f;
         const auto g = -m_g;
-        const auto j = -m_j;
-        return HyperJet(v, g, j);
+        const auto h = -m_h;
+        return HyperJet(f, g, h);
     }
 
     HyperJet
     operator+(
         const HyperJet& rhs) const
     {
-        const auto v = m_v + rhs.m_v;
+        const auto f = m_f + rhs.m_f;
         const auto g = m_g + rhs.m_g;
-        const auto j = m_j + rhs.m_j;
-        return HyperJet(v, g, j);
+        const auto h = m_h + rhs.m_h;
+        return HyperJet(f, g, h);
     }
 
     HyperJet
     operator+(
         const T rhs) const
     {
-        const auto v = m_v + rhs;
+        const auto f = m_f + rhs;
         const auto g = m_g;
-        const auto j = m_j;
-        return HyperJet(v, g, j);
+        const auto h = m_h;
+        return HyperJet(f, g, h);
     }
     
     HyperJet
     operator-(
         const HyperJet& rhs) const
     {
-        const auto v = m_v - rhs.m_v;
+        const auto f = m_f - rhs.m_f;
         const auto g = m_g - rhs.m_g;
-        const auto j = m_j - rhs.m_j;
-        return HyperJet(v, g, j);
+        const auto h = m_h - rhs.m_h;
+        return HyperJet(f, g, h);
     }
 
     HyperJet
     operator-(
         const T rhs) const
     {
-        const auto v = m_v - rhs;
+        const auto f = m_f - rhs;
         const auto g = m_g;
-        const auto j = m_j;
-        return HyperJet(v, g, j);
+        const auto h = m_h;
+        return HyperJet(f, g, h);
     }
 
     HyperJet
     operator*(
         const HyperJet& rhs) const
     {
-        const auto v = m_v * rhs.m_v;
-        const auto g = m_v * rhs.m_g + rhs.m_v * m_g;
-        const auto j = m_v * rhs.m_j + rhs.m_v * m_j + m_g.transpose() * rhs.m_g
+        const auto f = m_f * rhs.m_f;
+        const auto g = m_f * rhs.m_g + rhs.m_f * m_g;
+        const auto h = m_f * rhs.m_h + rhs.m_f * m_h + m_g.transpose() * rhs.m_g
             + rhs.m_g.transpose() * m_g;
-        return HyperJet(v, g, j);
+        return HyperJet(f, g, h);
     }
 
     HyperJet
     operator*(
         const T rhs) const
     {
-        const auto v = m_v * rhs;
+        const auto f = m_f * rhs;
         const auto g = rhs * m_g;
-        const auto j = rhs * m_j;
-        return HyperJet(v, g, j);
+        const auto h = rhs * m_h;
+        return HyperJet(f, g, h);
     }
 
     HyperJet
     operator/(
         const HyperJet& rhs) const
     {
-        const auto v = m_v / rhs.m_v;
-        const auto g = m_g / rhs.m_v - m_v * rhs.m_g / (rhs.m_v * rhs.m_v);
-        const auto j = (2 * m_v * rhs.m_g.transpose() * rhs.m_g +
-            std::pow(rhs.m_v, 2) * m_j - rhs.m_v * (m_g.transpose() * rhs.m_g +
-            rhs.m_g.transpose() * m_g + m_v * rhs.m_j)) / std::pow(rhs.m_v, 3);
-        return HyperJet(v, g, j);
+        const auto f = m_f / rhs.m_f;
+        const auto g = m_g / rhs.m_f - m_f * rhs.m_g / (rhs.m_f * rhs.m_f);
+        const auto h = (2 * m_f * rhs.m_g.transpose() * rhs.m_g +
+            std::pow(rhs.m_f, 2) * m_h - rhs.m_f * (m_g.transpose() * rhs.m_g +
+            rhs.m_g.transpose() * m_g + m_f * rhs.m_h)) / std::pow(rhs.m_f, 3);
+        return HyperJet(f, g, h);
     }
 
     HyperJet
     operator/(
         const T rhs) const
     {
-        const auto v = m_v / rhs;
+        const auto f = m_f / rhs;
         const auto g = m_g / rhs;
-        const auto j = m_j / rhs;
-        return HyperJet(v, g, j);
+        const auto h = m_h / rhs;
+        return HyperJet(f, g, h);
     }
 
     HyperJet&
     operator+=(
         const HyperJet& rhs)
     {
-        m_v += rhs.m_v;
+        m_f += rhs.m_f;
         m_g += rhs.m_g;
-        m_j += rhs.m_j;
+        m_h += rhs.m_h;
         return *this;
     }
 
@@ -167,9 +167,9 @@ public:     // Methods
     operator-=(
         const HyperJet& rhs)
     {
-        m_v -= rhs.m_v;
+        m_f -= rhs.m_f;
         m_g -= rhs.m_g;
-        m_j -= rhs.m_j;
+        m_h -= rhs.m_h;
         return *this;
     }
 
@@ -185,9 +185,9 @@ public:     // Methods
     operator*=(
         const T rhs)
     {
-        m_v *= rhs;
+        m_f *= rhs;
         m_g *= rhs;
-        m_j *= rhs;
+        m_h *= rhs;
         return *this;
     }
 
@@ -203,9 +203,9 @@ public:     // Methods
     operator/=(
         const T rhs)
     {
-        m_v /= rhs;
+        m_f /= rhs;
         m_g /= rhs;
-        m_j /= rhs;
+        m_h /= rhs;
         return *this;
     }
     
@@ -222,10 +222,10 @@ public:     // Methods
         const T lhs,
         const HyperJet& rhs)
     {
-        const auto v = lhs - rhs.m_v;
+        const auto f = lhs - rhs.m_f;
         const auto g = -rhs.m_g;
-        const auto j = -rhs.m_j;
-        return HyperJet(v, g, j);
+        const auto h = -rhs.m_h;
+        return HyperJet(f, g, h);
     }
 
     friend HyperJet
@@ -241,76 +241,76 @@ public:     // Methods
         const T lhs,
         const HyperJet& rhs)
     {
-        const auto v = lhs / rhs.m_v;
-        const auto g = -lhs * rhs.m_g / (rhs.m_v * rhs.m_v);
-        const auto j = (2 * lhs * rhs.m_g.transpose() * rhs.m_g - rhs.m_v * (lhs * rhs.m_j)) / std::pow(rhs.m_v, 3);
-        return HyperJet(v, g, j);
+        const auto f = lhs / rhs.m_f;
+        const auto g = -lhs * rhs.m_g / (rhs.m_f * rhs.m_f);
+        const auto h = (2 * lhs * rhs.m_g.transpose() * rhs.m_g - rhs.m_f * (lhs * rhs.m_h)) / std::pow(rhs.m_f, 3);
+        return HyperJet(f, g, h);
     }
 
     inline HyperJet
     sqrt() const
     {
-        const auto v = std::sqrt(m_v);
-        const auto g = m_g / (2 * v);
-        const auto j = (2 * m_j - m_g.transpose() * m_g / m_v) / (4 * std::sqrt(m_v));
-        return HyperJet(v, g, j);
+        const auto f = std::sqrt(m_f);
+        const auto g = m_g / (2 * f);
+        const auto h = (2 * m_h - m_g.transpose() * m_g / m_f) / (4 * std::sqrt(m_f));
+        return HyperJet(f, g, h);
     }
 
     inline HyperJet
     cos() const
     {
-        const auto v = std::cos(m_v);
-        const auto g = -std::sin(m_v) * m_g;
-        const auto j = -std::cos(m_v) * m_g.transpose() * m_g - std::sin(m_v) * m_j;
-        return HyperJet(v, g, j);
+        const auto f = std::cos(m_f);
+        const auto g = -std::sin(m_f) * m_g;
+        const auto h = -std::cos(m_f) * m_g.transpose() * m_g - std::sin(m_f) * m_h;
+        return HyperJet(f, g, h);
     }
 
     inline HyperJet
     sin() const
     {
-        const auto v = std::sin(m_v);
-        const auto g = std::cos(m_v) * m_g;
-        const auto j = -std::sin(m_v) * m_g.transpose() * m_g + std::cos(m_v) * m_j;
-        return HyperJet(v, g, j);
+        const auto f = std::sin(m_f);
+        const auto g = std::cos(m_f) * m_g;
+        const auto h = -std::sin(m_f) * m_g.transpose() * m_g + std::cos(m_f) * m_h;
+        return HyperJet(f, g, h);
     }
 
     inline HyperJet
     tan() const
     {
-        const auto v = std::tan(m_v);
-        const auto g = m_g * (v * v + 1);
-        const auto j = (2 * m_g.transpose() * m_g * v + m_j)*(v * v + 1);
-        return HyperJet(v, g, j);
+        const auto f = std::tan(m_f);
+        const auto g = m_g * (f * f + 1);
+        const auto h = (2 * m_g.transpose() * m_g * f + m_h)*(f * f + 1);
+        return HyperJet(f, g, h);
     }
 
     inline HyperJet
     acos() const
     {
-        const auto v = std::acos(m_v);
-        const auto g = -m_g / std::sqrt(-m_v * m_v + 1);
-        const auto j = -(m_g.transpose() * m_g * m_v / (-m_v * m_v + 1) + m_j) /
-            std::sqrt(-m_v * m_v + 1);
-        return HyperJet(v, g, j);
+        const auto f = std::acos(m_f);
+        const auto g = -m_g / std::sqrt(-m_f * m_f + 1);
+        const auto h = -(m_g.transpose() * m_g * m_f / (-m_f * m_f + 1) + m_h) /
+            std::sqrt(-m_f * m_f + 1);
+        return HyperJet(f, g, h);
     }
 
     inline HyperJet
     asin() const
     {
-        const auto v = std::asin(m_v);
-        const auto g = m_g / std::sqrt(-m_v * m_v + 1);
-        const auto j = (m_g.transpose() * m_g * m_v / (-m_v * m_v + 1) + m_j) /
-            std::sqrt(-m_v * m_v + 1);
-        return HyperJet(v, g, j);
+        const auto f = std::asin(m_f);
+        const auto g = m_g / std::sqrt(-m_f * m_f + 1);
+        const auto h = (m_g.transpose() * m_g * m_f / (-m_f * m_f + 1) + m_h) /
+            std::sqrt(-m_f * m_f + 1);
+        return HyperJet(f, g, h);
     }
 
     inline HyperJet
     atan() const
     {
-        const auto v = std::atan(m_v);
-        const auto g = m_g / (m_v * m_v + 1);
-        const auto j = (m_j - 2 * m_v * m_g.transpose() * m_g /
-            (m_v * m_v + 1)) / (m_v * m_v + 1);
-        return HyperJet(v, g, j);
+        const auto f = std::atan(m_f);
+        const auto g = m_g / (m_f * m_f + 1);
+        const auto h = (m_h - 2 * m_f * m_g.transpose() * m_g /
+            (m_f * m_f + 1)) / (m_f * m_f + 1);
+        return HyperJet(f, g, h);
     }
 
     static inline HyperJet
@@ -318,111 +318,111 @@ public:     // Methods
         const HyperJet& a,
         const HyperJet& b)
     {
-        const auto tmp = a.m_v * a.m_v + b.m_v * b.m_v;
+        const auto tmp = a.m_f * a.m_f + b.m_f * b.m_f;
 
-        const auto v = std::atan2(a.m_v, b.m_v);
-        const auto g = (a.m_g * b.m_v - a.m_v * b.m_g) / tmp;
-        const auto j = (
-            2 * (a.m_v * a.m_g + b.m_v * b.m_g).transpose() * (a.m_v * b.m_g) -
-            2 * (a.m_v * a.m_g + b.m_v * b.m_g).transpose() * (b.m_v * a.m_g) +
-            tmp * (b.m_v * a.m_j - a.m_v * b.m_j + b.m_g.transpose() * a.m_g -
+        const auto f = std::atan2(a.m_f, b.m_f);
+        const auto g = (a.m_g * b.m_f - a.m_f * b.m_g) / tmp;
+        const auto h = (
+            2 * (a.m_f * a.m_g + b.m_f * b.m_g).transpose() * (a.m_f * b.m_g) -
+            2 * (a.m_f * a.m_g + b.m_f * b.m_g).transpose() * (b.m_f * a.m_g) +
+            tmp * (b.m_f * a.m_h - a.m_f * b.m_h + b.m_g.transpose() * a.m_g -
             a.m_g.transpose() * b.m_g)) / std::pow(tmp, 2);
-        return HyperJet(v, g, j);
+        return HyperJet(f, g, h);
     }
 
     inline HyperJet
     pow(
         const T b) const
     {
-        const auto v = std::pow(m_v, b);
-        const auto g = b * std::pow(m_v, b - T(1)) * m_g;
-        const auto j = b * (b * m_g.transpose() * m_g + m_v * m_j - 
-            m_g.transpose() * m_g) * std::pow(m_v, b - 2);
-        return HyperJet(v, g, j);
+        const auto f = std::pow(m_f, b);
+        const auto g = b * std::pow(m_f, b - T(1)) * m_g;
+        const auto h = b * (b * m_g.transpose() * m_g + m_f * m_h - 
+            m_g.transpose() * m_g) * std::pow(m_f, b - 2);
+        return HyperJet(f, g, h);
     }
 
     bool
     operator==(
         const HyperJet& rhs) const
     {
-        return m_v == rhs.m_v;
+        return m_f == rhs.m_f;
     }
 
     bool
     operator!=(
         const HyperJet& rhs) const
     {
-        return m_v != rhs.m_v;
+        return m_f != rhs.m_f;
     }
 
     bool
     operator<(
         const HyperJet& rhs) const
     {
-        return m_v < rhs.m_v;
+        return m_f < rhs.m_f;
     }
 
     bool
     operator>(
         const HyperJet& rhs) const
     {
-        return m_v > rhs.m_v;
+        return m_f > rhs.m_f;
     }
 
     bool
     operator<=(
         const HyperJet& rhs) const
     {
-        return m_v <= rhs.m_v;
+        return m_f <= rhs.m_f;
     }
 
     bool
     operator>=(
         const HyperJet& rhs) const
     {
-        return m_v >= rhs.m_v;
+        return m_f >= rhs.m_f;
     }
 
     bool
     operator==(
         const T rhs) const
     {
-        return m_v == rhs;
+        return m_f == rhs;
     }
 
     bool
     operator!=(
         const T rhs) const
     {
-        return m_v != rhs;
+        return m_f != rhs;
     }
 
     bool
     operator<(
         const T rhs) const
     {
-        return m_v < rhs;
+        return m_f < rhs;
     }
 
     bool
     operator>(
         const T rhs) const
     {
-        return m_v > rhs;
+        return m_f > rhs;
     }
 
     bool
     operator<=(
         const T rhs) const
     {
-        return m_v <= rhs;
+        return m_f <= rhs;
     }
 
     bool
     operator>=(
         const T rhs) const
     {
-        return m_v >= rhs;
+        return m_f >= rhs;
     }
     
     friend bool
@@ -476,6 +476,6 @@ public:     // Methods
     std::string
     toString() const
     {
-        return "HyperJet<" + std::to_string(m_v) + ">";
+        return "HyperJet<" + std::to_string(m_f) + ">";
     }
 };

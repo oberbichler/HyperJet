@@ -21,10 +21,10 @@ class TestHyperJet(unittest.TestCase):
 
         return u, v
 
-    def check(self, f, v, g, j):
-        assert_almost_equal(f.v, v)
-        assert_array_almost_equal(f.g, g)
-        assert_array_almost_equal(f.j, j)
+    def check(self, jet, f, g, h):
+        assert_almost_equal(jet.f, f)
+        assert_array_almost_equal(jet.g, g)
+        assert_array_almost_equal(jet.h, h)
 
     def test_add(self):
         u, v = self.sample()

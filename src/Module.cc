@@ -24,10 +24,10 @@ PYBIND11_MODULE(HyperJet, m) {
         .def(py::init<int>())
         .def(py::init<double, Type::Vector>())
         .def(py::init<double, Type::Vector, Type::Matrix>())
-        .def_property("v", &Type::v, [](Type& self, double value) {
-            self.v() = value;})
+        .def_property("f", &Type::f, [](Type& self, double value) {
+            self.f() = value;})
         .def_property_readonly("g", &Type::g)
-        .def_property_readonly("j", &Type::j)
+        .def_property_readonly("h", &Type::h)
         .def(-py::self)
         .def(py::self == py::self)
         .def(py::self != py::self)
