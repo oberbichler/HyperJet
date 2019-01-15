@@ -19,6 +19,12 @@ PYBIND11_MODULE(HyperJet, m) {
 
     namespace py = pybind11;
 
+#if defined(EIGEN_USE_BLAS)
+    m.def("use_blas", []() { return true; });
+#else
+    m.def("use_blas", []() { return false; });
+#endif // EIGEN_USE_BLAS
+
     {
     using Type = HyperJet<double>;
 
