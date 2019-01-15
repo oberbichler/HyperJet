@@ -291,12 +291,13 @@ public:     // Methods
         return Jet(f, g);
     }
 
+    template <typename U>
     inline Jet
     pow(
-        const T b) const
+        const U b) const
     {
         const auto f = std::pow(m_f, b);
-        const auto g = b * std::pow(m_f, b - T(1)) * m_g;
+        const auto g = b * std::pow(m_f, b - U(1)) * m_g;
         return Jet(f, g);
     }
 

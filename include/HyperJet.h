@@ -336,14 +336,15 @@ public:     // Methods
         return HyperJet(f, g, h);
     }
 
+    template <typename U>
     inline HyperJet
     pow(
-        const T b) const
+        const U b) const
     {
         const auto f = std::pow(m_f, b);
-        const auto g = b * std::pow(m_f, b - T(1)) * m_g;
+        const auto g = b * std::pow(m_f, b - U(1)) * m_g;
         const auto h = b * (b * m_g.transpose() * m_g + m_f * m_h - 
-            m_g.transpose() * m_g) * std::pow(m_f, b - 2);
+            m_g.transpose() * m_g) * std::pow(m_f, b - U(2));
         return HyperJet(f, g, h);
     }
 
