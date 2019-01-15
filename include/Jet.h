@@ -49,6 +49,12 @@ public:     // Methods
         return m_g;
     }
     
+    inline size_t
+    size() const
+    {
+        return m_g.size();
+    }
+    
     Jet
     operator-() const
     {

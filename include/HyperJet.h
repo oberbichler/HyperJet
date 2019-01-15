@@ -61,6 +61,12 @@ public:     // Methods
         return m_h;
     }
     
+    inline size_t
+    size() const
+    {
+        return m_g.size();
+    }
+    
     HyperJet
     operator-() const
     {
