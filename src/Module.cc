@@ -20,9 +20,9 @@ PYBIND11_MODULE(HyperJet, m) {
     namespace py = pybind11;
 
 #if defined(EIGEN_USE_BLAS)
-    m.def("use_blas", []() { return true; });
+    m.attr("USE_BLAS") = true;
 #else
-    m.def("use_blas", []() { return false; });
+    m.attr("USE_BLAS") = false;
 #endif // EIGEN_USE_BLAS
 
     {
