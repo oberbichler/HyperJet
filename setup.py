@@ -8,7 +8,7 @@ from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
 
-HYPERJET_VERSION = '0.6.0'
+HYPERJET_VERSION = '0.6.1'
 
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
@@ -62,7 +62,7 @@ setup(
     name='HyperJet',
     description='Automatic differentiation with dual numbers',
     version=HYPERJET_VERSION,
-    url='',
+    url='https://github.com/oberbichler/HyperJet',
     author='Thomas Oberbichler',
     author_email='thomas.oberbichler@gmail.com',
     ext_modules=[CMakeExtension('HyperJet')],
