@@ -83,6 +83,10 @@ PYBIND11_MODULE(HyperJet, m) {
         .def("asin", &Type::asin)
         .def("atan", &Type::atan)
         .def_static("atan2", &Type::atan2)
+        .def("arccos", &Type::acos)
+        .def("arcsin", &Type::asin)
+        .def("arctan", &Type::atan)
+        .def_static("arctan2", &Type::atan2)
         .def("__pow__", &Type::pow<int>)
         .def("__pow__", &Type::pow<double>)
     ;
