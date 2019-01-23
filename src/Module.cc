@@ -87,7 +87,7 @@ PYBIND11_MODULE(HyperJet, m) {
         .def("arcsin", &Type::asin)
         .def("arctan", &Type::atan)
         .def("arctan2", [](const Type& self, const Type& x) {
-            Type.atan2(self, x); })
+            Type::atan2(self, x); })
         .def("__pow__", &Type::pow<int>)
         .def("__pow__", &Type::pow<double>)
     ;
