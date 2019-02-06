@@ -2,6 +2,8 @@
 
 #include <string>
 
+namespace HyperJet {
+
 template <typename T>
 class Jet {
 public:     // Types
@@ -439,3 +441,5 @@ public:     // Methods
         return "Jet<" + std::to_string(m_f) + ">";
     }
 };
+
+} // namespace HyperJet

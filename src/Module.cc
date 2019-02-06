@@ -6,8 +6,8 @@
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
 
-#include <HyperJet.h>
-#include <Jet.h>
+#include <HyperJet/HyperJet.h>
+#include <HyperJet/Jet.h>
 
 PYBIND11_MODULE(HyperJet, m) {
     m.doc() = "HyperJet by Thomas Oberbichler";
@@ -26,7 +26,7 @@ PYBIND11_MODULE(HyperJet, m) {
 #endif // EIGEN_USE_BLAS
 
     {
-    using Type = HyperJet<double>;
+    using Type = HyperJet::HyperJet<double>;
 
     py::class_<Type>(m, "HyperJet")
         .def(py::init<int>())
@@ -93,7 +93,7 @@ PYBIND11_MODULE(HyperJet, m) {
     }
 
     {
-    using Type = Jet<double>;
+    using Type = HyperJet::Jet<double>;
 
     py::class_<Type>(m, "Jet")
         .def(py::init<int>())
