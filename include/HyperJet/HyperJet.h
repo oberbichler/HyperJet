@@ -75,8 +75,20 @@ public:     // Methods
         return m_g;
     }
 
+    Eigen::Ref<const Vector>
+    g() const
+    {
+        return m_g;
+    }
+
     Eigen::Ref<Matrix>
     h()
+    {
+        return m_h;
+    }
+    
+    Eigen::Ref<const Matrix>
+    h() const
     {
         return m_h;
     }
