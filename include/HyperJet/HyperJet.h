@@ -33,6 +33,15 @@ public:     // Methods
     , m_h(Matrix::Zero(size, size))
     { }
 
+    EIGEN_STRONG_INLINE
+    HyperJet(
+        const T value,
+        const int size)
+    : m_f(value)
+    , m_g(Vector::Zero(size))
+    , m_h(Matrix::Zero(size, size))
+    { }
+
     template <typename Derived>
     EIGEN_STRONG_INLINE
     HyperJet(
