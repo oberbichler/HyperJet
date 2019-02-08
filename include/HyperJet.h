@@ -324,8 +324,8 @@ public:     // Methods
     {
         const auto f = std::asin(m_f);
         const auto g = m_g / std::sqrt(-m_f * m_f + 1);
-        const auto h = (m_g.transpose() * m_g * m_f / (-m_f * m_f + 1) + m_h) /
-            std::sqrt(-m_f * m_f + 1);
+        const auto h = (m_f * m_g.transpose() * m_g - (m_f * m_f - 1) * m_h)
+            / std::pow(1 - m_f * m_f, 1.5);
         return HyperJet(f, g, h);
     }
 
