@@ -507,6 +507,58 @@ public:     // Methods
     }
 };
 
+using std::pow;
+using std::sqrt;
+using std::cos;
+using std::sin;
+using std::tan;
+using std::acos;
+using std::asin;
+using std::atan;
+using std::atan2;
+
+template <typename T>
+inline HyperJet<T>
+pow(
+    const HyperJet<T>& a,
+    const int b) 
+{
+    return a.pow(b);
+}
+
+template <typename T>
+inline HyperJet<T>
+pow(
+    const HyperJet<T>& a,
+    const double b) 
+{
+    return a.pow(b);
+}
+
+template <typename T>
+inline HyperJet<T>
+sqrt(
+    const HyperJet<T>& a) 
+{
+    return a.sqrt();
+}
+
+template <typename T>
+inline HyperJet<T>
+cos(
+    const HyperJet<T>& a) 
+{
+    return a.cos();
+}
+
+template <typename T>
+inline HyperJet<T>
+sin(
+    const HyperJet<T>& a)
+{
+    return a.sin();
+}
+
 } // namespace HyperJet
 
 namespace Eigen {
