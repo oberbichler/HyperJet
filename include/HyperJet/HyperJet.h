@@ -19,6 +19,13 @@ private:    // Variables
 
 public:     // Methods
     EIGEN_STRONG_INLINE
+    HyperJet()
+    : m_f(0)
+    , m_g(0)
+    , m_h(0, 0)
+    { }
+
+    EIGEN_STRONG_INLINE
     HyperJet(
         const int size)
     : m_f(0)
