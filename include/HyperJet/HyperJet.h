@@ -46,7 +46,7 @@ public:     // Methods
     EIGEN_STRONG_INLINE
     HyperJet(
         const T f,
-        const Derived g)
+        const Eigen::DenseBase<Derived>& g)
     : m_f(f)
     , m_g(g)
     , m_h(Matrix::Zero(g.size(), g.size()))
