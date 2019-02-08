@@ -68,6 +68,26 @@ public:     // Methods
     }
     
     HyperJet
+    enlarge(
+        const size_t size,
+        const bool left) const
+    {
+        HyperJet result(this->size() + size);
+
+        result.m_f = m_f;
+        
+        if (!left) {
+            result.m_g.head(this->size()) = m_g;
+            result.m_h.topLeftCorner(this->size(), this->size()) = m_h;
+        } else {
+            result.m_g.tail(this->size()) = m_g;
+            result.m_h.bottomRightCorner(this->size(), this->size()) = m_h;
+        }
+
+        return result;
+    }
+    
+    HyperJet
     operator-() const
     {
         const auto f = -m_f;

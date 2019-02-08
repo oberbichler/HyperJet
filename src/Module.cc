@@ -18,6 +18,7 @@ PYBIND11_MODULE(HyperJet, m) {
     m.attr("__status__") = "Development";
 
     namespace py = pybind11;
+    using namespace pybind11::literals;
 
 #if defined(EIGEN_USE_BLAS)
     m.attr("USE_BLAS") = true;
@@ -75,6 +76,7 @@ PYBIND11_MODULE(HyperJet, m) {
         .def(double() / py::self)
         .def("__repr__", &Type::toString)
         .def("__len__", &Type::size)
+        .def("enlarge", &Type::enlarge, "size"_a, "left"_a=false)
         .def("sqrt", &Type::sqrt)
         .def("cos", &Type::cos)
         .def("sin", &Type::sin)
