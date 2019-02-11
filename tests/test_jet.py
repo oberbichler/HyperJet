@@ -156,5 +156,20 @@ class TestJet(unittest.TestCase):
         self.assertEqual(3 >= a, True)
         self.assertEqual(5 >= a, True)
 
+    def test_resized(self):
+        a = Jet(7, [1, 2])
+
+        b = a.enlarge(1, False)
+
+        self.assertEqual(len(b), 3)
+        self.assertEqual(b.f, 7)
+        assert_array_almost_equal(b.g, [1, 2, 0])
+        
+        b = a.enlarge(1, True)
+
+        self.assertEqual(len(b), 3)
+        self.assertEqual(b.f, 7)
+        assert_array_almost_equal(b.g, [0, 1, 2])
+
 if __name__ == '__main__':
     unittest.main()

@@ -56,6 +56,24 @@ public:     // Methods
     }
     
     Jet
+    enlarge(
+        const size_t size,
+        const bool left) const
+    {
+        Jet result(static_cast<int>(this->size() + size));
+
+        result.m_f = m_f;
+        
+        if (!left) {
+            result.m_g.head(this->size()) = m_g;
+        } else {
+            result.m_g.tail(this->size()) = m_g;
+        }
+
+        return result;
+    }
+    
+    Jet
     operator-() const
     {
         const auto f = -m_f;

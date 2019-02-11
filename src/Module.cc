@@ -143,6 +143,7 @@ PYBIND11_MODULE(HyperJet, m) {
         .def(double() / py::self)
         .def("__repr__", &Type::toString)
         .def("__len__", &Type::size)
+        .def("enlarge", &Type::enlarge, "size"_a, "left"_a=false)
         .def("sqrt", &Type::sqrt)
         .def("cos", &Type::cos)
         .def("sin", &Type::sin)
