@@ -72,7 +72,7 @@ public:     // Methods
         const size_t size,
         const bool left) const
     {
-        HyperJet result(this->size() + size);
+        HyperJet result(static_cast<int>(this->size() + size));
 
         result.m_f = m_f;
         
