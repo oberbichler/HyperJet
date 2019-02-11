@@ -171,5 +171,23 @@ class TestJet(unittest.TestCase):
         self.assertEqual(b.f, 7)
         assert_array_almost_equal(b.g, [0, 1, 2])
 
+        b = a.enlarge(right=1)
+
+        self.assertEqual(len(b), 3)
+        self.assertEqual(b.f, 7)
+        assert_array_almost_equal(b.g, [1, 2, 0])
+        
+        b = a.enlarge(left=1)
+
+        self.assertEqual(len(b), 3)
+        self.assertEqual(b.f, 7)
+        assert_array_almost_equal(b.g, [0, 1, 2])
+        
+        b = a.enlarge(right=1, left=1)
+
+        self.assertEqual(len(b), 4)
+        self.assertEqual(b.f, 7)
+        assert_array_almost_equal(b.g, [0, 1, 2, 0])
+
 if __name__ == '__main__':
     unittest.main()

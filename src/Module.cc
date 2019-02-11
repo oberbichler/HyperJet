@@ -76,7 +76,10 @@ PYBIND11_MODULE(HyperJet, m) {
         .def(double() / py::self)
         .def("__repr__", &Type::toString)
         .def("__len__", &Type::size)
-        .def("enlarge", &Type::enlarge, "size"_a, "left"_a=false)
+        .def("enlarge", py::overload_cast<size_t, bool>(&Type::enlarge,
+            py::const_), "size"_a, "left"_a=false)
+        .def("enlarge", py::overload_cast<size_t, size_t>(&Type::enlarge,
+            py::const_), "left"_a=0, "right"_a=0)
         .def("sqrt", &Type::sqrt)
         .def("cos", &Type::cos)
         .def("sin", &Type::sin)
@@ -143,7 +146,10 @@ PYBIND11_MODULE(HyperJet, m) {
         .def(double() / py::self)
         .def("__repr__", &Type::toString)
         .def("__len__", &Type::size)
-        .def("enlarge", &Type::enlarge, "size"_a, "left"_a=false)
+        .def("enlarge", py::overload_cast<size_t, bool>(&Type::enlarge,
+            py::const_), "size"_a, "left"_a=false)
+        .def("enlarge", py::overload_cast<size_t, size_t>(&Type::enlarge,
+            py::const_), "left"_a=0, "right"_a=0)
         .def("sqrt", &Type::sqrt)
         .def("cos", &Type::cos)
         .def("sin", &Type::sin)
