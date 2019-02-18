@@ -157,7 +157,7 @@ class TestHyperJet(unittest.TestCase):
         self.assertEqual(3 >= a, True)
         self.assertEqual(5 >= a, True)
 
-    def test_resized(self):
+    def test_enlarge(self):
         a = HyperJet(7, [1, 2], [[1, 2], [3, 4]])
 
         b = a.enlarge(1, False)
