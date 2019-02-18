@@ -106,6 +106,46 @@ public:     // Methods
     }
     
     HyperJet
+    enlarge(
+        const size_t size,
+        const bool left) const
+    {
+        HyperJet result(static_cast<int>(this->size() + size));
+
+        result.m_f = m_f;
+        
+        if (!left) {
+            result.m_g.head(this->size()) = m_g;
+            result.m_h.topLeftCorner(this->size(), this->size()) = m_h;
+        } else {
+            result.m_g.tail(this->size()) = m_g;
+            result.m_h.bottomRightCorner(this->size(), this->size()) = m_h;
+        }
+
+        return result;
+    }
+    
+    HyperJet
+    enlarge(
+        const size_t left,
+        const size_t right) const
+    {
+        HyperJet result(static_cast<int>(this->size() + left + right));
+
+        result.m_f = m_f;
+        
+        if (!left) {
+            result.m_g.segment(left, this->size()) = m_g;
+            result.m_h.block(left, left, this->size(), this->size()) = m_h;
+        } else {
+            result.m_g.segment(left, this->size()) = m_g;
+            result.m_h.block(left, left, this->size(), this->size()) = m_h;
+        }
+
+        return result;
+    }
+    
+    HyperJet
     operator-() const
     {
         const auto f = -m_f;
@@ -347,9 +387,9 @@ public:     // Methods
     asin() const
     {
         const auto f = std::asin(m_f);
-        const auto g = m_g / std::sqrt(-m_f * m_f + 1);
-        const auto h = (m_g.transpose() * m_g * m_f / (-m_f * m_f + 1) + m_h) /
-            std::sqrt(-m_f * m_f + 1);
+        const auto g = m_g / std::sqrt(1 - m_f * m_f);
+        const auto h = (m_f * m_g.transpose() * m_g - (m_f * m_f - 1) * m_h)
+            / std::pow(1 - m_f * m_f, 1.5);
         return HyperJet(f, g, h);
     }
 

@@ -58,6 +58,42 @@ public:     // Methods
     }
     
     Jet
+    enlarge(
+        const size_t size,
+        const bool left) const
+    {
+        Jet result(static_cast<int>(this->size() + size));
+
+        result.m_f = m_f;
+        
+        if (!left) {
+            result.m_g.head(this->size()) = m_g;
+        } else {
+            result.m_g.tail(this->size()) = m_g;
+        }
+
+        return result;
+    }
+    
+    Jet
+    enlarge(
+        const size_t left,
+        const size_t right) const
+    {
+        Jet result(static_cast<int>(this->size() + left + right));
+
+        result.m_f = m_f;
+        
+        if (!left) {
+            result.m_g.segment(left, this->size()) = m_g;
+        } else {
+            result.m_g.segment(left, this->size()) = m_g;
+        }
+
+        return result;
+    }
+    
+    Jet
     operator-() const
     {
         const auto f = -m_f;
