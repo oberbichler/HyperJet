@@ -196,5 +196,30 @@ class TestHyperJet(unittest.TestCase):
         assert_array_almost_equal(b.h, [[0, 0, 0, 0], [0, 1, 2, 0],
             [0, 3, 4, 0], [0, 0, 0, 0]])
 
+    def test_pickle(self):
+        import pickle
+
+        a = HyperJet(1, [2, 3], [[4, 5], [6, 7]])
+
+        data = pickle.dumps(a)
+
+        b = pickle.loads(data)
+
+        self.assertEqual(a.f, b.f)
+        assert_array_almost_equal(a.g, b.g)
+        assert_array_almost_equal(a.f, b.f)
+        
+        a.f = 2
+        a.g[:] = [4, 6]
+        a.h[:] = [[8, 10], [12, 14]]
+        
+        self.assertEqual(a.f, 2)
+        assert_array_almost_equal(a.g, [4, 6])
+        assert_array_almost_equal(a.h, [[8, 10], [12, 14]])
+        
+        self.assertEqual(b.f, 1)
+        assert_array_almost_equal(b.g, [2, 3])
+        assert_array_almost_equal(b.h, [[4, 5], [6, 7]])
+
 if __name__ == '__main__':
     unittest.main()

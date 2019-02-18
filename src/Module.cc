@@ -94,6 +94,20 @@ PYBIND11_MODULE(HyperJet, m) {
         .def("arctan2", &Type::atan2)
         .def("__pow__", &Type::pow<int>)
         .def("__pow__", &Type::pow<double>)
+        .def(py::pickle([](const Type& self) {
+                return py::make_tuple(self.f(), self.g(), self.h());
+            }, [](py::tuple tuple) {
+                if (tuple.size() != 3) {
+                    throw std::runtime_error("Invalid state!");
+                }
+                
+                auto f = tuple[0].cast<double>();
+                auto g = tuple[1].cast<Type::Vector>();
+                auto h = tuple[2].cast<Type::Matrix>();
+
+                return Type(f, g, h);
+            }
+        ))
     ;
     }
 
