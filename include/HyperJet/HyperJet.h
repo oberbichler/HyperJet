@@ -519,6 +519,7 @@ public:     // Methods
     }
 };
 
+using std::abs;
 using std::pow;
 using std::sqrt;
 using std::cos;
@@ -528,6 +529,14 @@ using std::acos;
 using std::asin;
 using std::atan;
 using std::atan2;
+
+template <typename T>
+inline HyperJet<T>
+abs(
+    const HyperJet<T>& a) 
+{
+    return a.f() < 0 ? -a : a;
+}
 
 template <typename T>
 inline HyperJet<T>
