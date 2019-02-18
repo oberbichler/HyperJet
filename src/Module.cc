@@ -35,8 +35,8 @@ PYBIND11_MODULE(HyperJet, m) {
         .def(py::init<double, Type::Vector, Type::Matrix>())
         .def_property("f", py::overload_cast<>(&Type::f), [](Type& self, double value) {
             self.f() = value;})
-        .def_property_readonly("g", py::overload_cast<>(&Type::g, py::const_))
-        .def_property_readonly("h", py::overload_cast<>(&Type::h, py::const_))
+        .def_property_readonly("g", py::overload_cast<>(&Type::g))
+        .def_property_readonly("h", py::overload_cast<>(&Type::h))
         .def(-py::self)
         .def(py::self == py::self)
         .def(py::self != py::self)
