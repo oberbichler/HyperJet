@@ -156,7 +156,7 @@ class TestJet(unittest.TestCase):
         self.assertEqual(3 >= a, True)
         self.assertEqual(5 >= a, True)
 
-    def test_resized(self):
+    def test_enlarge(self):
         a = Jet(7, [1, 2])
 
         b = a.enlarge(1, False)
