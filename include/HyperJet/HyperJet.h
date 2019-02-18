@@ -588,6 +588,39 @@ tan(
     return a.tan();
 }
 
+template <typename T>
+inline HyperJet<T>
+acos(
+    const HyperJet<T>& a) 
+{
+    return a.acos();
+}
+
+template <typename T>
+inline HyperJet<T>
+asin(
+    const HyperJet<T>& a)
+{
+    return a.asin();
+}
+
+template <typename T>
+inline HyperJet<T>
+atan(
+    const HyperJet<T>& a)
+{
+    return a.atan();
+}
+
+template <typename T>
+inline HyperJet<T>
+atan2(
+    const HyperJet<T>& a,
+    const HyperJet<T>& b)
+{
+    return a.atan2(b);
+}
+
 } // namespace HyperJet
 
 namespace Eigen {
