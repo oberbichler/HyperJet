@@ -108,6 +108,9 @@ PYBIND11_MODULE(HyperJet, m) {
                 return Type(f, g, h);
             }
         ))
+        .def("__copy__", [](const Type& self) { return self; })
+        .def("__deepcopy__", [](const Type& self, py::dict& memo) {
+            return self; }, "memodict"_a)
     ;
     }
 
