@@ -286,6 +286,12 @@ public:     // Methods
     }
 
     inline HyperJet
+    abs() const
+    {
+        return a.m_f < 0 ? -(*this) : *this;
+    }
+
+    inline HyperJet
     sqrt() const
     {
         const auto f = std::sqrt(m_f);
@@ -535,7 +541,7 @@ inline HyperJet<T>
 abs(
     const HyperJet<T>& a) 
 {
-    return a.f() < 0 ? -a : a;
+    return a.abs();
 }
 
 template <typename T>
