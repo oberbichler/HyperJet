@@ -580,6 +580,14 @@ sin(
     return a.sin();
 }
 
+template <typename T>
+inline HyperJet<T>
+tan(
+    const HyperJet<T>& a)
+{
+    return a.tan();
+}
+
 } // namespace HyperJet
 
 namespace Eigen {
