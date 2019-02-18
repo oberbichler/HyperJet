@@ -6,8 +6,8 @@
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
 
-#include <HyperJet.h>
-#include <Jet.h>
+#include <HyperJet/HyperJet.h>
+#include <HyperJet/Jet.h>
 
 PYBIND11_MODULE(HyperJet, m) {
     m.doc() = "HyperJet by Thomas Oberbichler";
@@ -27,16 +27,16 @@ PYBIND11_MODULE(HyperJet, m) {
 #endif // EIGEN_USE_BLAS
 
     {
-    using Type = HyperJet<double>;
+    using Type = HyperJet::HyperJet<double>;
 
     py::class_<Type>(m, "HyperJet")
         .def(py::init<int>())
         .def(py::init<double, Type::Vector>())
         .def(py::init<double, Type::Vector, Type::Matrix>())
-        .def_property("f", &Type::f, [](Type& self, double value) {
+        .def_property("f", py::overload_cast<>(&Type::f), [](Type& self, double value) {
             self.f() = value;})
-        .def_property_readonly("g", &Type::g)
-        .def_property_readonly("h", &Type::h)
+        .def_property_readonly("g", py::overload_cast<>(&Type::g, py::const_))
+        .def_property_readonly("h", py::overload_cast<>(&Type::h, py::const_))
         .def(-py::self)
         .def(py::self == py::self)
         .def(py::self != py::self)
@@ -98,7 +98,7 @@ PYBIND11_MODULE(HyperJet, m) {
     }
 
     {
-    using Type = Jet<double>;
+    using Type = HyperJet::Jet<double>;
 
     py::class_<Type>(m, "Jet")
         .def(py::init<int>())
