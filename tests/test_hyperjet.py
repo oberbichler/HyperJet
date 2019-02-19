@@ -26,6 +26,26 @@ class TestHyperJet(unittest.TestCase):
         assert_array_almost_equal(jet.g, g)
         assert_array_almost_equal(jet.h, h)
 
+    def test_hyperjet_getter_and_setter(self):
+        u = HyperJet(2)
+        
+        u.f = 1
+        u.g = [2, 3]
+        u.h = [[4, 5], [6, 7]]
+
+        self.assertEqual(len(u), 2)
+        self.check(u, 1, [2, 3], [[4, 5], [6, 7]])
+
+        def wrong_shape_for_g():
+            u.g = [1, 2, 3]
+
+        def wrong_shape_for_h():
+            u.h = [[1, 2, 3], [1, 2, 3]]
+        
+        self.assertRaises(RuntimeError, wrong_shape_for_g)
+        self.assertRaises(RuntimeError, wrong_shape_for_h)
+
+
     def test_hyperjet_add(self):
         u, v = self.sample()
         self.check(u + v, 300, [175, 120], [[50, 70], [70, 24]])

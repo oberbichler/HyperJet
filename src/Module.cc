@@ -33,10 +33,25 @@ PYBIND11_MODULE(HyperJet, m) {
         .def(py::init<int>())
         .def(py::init<double, Type::Vector>())
         .def(py::init<double, Type::Vector, Type::Matrix>())
-        .def_property("f", py::overload_cast<>(&Type::f), [](Type& self, double value) {
-            self.f() = value;})
-        .def_property_readonly("g", py::overload_cast<>(&Type::g))
-        .def_property_readonly("h", py::overload_cast<>(&Type::h))
+        .def_property("f", py::overload_cast<>(&Type::f),
+            [](Type& self, double value) {
+                self.f() = value;
+            })
+        .def_property("g", py::overload_cast<>(&Type::g),
+            [](Type& self, Eigen::Ref<const Type::Vector> value) {
+                if (value.size() != self.size()) {
+                    throw std::runtime_error("Invalid shape!");
+                }
+                self.g() = value;
+            })
+        .def_property("h", py::overload_cast<>(&Type::h),
+            [](Type& self, Eigen::Ref<const Type::Matrix> value) {
+                if (value.rows() != self.size() ||
+                    value.cols() != self.size()) {
+                    throw std::runtime_error("Invalid shape!");
+                }
+                self.h() = value;
+            })
         .def(-py::self)
         .def(py::self == py::self)
         .def(py::self != py::self)
