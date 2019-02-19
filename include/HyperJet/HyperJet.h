@@ -670,7 +670,7 @@ atan2(
     const HyperJet<T>& a,
     const HyperJet<T>& b)
 {
-    return a.atan2(b);
+    return HyperJet<T>::atan2(a, b);
 }
 
 } // namespace HyperJet
