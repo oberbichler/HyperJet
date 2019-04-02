@@ -30,9 +30,10 @@ PYBIND11_MODULE(HyperJet, m) {
     using Type = HyperJet::HyperJet<double>;
 
     py::class_<Type>(m, "HyperJet")
-        .def(py::init<int>())
-        .def(py::init<double, Type::Vector>())
-        .def(py::init<double, Type::Vector, Type::Matrix>())
+        .def(py::init<int>(), "size"_a)
+        .def(py::init<double, Type::Vector>(), "f"_a, "g"_a)
+        .def(py::init<double, Type::Vector, Type::Matrix>(), "f"_a, "g"_a,
+            "h"_a)
         .def_property("f", py::overload_cast<>(&Type::f),
             [](Type& self, double value) {
                 self.f() = value;
