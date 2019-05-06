@@ -330,7 +330,7 @@ public:     // Methods
     asin() const
     {
         const auto f = std::asin(m_f);
-        const auto g = m_g / std::sqrt(-m_f * m_f + 1);
+        const auto g = m_g / std::sqrt(1 - m_f * m_f);
         return Jet(f, g);
     }
 
