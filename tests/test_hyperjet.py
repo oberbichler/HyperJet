@@ -227,7 +227,7 @@ class TestHyperJet(unittest.TestCase):
 
         self.assertEqual(a.f, b.f)
         assert_array_almost_equal(a.g, b.g)
-        assert_array_almost_equal(a.f, b.f)
+        assert_array_almost_equal(a.h, b.h)
         
         a.f = 2
         a.g[:] = [4, 6]
