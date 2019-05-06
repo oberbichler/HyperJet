@@ -501,6 +501,81 @@ public:     // Methods
     {
         return "Jet<" + std::to_string(m_f) + ">";
     }
-};
+}; // class Jet
 
 } // namespace HyperJet
+
+namespace Eigen {
+
+template<typename T>
+struct NumTraits<HyperJet::Jet<T>> {
+    using Real = HyperJet::Jet<T>;
+    using NonInteger = HyperJet::Jet<T>;
+    using Nested = HyperJet::Jet<T>;
+    using Literal = HyperJet::Jet<T>;
+
+    static Real
+    dummy_precision()
+    {
+        return HyperJet::Jet<T>(1e-12, 0);
+    }
+    
+    static inline Real
+    epsilon()
+    {
+        return Real(std::numeric_limits<T>::epsilon());
+    }
+
+    static inline int
+    digits10()
+    {
+        return NumTraits<T>::digits10();
+    }
+
+    enum {
+        IsComplex = 0,
+        IsInteger = 0,
+        IsSigned,
+        ReadCost = 1,
+        AddCost = 1,
+        MulCost = 3,
+        HasFloatingPoint = 1,
+        RequireInitialization = 1
+    };
+
+    template<bool Vectorized>
+    struct Div {
+        enum {
+#if defined(EIGEN_VECTORIZE_AVX)
+            AVX = true,
+#else
+            AVX = false,
+#endif
+            Cost = 3
+        };
+    };
+
+    static inline Real
+    highest()
+    {
+        return Real(std::numeric_limits<T>::max());
+    }
+    
+    static inline Real
+    lowest()
+    {
+        return Real(-std::numeric_limits<T>::max());
+    }
+}; // struct NumTraits<HyperJet::Jet<T>>
+
+template <typename BinaryOp, typename T>
+struct ScalarBinaryOpTraits<HyperJet::Jet<T>, T, BinaryOp> {
+    typedef HyperJet::Jet<T> ReturnType;
+};
+
+template <typename BinaryOp, typename T>
+struct ScalarBinaryOpTraits<T, HyperJet::Jet<T>, BinaryOp> {
+    typedef HyperJet::Jet<T> ReturnType;
+};
+
+}  // namespace Eigen
