@@ -63,7 +63,7 @@ public:     // Methods
     {
         return m_g;
     }
-    
+
     Eigen::Ref<const Vector>
     g() const
     {
