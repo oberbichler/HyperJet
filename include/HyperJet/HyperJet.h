@@ -56,8 +56,8 @@ public:     // Methods
     EIGEN_STRONG_INLINE
     HyperJet(
         const T f,
-        const Derived1 g,
-        const Derived2 h)
+        const Eigen::DenseBase<Derived1>& g,
+        const Eigen::DenseBase<Derived2>& h)
     : m_f(f)
     , m_g(g)
     , m_h(h)
