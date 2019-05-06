@@ -52,8 +52,20 @@ public:     // Methods
         return m_f;
     }
 
+    T
+    f() const
+    {
+        return m_f;
+    }
+
     Eigen::Ref<Vector>
     g()
+    {
+        return m_g;
+    }
+    
+    Eigen::Ref<const Vector>
+    g() const
     {
         return m_g;
     }
