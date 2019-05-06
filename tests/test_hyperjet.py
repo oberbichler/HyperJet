@@ -28,7 +28,7 @@ class TestHyperJet(unittest.TestCase):
 
     def test_hyperjet_getter_and_setter(self):
         u = HyperJet(2)
-        
+
         u.f = 1
         u.g = [2, 3]
         u.h = [[4, 5], [6, 7]]
@@ -41,7 +41,7 @@ class TestHyperJet(unittest.TestCase):
 
         def wrong_shape_for_h():
             u.h = [[1, 2, 3], [1, 2, 3]]
-        
+
         self.assertRaises(RuntimeError, wrong_shape_for_g)
         self.assertRaises(RuntimeError, wrong_shape_for_h)
 
@@ -79,7 +79,7 @@ class TestHyperJet(unittest.TestCase):
         u, v = self.sample()
         self.check(u.cos(), cos(75), [-25*sin(75), -30*sin(75)], [[-625*cos(75), -750*cos(75) - 10*sin(75)], [-750*cos(75) - 10*sin(75), -900*cos(75) - 6*sin(75)]])
         self.check(v.cos(), cos(225), [-150*sin(225), -90*sin(225)], [[-22500*cos(225) - 50*sin(225), -13500*cos(225) - 60*sin(225)], [-13500*cos(225) - 60*sin(225), -8100*cos(225) - 18*sin(225)]])
-    
+
     def test_hyperjet_sin(self):
         u, v = self.sample()
         self.check(u.sin(), sin(75), [25*cos(75), 30*cos(75)], [[-625*sin(75), 10*cos(75) - 750*sin(75)], [10*cos(75) - 750*sin(75), 6*cos(75) - 900*sin(75)]])
@@ -104,7 +104,7 @@ class TestHyperJet(unittest.TestCase):
         u, v = self.sample()
         self.check(u.atan(), atan(75), [25/5626, 15/2813], [[-46875/15825938, -14060/7912969], [-14060/7912969, -25311/7912969]])
         self.check(v.atan(), atan(225), [75/25313, 45/25313], [[-1898425/640747969, -759360/640747969], [-759360/640747969, -683433/640747969]])
-    
+
     def test_hyperjet_atan2(self):
         u, v = self.sample()
         self.check(HyperJet.atan2(u, v), atan(1/3), [-1/10, 0], [[3/50, 0], [0, 0]])
@@ -186,7 +186,7 @@ class TestHyperJet(unittest.TestCase):
         self.assertEqual(b.f, 7)
         assert_array_almost_equal(b.g, [1, 2, 0])
         assert_array_almost_equal(b.h, [[1, 2, 0], [3, 4, 0], [0, 0, 0]])
-        
+
         b = a.enlarge(1, True)
 
         self.assertEqual(len(b), 3)
@@ -200,14 +200,14 @@ class TestHyperJet(unittest.TestCase):
         self.assertEqual(b.f, 7)
         assert_array_almost_equal(b.g, [1, 2, 0])
         assert_array_almost_equal(b.h, [[1, 2, 0], [3, 4, 0], [0, 0, 0]])
-        
+
         b = a.enlarge(left=1)
 
         self.assertEqual(len(b), 3)
         self.assertEqual(b.f, 7)
         assert_array_almost_equal(b.g, [0, 1, 2])
         assert_array_almost_equal(b.h, [[0, 0, 0], [0, 1, 2], [0, 3, 4]])
-        
+
         b = a.enlarge(right=1, left=1)
 
         self.assertEqual(len(b), 4)
@@ -225,21 +225,15 @@ class TestHyperJet(unittest.TestCase):
 
         b = pickle.loads(data)
 
-        self.assertEqual(a.f, b.f)
-        assert_array_almost_equal(a.g, b.g)
-        assert_array_almost_equal(a.h, b.h)
-        
+        self.check(a, b.f, b.g, b.h)
+
         a.f = 2
         a.g[:] = [4, 6]
         a.h[:] = [[8, 10], [12, 14]]
-        
-        self.assertEqual(a.f, 2)
-        assert_array_almost_equal(a.g, [4, 6])
-        assert_array_almost_equal(a.h, [[8, 10], [12, 14]])
-        
-        self.assertEqual(b.f, 1)
-        assert_array_almost_equal(b.g, [2, 3])
-        assert_array_almost_equal(b.h, [[4, 5], [6, 7]])
+
+        self.check(a, 2, [4, 6], [[8, 10], [12, 14]])
+
+        self.check(b, 1, [2, 3], [[4, 5], [6, 7]])
 
     def test_hyperjet_copy(self):
         from copy import copy, deepcopy
@@ -248,21 +242,15 @@ class TestHyperJet(unittest.TestCase):
             a = HyperJet(1, [2, 3], [[4, 5], [6, 7]])
             b = op(a)
 
-            self.assertEqual(a.f, b.f)
-            assert_array_almost_equal(a.g, b.g)
-            assert_array_almost_equal(a.h, b.h)
+            self.check(a, b.f, b.g, b.h)
 
             a.f = 2
             a.g[:] = [4, 6]
             a.h[:] = [[8, 10], [12, 14]]
-            
-            self.assertEqual(a.f, 2)
-            assert_array_almost_equal(a.g, [4, 6])
-            assert_array_almost_equal(a.h, [[8, 10], [12, 14]])
-            
-            self.assertEqual(b.f, 1)
-            assert_array_almost_equal(b.g, [2, 3])
-            assert_array_almost_equal(b.h, [[4, 5], [6, 7]])
+
+            self.check(a, 2, [4, 6], [[8, 10], [12, 14]])
+
+            self.check(b, 1, [2, 3], [[4, 5], [6, 7]])
 
 
 if __name__ == '__main__':
