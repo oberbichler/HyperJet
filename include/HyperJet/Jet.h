@@ -281,6 +281,12 @@ public:     // Methods
     }
 
     inline Jet
+    abs() const
+    {
+        return a.m_f < 0 ? -(*this) : *this;
+    }
+
+    inline Jet
     sqrt() const
     {
         const auto f = std::sqrt(m_f);
