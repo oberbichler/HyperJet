@@ -21,9 +21,24 @@ class TestJet(unittest.TestCase):
 
         return u, v
 
-    def check(self, jet, f, g, h):
+    def check(self, jet, f, g, h=None):
         assert_almost_equal(jet.f, f)
         assert_array_almost_equal(jet.g, g)
+
+    def test_hyperjet_getter_and_setter(self):
+        u = Jet(2)
+        
+        u.f = 1
+        u.g = [2, 3]
+
+        self.assertEqual(len(u), 2)
+        self.check(u, 1, [2, 3])
+
+        def wrong_shape_for_g():
+            u.g = [1, 2, 3]
+        
+        self.assertRaises(RuntimeError, wrong_shape_for_g)
+
 
     def test_jet_add(self):
         u, v = self.sample()
@@ -188,6 +203,47 @@ class TestJet(unittest.TestCase):
         self.assertEqual(len(b), 4)
         self.assertEqual(b.f, 7)
         assert_array_almost_equal(b.g, [0, 1, 2, 0])
+
+    def test_jet_pickle(self):
+        import pickle
+
+        a = Jet(1, [2, 3])
+
+        data = pickle.dumps(a)
+
+        b = pickle.loads(data)
+
+        self.assertEqual(a.f, b.f)
+        assert_array_almost_equal(a.g, b.g)
+
+        a.f = 2
+        a.g[:] = [4, 6]
+        
+        self.assertEqual(a.f, 2)
+        assert_array_almost_equal(a.g, [4, 6])
+
+        self.assertEqual(b.f, 1)
+        assert_array_almost_equal(b.g, [2, 3])
+
+    def test_jet_copy(self):
+        from copy import copy, deepcopy
+
+        for op in [copy, deepcopy]:
+            a = Jet(1, [2, 3])
+            b = op(a)
+
+            self.assertEqual(a.f, b.f)
+            assert_array_almost_equal(a.g, b.g)
+
+            a.f = 2
+            a.g[:] = [4, 6]
+
+            self.assertEqual(a.f, 2)
+            assert_array_almost_equal(a.g, [4, 6])
+            
+            self.assertEqual(b.f, 1)
+            assert_array_almost_equal(b.g, [2, 3])
+
 
 if __name__ == '__main__':
     unittest.main()
