@@ -239,6 +239,13 @@ class TestJet(unittest.TestCase):
 
             self.check(b, 1, [2, 3])
 
+    def test_jet_variables(self):
+        a, b, c = Jet.variables([1, 2, 3])
+
+        self.check(a, 1, [1, 0, 0])
+        self.check(b, 2, [0, 1, 0])
+        self.check(c, 3, [0, 0, 1])
+
 
 if __name__ == '__main__':
     unittest.main()
