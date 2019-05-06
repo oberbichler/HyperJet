@@ -9,7 +9,7 @@
 #include <HyperJet/HyperJet.h>
 #include <HyperJet/Jet.h>
 
-PYBIND11_MODULE(HyperJet, m) {
+PYBIND11_MODULE(hyperjet, m) {
     m.doc() = "HyperJet by Thomas Oberbichler";
     m.attr("__author__") = "Thomas Oberbichler";
     m.attr("__copyright__") = "Copyright (c) 2019, Thomas Oberbichler";
@@ -27,7 +27,7 @@ PYBIND11_MODULE(HyperJet, m) {
 #endif // EIGEN_USE_BLAS
 
     {
-    using Type = HyperJet::HyperJet<double>;
+    using Type = hyperjet::HyperJet<double>;
 
     py::class_<Type>(m, "HyperJet")
         // constructors
@@ -147,7 +147,7 @@ PYBIND11_MODULE(HyperJet, m) {
     }
 
     {
-    using Type = HyperJet::Jet<double>;
+    using Type = hyperjet::Jet<double>;
 
     py::class_<Type>(m, "Jet")
         // constructors

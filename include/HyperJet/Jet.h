@@ -4,7 +4,7 @@
 
 #include <string>
 
-namespace HyperJet {
+namespace hyperjet {
 
 template <typename T>
 class Jet {
@@ -606,21 +606,21 @@ atan2(
     return Jet<T>::atan2(a, b);
 }
 
-} // namespace HyperJet
+} // namespace hyperjet
 
 namespace Eigen {
 
 template<typename T>
-struct NumTraits<HyperJet::Jet<T>> {
-    using Real = HyperJet::Jet<T>;
-    using NonInteger = HyperJet::Jet<T>;
-    using Nested = HyperJet::Jet<T>;
-    using Literal = HyperJet::Jet<T>;
+struct NumTraits<hyperjet::Jet<T>> {
+    using Real = hyperjet::Jet<T>;
+    using NonInteger = hyperjet::Jet<T>;
+    using Nested = hyperjet::Jet<T>;
+    using Literal = hyperjet::Jet<T>;
 
     static Real
     dummy_precision()
     {
-        return HyperJet::Jet<T>(1e-12, 0);
+        return hyperjet::Jet<T>(1e-12, 0);
     }
     
     static inline Real
@@ -669,16 +669,16 @@ struct NumTraits<HyperJet::Jet<T>> {
     {
         return Real(-std::numeric_limits<T>::max());
     }
-}; // struct NumTraits<HyperJet::Jet<T>>
+}; // struct NumTraits<hyperjet::Jet<T>>
 
 template <typename BinaryOp, typename T>
-struct ScalarBinaryOpTraits<HyperJet::Jet<T>, T, BinaryOp> {
-    typedef HyperJet::Jet<T> ReturnType;
+struct ScalarBinaryOpTraits<hyperjet::Jet<T>, T, BinaryOp> {
+    typedef hyperjet::Jet<T> ReturnType;
 };
 
 template <typename BinaryOp, typename T>
-struct ScalarBinaryOpTraits<T, HyperJet::Jet<T>, BinaryOp> {
-    typedef HyperJet::Jet<T> ReturnType;
+struct ScalarBinaryOpTraits<T, hyperjet::Jet<T>, BinaryOp> {
+    typedef hyperjet::Jet<T> ReturnType;
 };
 
 }  // namespace Eigen

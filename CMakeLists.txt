@@ -18,11 +18,11 @@ add_definitions(
     -DHYPERJET_VERSION="${HYPERJET_VERSION}"
 )
 
-pybind11_add_module(HyperJet src/Module.cc)
+pybind11_add_module(hyperjet src/Module.cc)
 
 if(BLAS_FOUND)
     add_definitions(-DEIGEN_USE_BLAS)
-    target_link_libraries(HyperJet PRIVATE ${BLAS_LIBRARIES})
+    target_link_libraries(hyperjet PRIVATE ${BLAS_LIBRARIES})
 endif()
 
-install(TARGETS HyperJet DESTINATION bin)
+install(TARGETS hyperjet DESTINATION bin)
