@@ -17,6 +17,12 @@ private:    // Variables
 
 public:     // Methods
     EIGEN_STRONG_INLINE
+    Jet()
+    : m_f(0)
+    , m_g(0)
+    { }
+
+    EIGEN_STRONG_INLINE
     Jet(
         const int size)
     : m_f(0)
