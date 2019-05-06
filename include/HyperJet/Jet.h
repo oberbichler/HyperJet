@@ -503,6 +503,108 @@ public:     // Methods
     }
 }; // class Jet
 
+using std::abs;
+using std::pow;
+using std::sqrt;
+using std::cos;
+using std::sin;
+using std::tan;
+using std::acos;
+using std::asin;
+using std::atan;
+using std::atan2;
+
+template <typename T>
+inline Jet<T>
+abs(
+    const Jet<T>& a) 
+{
+    return a.abs();
+}
+
+template <typename T>
+inline Jet<T>
+pow(
+    const Jet<T>& a,
+    const int b) 
+{
+    return a.pow(b);
+}
+
+template <typename T>
+inline Jet<T>
+pow(
+    const Jet<T>& a,
+    const double b) 
+{
+    return a.pow(b);
+}
+
+template <typename T>
+inline Jet<T>
+sqrt(
+    const Jet<T>& a) 
+{
+    return a.sqrt();
+}
+
+template <typename T>
+inline Jet<T>
+cos(
+    const Jet<T>& a) 
+{
+    return a.cos();
+}
+
+template <typename T>
+inline Jet<T>
+sin(
+    const Jet<T>& a)
+{
+    return a.sin();
+}
+
+template <typename T>
+inline Jet<T>
+tan(
+    const Jet<T>& a)
+{
+    return a.tan();
+}
+
+template <typename T>
+inline Jet<T>
+acos(
+    const Jet<T>& a) 
+{
+    return a.acos();
+}
+
+template <typename T>
+inline Jet<T>
+asin(
+    const Jet<T>& a)
+{
+    return a.asin();
+}
+
+template <typename T>
+inline Jet<T>
+atan(
+    const Jet<T>& a)
+{
+    return a.atan();
+}
+
+template <typename T>
+inline Jet<T>
+atan2(
+    const Jet<T>& a,
+    const Jet<T>& b)
+{
+    return Jet<T>::atan2(a, b);
+}
+
 } // namespace HyperJet
 
 namespace Eigen {
