@@ -57,6 +57,16 @@ PYBIND11_MODULE(HyperJet, m) {
             })
         // static methods
         .def_static("atan2", &Type::atan2)
+        .def_static("variables", [](const std::vector<Type::Scalar> values) {
+            const auto nb_variables = values.size();
+            std::vector<Type> variables(nb_variables);
+            for (int i = 0; i < nb_variables; i++) {
+                Type::Vector g = Type::Vector::Zero(nb_variables);
+                g[i] = 1;
+                variables[i] = Type(values[i], g);
+            }
+            return variables;
+        })
         // methods
         .def("__len__", &Type::size)
         .def("__pow__", &Type::pow<double>)
@@ -157,6 +167,16 @@ PYBIND11_MODULE(HyperJet, m) {
             })
         // static methods
         .def_static("atan2", &Type::atan2)
+        .def_static("variables", [](const std::vector<Type::Scalar> values) {
+            const auto nb_variables = values.size();
+            std::vector<Type> variables(nb_variables);
+            for (int i = 0; i < nb_variables; i++) {
+                Type::Vector g = Type::Vector::Zero(nb_variables);
+                g[i] = 1;
+                variables[i] = Type(values[i], g);
+            }
+            return variables;
+        })
         // methods
         .def("__len__", &Type::size)
         .def("__pow__", &Type::pow<double>)

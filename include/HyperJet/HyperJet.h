@@ -9,6 +9,7 @@ namespace HyperJet {
 template <typename T>
 class HyperJet {
 public:     // Types
+    using Scalar = T;
     using Vector = Eigen::Matrix<T, 1, Eigen::Dynamic>;
     using Matrix = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
 
