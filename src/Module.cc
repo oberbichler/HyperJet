@@ -30,10 +30,12 @@ PYBIND11_MODULE(HyperJet, m) {
     using Type = HyperJet::HyperJet<double>;
 
     py::class_<Type>(m, "HyperJet")
+        // constructors
         .def(py::init<int>(), "size"_a)
         .def(py::init<double, Type::Vector>(), "f"_a, "g"_a)
         .def(py::init<double, Type::Vector, Type::Matrix>(), "f"_a, "g"_a,
             "h"_a)
+        // properties
         .def_property("f", py::overload_cast<>(&Type::f),
             [](Type& self, double value) {
                 self.f() = value;
@@ -53,6 +55,29 @@ PYBIND11_MODULE(HyperJet, m) {
                 }
                 self.h() = value;
             })
+        // static methods
+        .def_static("atan2", &Type::atan2)
+        // methods
+        .def("__len__", &Type::size)
+        .def("__pow__", &Type::pow<double>)
+        .def("__pow__", &Type::pow<int>)
+        .def("__repr__", &Type::toString)
+        .def("acos", &Type::acos)
+        .def("arccos", &Type::acos)
+        .def("arcsin", &Type::asin)
+        .def("arctan", &Type::atan)
+        .def("arctan2", &Type::atan2)
+        .def("asin", &Type::asin)
+        .def("atan", &Type::atan)
+        .def("cos", &Type::cos)
+        .def("enlarge", py::overload_cast<size_t, bool>(&Type::enlarge,
+            py::const_), "size"_a, "left"_a=false)
+        .def("enlarge", py::overload_cast<size_t, size_t>(&Type::enlarge,
+            py::const_), "left"_a=0, "right"_a=0)
+        .def("sin", &Type::sin)
+        .def("sqrt", &Type::sqrt)
+        .def("tan", &Type::tan)
+        // operators
         .def(-py::self)
         .def(py::self == py::self)
         .def(py::self != py::self)
@@ -90,26 +115,7 @@ PYBIND11_MODULE(HyperJet, m) {
         .def(double() - py::self)
         .def(double() * py::self)
         .def(double() / py::self)
-        .def("__repr__", &Type::toString)
-        .def("__len__", &Type::size)
-        .def("enlarge", py::overload_cast<size_t, bool>(&Type::enlarge,
-            py::const_), "size"_a, "left"_a=false)
-        .def("enlarge", py::overload_cast<size_t, size_t>(&Type::enlarge,
-            py::const_), "left"_a=0, "right"_a=0)
-        .def("sqrt", &Type::sqrt)
-        .def("cos", &Type::cos)
-        .def("sin", &Type::sin)
-        .def("tan", &Type::tan)
-        .def("acos", &Type::acos)
-        .def("asin", &Type::asin)
-        .def("atan", &Type::atan)
-        .def_static("atan2", &Type::atan2)
-        .def("arccos", &Type::acos)
-        .def("arcsin", &Type::asin)
-        .def("arctan", &Type::atan)
-        .def("arctan2", &Type::atan2)
-        .def("__pow__", &Type::pow<int>)
-        .def("__pow__", &Type::pow<double>)
+        // serialization
         .def(py::pickle([](const Type& self) {
                 return py::make_tuple(self.f(), self.g(), self.h());
             }, [](py::tuple tuple) {
