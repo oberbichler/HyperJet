@@ -29,20 +29,19 @@ public:     // Methods
     , m_g(Vector::Zero(size))
     { }
 
+    EIGEN_STRONG_INLINE
+    Jet(
+        const T f,
+        const int size)
+    : m_f(f)
+    , m_g(Vector::Zero(size))
+    { }
+
     template <typename Derived>
     EIGEN_STRONG_INLINE
     Jet(
         const T f,
-        const Derived g)
-    : m_f(f)
-    , m_g(g)
-    { }
-
-    template <typename Derived1, typename Derived2>
-    EIGEN_STRONG_INLINE
-    Jet(
-        const T f,
-        const Derived1 g)
+        const Eigen::DenseBase<Derived>& g)
     : m_f(f)
     , m_g(g)
     { }
