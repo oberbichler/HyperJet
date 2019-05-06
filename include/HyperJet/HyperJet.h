@@ -93,39 +93,19 @@ public:     // Methods
     {
         return m_h;
     }
-    
+
     Eigen::Ref<const Matrix>
     h() const
     {
         return m_h;
     }
-    
+
     inline size_t
     size() const
     {
         return m_g.size();
     }
-    
-    HyperJet
-    enlarge(
-        const size_t size,
-        const bool left) const
-    {
-        HyperJet result(static_cast<int>(this->size() + size));
 
-        result.m_f = m_f;
-        
-        if (!left) {
-            result.m_g.head(this->size()) = m_g;
-            result.m_h.topLeftCorner(this->size(), this->size()) = m_h;
-        } else {
-            result.m_g.tail(this->size()) = m_g;
-            result.m_h.bottomRightCorner(this->size(), this->size()) = m_h;
-        }
-
-        return result;
-    }
-    
     HyperJet
     enlarge(
         const size_t left,
@@ -134,7 +114,7 @@ public:     // Methods
         HyperJet result(static_cast<int>(this->size() + left + right));
 
         result.m_f = m_f;
-        
+
         if (!left) {
             result.m_g.segment(left, this->size()) = m_g;
             result.m_h.block(left, left, this->size(), this->size()) = m_h;
@@ -145,7 +125,7 @@ public:     // Methods
 
         return result;
     }
-    
+
     HyperJet
     operator-() const
     {
@@ -174,7 +154,7 @@ public:     // Methods
         const auto h = m_h;
         return HyperJet(f, g, h);
     }
-    
+
     HyperJet
     operator-(
         const HyperJet& rhs) const
@@ -293,7 +273,7 @@ public:     // Methods
         m_h /= rhs;
         return *this;
     }
-    
+
     friend HyperJet
     operator+(
         const T lhs,
@@ -428,7 +408,7 @@ public:     // Methods
     {
         const auto f = std::pow(m_f, b);
         const auto g = b * std::pow(m_f, b - U(1)) * m_g;
-        const auto h = b * (b * m_g.transpose() * m_g + m_f * m_h - 
+        const auto h = b * (b * m_g.transpose() * m_g + m_f * m_h -
             m_g.transpose() * m_g) * std::pow(m_f, b - U(2));
         return HyperJet(f, g, h);
     }
@@ -516,7 +496,7 @@ public:     // Methods
     {
         return m_f >= rhs;
     }
-    
+
     friend bool
     operator==(
         const T lhs,
@@ -524,7 +504,7 @@ public:     // Methods
     {
         return rhs.operator==(lhs);
     }
-    
+
     friend bool
     operator!=(
         const T lhs,
@@ -532,7 +512,7 @@ public:     // Methods
     {
         return rhs.operator!=(lhs);
     }
-    
+
     friend bool
     operator<(
         const T lhs,
@@ -540,7 +520,7 @@ public:     // Methods
     {
         return rhs.operator>(lhs);
     }
-    
+
     friend bool
     operator>(
         const T lhs,
@@ -548,7 +528,7 @@ public:     // Methods
     {
         return rhs.operator<(lhs);
     }
-    
+
     friend bool
     operator<=(
         const T lhs,
@@ -556,7 +536,7 @@ public:     // Methods
     {
         return rhs.operator>=(lhs);
     }
-    
+
     friend bool
     operator>=(
         const T lhs,
@@ -586,7 +566,7 @@ using std::atan2;
 template <typename T>
 inline HyperJet<T>
 abs(
-    const HyperJet<T>& a) 
+    const HyperJet<T>& a)
 {
     return a.abs();
 }
@@ -595,7 +575,7 @@ template <typename T>
 inline HyperJet<T>
 pow(
     const HyperJet<T>& a,
-    const int b) 
+    const int b)
 {
     return a.pow(b);
 }
@@ -604,7 +584,7 @@ template <typename T>
 inline HyperJet<T>
 pow(
     const HyperJet<T>& a,
-    const double b) 
+    const double b)
 {
     return a.pow(b);
 }
@@ -612,7 +592,7 @@ pow(
 template <typename T>
 inline HyperJet<T>
 sqrt(
-    const HyperJet<T>& a) 
+    const HyperJet<T>& a)
 {
     return a.sqrt();
 }
@@ -620,7 +600,7 @@ sqrt(
 template <typename T>
 inline HyperJet<T>
 cos(
-    const HyperJet<T>& a) 
+    const HyperJet<T>& a)
 {
     return a.cos();
 }
@@ -644,7 +624,7 @@ tan(
 template <typename T>
 inline HyperJet<T>
 acos(
-    const HyperJet<T>& a) 
+    const HyperJet<T>& a)
 {
     return a.acos();
 }
@@ -690,7 +670,7 @@ struct NumTraits<hyperjet::HyperJet<T>> {
     {
         return hyperjet::HyperJet<T>(1e-12, 0);
     }
-    
+
     static inline Real
     epsilon()
     {
@@ -731,7 +711,7 @@ struct NumTraits<hyperjet::HyperJet<T>> {
     {
         return Real(std::numeric_limits<T>::max());
     }
-    
+
     static inline Real
     lowest()
     {

@@ -70,31 +70,13 @@ public:     // Methods
     {
         return m_g;
     }
-    
+
     inline size_t
     size() const
     {
         return m_g.size();
     }
-    
-    Jet
-    enlarge(
-        const size_t size,
-        const bool left) const
-    {
-        Jet result(static_cast<int>(this->size() + size));
 
-        result.m_f = m_f;
-        
-        if (!left) {
-            result.m_g.head(this->size()) = m_g;
-        } else {
-            result.m_g.tail(this->size()) = m_g;
-        }
-
-        return result;
-    }
-    
     Jet
     enlarge(
         const size_t left,
@@ -103,7 +85,7 @@ public:     // Methods
         Jet result(static_cast<int>(this->size() + left + right));
 
         result.m_f = m_f;
-        
+
         if (!left) {
             result.m_g.segment(left, this->size()) = m_g;
         } else {
@@ -112,7 +94,7 @@ public:     // Methods
 
         return result;
     }
-    
+
     Jet
     operator-() const
     {
@@ -138,7 +120,7 @@ public:     // Methods
         const auto g = m_g;
         return Jet(f, g);
     }
-    
+
     Jet
     operator-(
         const Jet& rhs) const
@@ -244,7 +226,7 @@ public:     // Methods
         m_g /= rhs;
         return *this;
     }
-    
+
     friend Jet
     operator+(
         const T lhs,
@@ -448,7 +430,7 @@ public:     // Methods
     {
         return m_f >= rhs;
     }
-    
+
     friend bool
     operator==(
         const T lhs,
@@ -456,7 +438,7 @@ public:     // Methods
     {
         return rhs.operator==(lhs);
     }
-    
+
     friend bool
     operator!=(
         const T lhs,
@@ -464,7 +446,7 @@ public:     // Methods
     {
         return rhs.operator!=(lhs);
     }
-    
+
     friend bool
     operator<(
         const T lhs,
@@ -472,7 +454,7 @@ public:     // Methods
     {
         return rhs.operator>(lhs);
     }
-    
+
     friend bool
     operator>(
         const T lhs,
@@ -480,7 +462,7 @@ public:     // Methods
     {
         return rhs.operator<(lhs);
     }
-    
+
     friend bool
     operator<=(
         const T lhs,
@@ -488,7 +470,7 @@ public:     // Methods
     {
         return rhs.operator>=(lhs);
     }
-    
+
     friend bool
     operator>=(
         const T lhs,
@@ -518,7 +500,7 @@ using std::atan2;
 template <typename T>
 inline Jet<T>
 abs(
-    const Jet<T>& a) 
+    const Jet<T>& a)
 {
     return a.abs();
 }
@@ -527,7 +509,7 @@ template <typename T>
 inline Jet<T>
 pow(
     const Jet<T>& a,
-    const int b) 
+    const int b)
 {
     return a.pow(b);
 }
@@ -536,7 +518,7 @@ template <typename T>
 inline Jet<T>
 pow(
     const Jet<T>& a,
-    const double b) 
+    const double b)
 {
     return a.pow(b);
 }
@@ -544,7 +526,7 @@ pow(
 template <typename T>
 inline Jet<T>
 sqrt(
-    const Jet<T>& a) 
+    const Jet<T>& a)
 {
     return a.sqrt();
 }
@@ -552,7 +534,7 @@ sqrt(
 template <typename T>
 inline Jet<T>
 cos(
-    const Jet<T>& a) 
+    const Jet<T>& a)
 {
     return a.cos();
 }
@@ -576,7 +558,7 @@ tan(
 template <typename T>
 inline Jet<T>
 acos(
-    const Jet<T>& a) 
+    const Jet<T>& a)
 {
     return a.acos();
 }
@@ -622,7 +604,7 @@ struct NumTraits<hyperjet::Jet<T>> {
     {
         return hyperjet::Jet<T>(1e-12, 0);
     }
-    
+
     static inline Real
     epsilon()
     {
@@ -663,7 +645,7 @@ struct NumTraits<hyperjet::Jet<T>> {
     {
         return Real(std::numeric_limits<T>::max());
     }
-    
+
     static inline Real
     lowest()
     {

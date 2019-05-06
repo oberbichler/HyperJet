@@ -80,8 +80,6 @@ PYBIND11_MODULE(hyperjet, m) {
         .def("asin", &Type::asin)
         .def("atan", &Type::atan)
         .def("cos", &Type::cos)
-        .def("enlarge", py::overload_cast<size_t, bool>(&Type::enlarge,
-            py::const_), "size"_a, "left"_a=false)
         .def("enlarge", py::overload_cast<size_t, size_t>(&Type::enlarge,
             py::const_), "left"_a=0, "right"_a=0)
         .def("sin", &Type::sin)
@@ -190,8 +188,6 @@ PYBIND11_MODULE(hyperjet, m) {
         .def("asin", &Type::asin)
         .def("atan", &Type::atan)
         .def("cos", &Type::cos)
-        .def("enlarge", py::overload_cast<size_t, bool>(&Type::enlarge,
-            py::const_), "size"_a, "left"_a=false)
         .def("enlarge", py::overload_cast<size_t, size_t>(&Type::enlarge,
             py::const_), "left"_a=0, "right"_a=0)
         .def("sin", &Type::sin)

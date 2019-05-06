@@ -174,18 +174,6 @@ class TestJet(unittest.TestCase):
     def test_jet_enlarge(self):
         a = Jet(7, [1, 2])
 
-        b = a.enlarge(1, False)
-
-        self.assertEqual(len(b), 3)
-        self.assertEqual(b.f, 7)
-        assert_array_almost_equal(b.g, [1, 2, 0])
-
-        b = a.enlarge(1, True)
-
-        self.assertEqual(len(b), 3)
-        self.assertEqual(b.f, 7)
-        assert_array_almost_equal(b.g, [0, 1, 2])
-
         b = a.enlarge(right=1)
 
         self.assertEqual(len(b), 3)

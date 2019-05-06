@@ -180,20 +180,6 @@ class TestHyperJet(unittest.TestCase):
     def test_hyperjet_enlarge(self):
         a = HyperJet(7, [1, 2], [[1, 2], [3, 4]])
 
-        b = a.enlarge(1, False)
-
-        self.assertEqual(len(b), 3)
-        self.assertEqual(b.f, 7)
-        assert_array_almost_equal(b.g, [1, 2, 0])
-        assert_array_almost_equal(b.h, [[1, 2, 0], [3, 4, 0], [0, 0, 0]])
-
-        b = a.enlarge(1, True)
-
-        self.assertEqual(len(b), 3)
-        self.assertEqual(b.f, 7)
-        assert_array_almost_equal(b.g, [0, 1, 2])
-        assert_array_almost_equal(b.h, [[0, 0, 0], [0, 1, 2], [0, 3, 4]])
-
         b = a.enlarge(right=1)
 
         self.assertEqual(len(b), 3)
