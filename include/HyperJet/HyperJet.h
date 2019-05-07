@@ -315,7 +315,7 @@ public:     // Methods
     inline HyperJet
     abs() const
     {
-        return a.m_f < 0 ? -(*this) : *this;
+        return m_f < 0 ? -(*this) : *this;
     }
 
     inline HyperJet
