@@ -58,7 +58,7 @@ It is also possible to specify the data in the constructor.
 
 Doing computations with `HyperJet`s is the same as with `float`s.
 
-```
+```python
 >>> a * b
 HyperJet<27.0000>
 ```
