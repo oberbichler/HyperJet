@@ -1,6 +1,8 @@
 # HyperJet
 Automatic differentiation with dual numbers
 
+## Citation
+
 ```
 @misc{HyperJet,
   author = "Thomas Oberbichler",
@@ -15,7 +17,7 @@ Automatic differentiation with dual numbers
 pip install git+https://github.com/oberbichler/HyperJet
 ```
 
-# How to use it
+## How to use it
 
 Import the module.
 
