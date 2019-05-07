@@ -66,7 +66,7 @@ PYBIND11_MODULE(hyperjet, m) {
                 variables[i] = Type(values[i], g);
             }
             return variables;
-        })
+        }, "values"_a)
         // methods
         .def("__len__", &Type::size)
         .def("__pow__", &Type::pow<double>)
@@ -174,7 +174,7 @@ PYBIND11_MODULE(hyperjet, m) {
                 variables[i] = Type(values[i], g);
             }
             return variables;
-        })
+        }, "values"_a)
         // methods
         .def("__len__", &Type::size)
         .def("__pow__", &Type::pow<double>)
