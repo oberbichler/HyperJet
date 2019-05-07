@@ -67,6 +67,17 @@ PYBIND11_MODULE(hyperjet, m) {
             }
             return variables;
         }, "values"_a)
+        .def_static("variables", [](const std::vector<Type::Scalar> values,
+            const int size, const int offset) {
+            const auto nb_variables = values.size();
+            std::vector<Type> variables(nb_variables);
+            for (int i = 0; i < nb_variables; i++) {
+                Type::Vector g = Type::Vector::Zero(size);
+                g[offset + i] = 1;
+                variables[i] = Type(values[i], g);
+            }
+            return variables;
+        }, "values"_a, "size"_a, "offset"_a)
         // methods
         .def("__len__", &Type::size)
         .def("__pow__", &Type::pow<double>)
@@ -175,6 +186,17 @@ PYBIND11_MODULE(hyperjet, m) {
             }
             return variables;
         }, "values"_a)
+        .def_static("variables", [](const std::vector<Type::Scalar> values,
+            const int size, const int offset) {
+            const auto nb_variables = values.size();
+            std::vector<Type> variables(nb_variables);
+            for (int i = 0; i < nb_variables; i++) {
+                Type::Vector g = Type::Vector::Zero(size);
+                g[offset + i] = 1;
+                variables[i] = Type(values[i], g);
+            }
+            return variables;
+        }, "values"_a, "size"_a, "offset"_a)
         // methods
         .def("__len__", &Type::size)
         .def("__pow__", &Type::pow<double>)
