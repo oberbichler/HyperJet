@@ -26,6 +26,30 @@ PYBIND11_MODULE(hyperjet, m) {
     m.attr("USE_BLAS") = false;
 #endif // EIGEN_USE_BLAS
 
+    m.def("assign", [](const double value,
+        Eigen::Ref<Eigen::VectorXd> g, Eigen::Ref<Eigen::MatrixXd> h) {
+        return value;
+    });
+
+    m.def("assign", [](const hyperjet::Jet<double>& jet,
+        Eigen::Ref<Eigen::VectorXd> g, Eigen::Ref<Eigen::MatrixXd> h) {
+        if (g.size() > 0) {
+            g = jet.g();
+        }
+        return jet.f();
+    });
+
+    m.def("assign", [](const hyperjet::HyperJet<double>& hyper_jet,
+        Eigen::Ref<Eigen::VectorXd> g, Eigen::Ref<Eigen::MatrixXd> h) {
+        if (g.size() > 0) {
+            g = hyper_jet.g();
+        }
+        if (h.size() > 0) {
+            h = hyper_jet.h();
+        }
+        return hyper_jet.f();
+    });
+
     {
     using Type = hyperjet::HyperJet<double>;
 
