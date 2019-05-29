@@ -546,7 +546,7 @@ public:     // Methods
     }
 
     std::string
-    toString() const
+    to_string() const
     {
         return "HyperJet<" + std::to_string(m_f) + ">";
     }
