@@ -103,6 +103,7 @@ PYBIND11_MODULE(hyperjet, m) {
             return variables;
         }, "values"_a, "size"_a, "offset"_a)
         // methods
+        .def("__float__", py::overload_cast<>(&Type::f))
         .def("__len__", &Type::size)
         .def("__pow__", &Type::pow<double>)
         .def("__pow__", &Type::pow<int>)
@@ -222,6 +223,7 @@ PYBIND11_MODULE(hyperjet, m) {
             return variables;
         }, "values"_a, "size"_a, "offset"_a)
         // methods
+        .def("__float__", py::overload_cast<>(&Type::f))
         .def("__len__", &Type::size)
         .def("__pow__", &Type::pow<double>)
         .def("__pow__", &Type::pow<int>)
