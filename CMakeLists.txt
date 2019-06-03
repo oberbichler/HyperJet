@@ -16,6 +16,7 @@ add_subdirectory(external_libraries/pybind11)
 add_definitions(
     -DEIGEN_DEFAULT_TO_ROW_MAJOR
     -DHYPERJET_VERSION="${HYPERJET_VERSION}"
+    -DHYPERJET_EXCEPTIONS
 )
 
 pybind11_add_module(hyperjet src/Module.cc)

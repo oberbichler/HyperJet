@@ -62,7 +62,17 @@ public:     // Methods
     : m_f(f)
     , m_g(g)
     , m_h(h)
-    { }
+    {
+#if defined(HYPERJET_EXCEPTIONS)
+        if (h.rows() != h.cols()) {
+            throw new std::runtime_error("Hessian is not a square matrix");
+        }
+
+        if (g.size() != h.rows()) {
+            throw new std::runtime_error("Dimensions do not match");
+        }
+#endif
+    }
 
     T&
     f()
@@ -139,6 +149,12 @@ public:     // Methods
     operator+(
         const HyperJet& rhs) const
     {
+#if defined(HYPERJET_EXCEPTIONS)
+        if (size() != rhs.size()) {
+            throw new std::runtime_error("Dimensions do not match");
+        }
+#endif
+
         const auto f = m_f + rhs.m_f;
         const auto g = m_g + rhs.m_g;
         const auto h = m_h + rhs.m_h;
@@ -159,6 +175,12 @@ public:     // Methods
     operator-(
         const HyperJet& rhs) const
     {
+#if defined(HYPERJET_EXCEPTIONS)
+        if (size() != rhs.size()) {
+            throw new std::runtime_error("Dimensions do not match");
+        }
+#endif
+
         const auto f = m_f - rhs.m_f;
         const auto g = m_g - rhs.m_g;
         const auto h = m_h - rhs.m_h;
@@ -179,6 +201,12 @@ public:     // Methods
     operator*(
         const HyperJet& rhs) const
     {
+#if defined(HYPERJET_EXCEPTIONS)
+        if (size() != rhs.size()) {
+            throw new std::runtime_error("Dimensions do not match");
+        }
+#endif
+
         const auto f = m_f * rhs.m_f;
         const auto g = m_f * rhs.m_g + rhs.m_f * m_g;
         const auto h = m_f * rhs.m_h + rhs.m_f * m_h + m_g.transpose() * rhs.m_g
@@ -200,6 +228,12 @@ public:     // Methods
     operator/(
         const HyperJet& rhs) const
     {
+#if defined(HYPERJET_EXCEPTIONS)
+        if (size() != rhs.size()) {
+            throw new std::runtime_error("Dimensions do not match");
+        }
+#endif
+
         const auto f = m_f / rhs.m_f;
         const auto g = m_g / rhs.m_f - m_f * rhs.m_g / (rhs.m_f * rhs.m_f);
         const auto h = (2 * m_f * rhs.m_g.transpose() * rhs.m_g +
@@ -222,6 +256,12 @@ public:     // Methods
     operator+=(
         const HyperJet& rhs)
     {
+#if defined(HYPERJET_EXCEPTIONS)
+        if (size() != rhs.size()) {
+            throw new std::runtime_error("Dimensions do not match");
+        }
+#endif
+
         m_f += rhs.m_f;
         m_g += rhs.m_g;
         m_h += rhs.m_h;
@@ -232,6 +272,12 @@ public:     // Methods
     operator-=(
         const HyperJet& rhs)
     {
+#if defined(HYPERJET_EXCEPTIONS)
+        if (size() != rhs.size()) {
+            throw new std::runtime_error("Dimensions do not match");
+        }
+#endif
+
         m_f -= rhs.m_f;
         m_g -= rhs.m_g;
         m_h -= rhs.m_h;
@@ -242,6 +288,12 @@ public:     // Methods
     operator*=(
         const HyperJet& rhs)
     {
+#if defined(HYPERJET_EXCEPTIONS)
+        if (size() != rhs.size()) {
+            throw new std::runtime_error("Dimensions do not match");
+        }
+#endif
+
         *this = *this * rhs;
         return *this;
     }
@@ -260,6 +312,12 @@ public:     // Methods
     operator/=(
         const HyperJet& rhs)
     {
+#if defined(HYPERJET_EXCEPTIONS)
+        if (size() != rhs.size()) {
+            throw new std::runtime_error("Dimensions do not match");
+        }
+#endif
+
         *this = *this / rhs;
         return *this;
     }
@@ -389,6 +447,12 @@ public:     // Methods
         const HyperJet& a,
         const HyperJet& b)
     {
+#if defined(HYPERJET_EXCEPTIONS)
+        if (a.size() != b.size()) {
+            throw new std::runtime_error("Dimensions do not match");
+        }
+#endif
+
         const auto tmp = a.m_f * a.m_f + b.m_f * b.m_f;
 
         const auto f = std::atan2(a.m_f, b.m_f);
@@ -417,6 +481,12 @@ public:     // Methods
     operator==(
         const HyperJet& rhs) const
     {
+#if defined(HYPERJET_EXCEPTIONS)
+        if (size() != rhs.size()) {
+            throw new std::runtime_error("Dimensions do not match");
+        }
+#endif
+
         return m_f == rhs.m_f;
     }
 
@@ -424,6 +494,12 @@ public:     // Methods
     operator!=(
         const HyperJet& rhs) const
     {
+#if defined(HYPERJET_EXCEPTIONS)
+        if (size() != rhs.size()) {
+            throw new std::runtime_error("Dimensions do not match");
+        }
+#endif
+
         return m_f != rhs.m_f;
     }
 
@@ -431,6 +507,12 @@ public:     // Methods
     operator<(
         const HyperJet& rhs) const
     {
+#if defined(HYPERJET_EXCEPTIONS)
+        if (size() != rhs.size()) {
+            throw new std::runtime_error("Dimensions do not match");
+        }
+#endif
+
         return m_f < rhs.m_f;
     }
 
@@ -438,6 +520,12 @@ public:     // Methods
     operator>(
         const HyperJet& rhs) const
     {
+#if defined(HYPERJET_EXCEPTIONS)
+        if (size() != rhs.size()) {
+            throw new std::runtime_error("Dimensions do not match");
+        }
+#endif
+
         return m_f > rhs.m_f;
     }
 
@@ -445,6 +533,12 @@ public:     // Methods
     operator<=(
         const HyperJet& rhs) const
     {
+#if defined(HYPERJET_EXCEPTIONS)
+        if (size() != rhs.size()) {
+            throw new std::runtime_error("Dimensions do not match");
+        }
+#endif
+
         return m_f <= rhs.m_f;
     }
 
@@ -452,6 +546,12 @@ public:     // Methods
     operator>=(
         const HyperJet& rhs) const
     {
+#if defined(HYPERJET_EXCEPTIONS)
+        if (size() != rhs.size()) {
+            throw new std::runtime_error("Dimensions do not match");
+        }
+#endif
+
         return m_f >= rhs.m_f;
     }
 

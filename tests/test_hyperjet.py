@@ -252,6 +252,61 @@ class TestHyperJet(unittest.TestCase):
         self.check(b, 2, [0, 0, 1, 0, 0, 0], np.zeros((6, 6)))
         self.check(c, 3, [0, 0, 0, 1, 0, 0], np.zeros((6, 6)))
 
+    def test_hyperjet_throws_when_dimensions_dont_match(self):
+        with self.assertRaises(RuntimeError) as _:
+            HyperJet(1, [1, 2], [[1, 2, 3], [4, 5, 6]])
+
+        with self.assertRaises(RuntimeError) as _:
+            HyperJet(1, [1, 2, 3], [[1, 2], [3, 4]])
+
+        lhs = HyperJet(2, [1, 2])
+        rhs = HyperJet(3, [1, 2, 3])
+
+        with self.assertRaises(RuntimeError) as _:
+            lhs + rhs
+
+        with self.assertRaises(RuntimeError) as _:
+            lhs - rhs
+
+        with self.assertRaises(RuntimeError) as _:
+            lhs * rhs
+
+        with self.assertRaises(RuntimeError) as _:
+            lhs / rhs
+
+        with self.assertRaises(RuntimeError) as _:
+            lhs += rhs
+
+        with self.assertRaises(RuntimeError) as _:
+            lhs -= rhs
+
+        with self.assertRaises(RuntimeError) as _:
+            lhs *= rhs
+
+        with self.assertRaises(RuntimeError) as _:
+            lhs /= rhs
+
+        with self.assertRaises(RuntimeError) as _:
+            HyperJet.atan2(lhs, rhs)
+
+        with self.assertRaises(RuntimeError) as _:
+            lhs == rhs
+
+        with self.assertRaises(RuntimeError) as _:
+            lhs != rhs
+
+        with self.assertRaises(RuntimeError) as _:
+            lhs < rhs
+
+        with self.assertRaises(RuntimeError) as _:
+            lhs > rhs
+
+        with self.assertRaises(RuntimeError) as _:
+            lhs <= rhs
+
+        with self.assertRaises(RuntimeError) as _:
+            lhs >= rhs
+
 
 if __name__ == '__main__':
     unittest.main()
