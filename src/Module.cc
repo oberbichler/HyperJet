@@ -103,11 +103,13 @@ PYBIND11_MODULE(hyperjet, m) {
             return variables;
         }, "values"_a, "size"_a, "offset"_a)
         // methods
+        .def("__abs__", &Type::abs)
         .def("__float__", py::overload_cast<>(&Type::f))
         .def("__len__", &Type::size)
         .def("__pow__", &Type::pow<double>)
         .def("__pow__", &Type::pow<int>)
         .def("__repr__", &Type::to_string)
+        .def("abs", &Type::abs)
         .def("acos", &Type::acos)
         .def("arccos", &Type::acos)
         .def("arcsin", &Type::asin)
@@ -223,11 +225,13 @@ PYBIND11_MODULE(hyperjet, m) {
             return variables;
         }, "values"_a, "size"_a, "offset"_a)
         // methods
+        .def("__abs__", &Type::abs)
         .def("__float__", py::overload_cast<>(&Type::f))
         .def("__len__", &Type::size)
         .def("__pow__", &Type::pow<double>)
         .def("__pow__", &Type::pow<int>)
         .def("__repr__", &Type::to_string)
+        .def("abs", &Type::abs)
         .def("acos", &Type::acos)
         .def("arccos", &Type::acos)
         .def("arcsin", &Type::asin)
