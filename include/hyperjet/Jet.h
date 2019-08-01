@@ -47,6 +47,14 @@ public:     // Methods
     , m_g(g)
     { }
 
+    static Jet<T>
+    constant(const double value, const int size, const int index)
+    {
+        Jet<T> result(value, size);
+        result.g(index) = 1;
+        return result;
+    }
+
     T&
     f()
     {

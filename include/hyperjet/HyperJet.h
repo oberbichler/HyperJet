@@ -74,6 +74,14 @@ public:     // Methods
 #endif
     }
 
+    static HyperJet<T>
+    constant(const double value, const int size, const int index)
+    {
+        HyperJet<T> result(value, size);
+        result.g(index) = 1;
+        return result;
+    }
+
     T&
     f()
     {
