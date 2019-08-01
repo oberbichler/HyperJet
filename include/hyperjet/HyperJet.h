@@ -98,6 +98,18 @@ public:     // Methods
         return m_g;
     }
 
+    T&
+    g(int index)
+    {
+        return m_g(index);
+    }
+
+    T
+    g(const int index) const
+    {
+        return m_g(index);
+    }
+
     Eigen::Ref<Matrix>
     h()
     {
@@ -108,6 +120,18 @@ public:     // Methods
     h() const
     {
         return m_h;
+    }
+
+    T&
+    h(const int row, const int col)
+    {
+        return m_h(row, col);
+    }
+
+    T
+    h(const int row, const int col) const
+    {
+        return m_h(row, col);
     }
 
     inline size_t

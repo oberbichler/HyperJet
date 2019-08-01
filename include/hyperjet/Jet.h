@@ -71,6 +71,19 @@ public:     // Methods
         return m_g;
     }
 
+    T&
+    g(int index)
+    {
+        return m_g(index);
+    }
+
+    T
+    g(const int index) const
+    {
+        return m_g(index);
+    }
+
+
     inline size_t
     size() const
     {
