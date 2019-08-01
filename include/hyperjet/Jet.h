@@ -6,7 +6,7 @@
 
 namespace hyperjet {
 
-template <typename T>
+template <typename T = double>
 class Jet {
 public:     // Types
     using Scalar = T;
