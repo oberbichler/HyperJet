@@ -238,6 +238,11 @@ class TestHyperJet(unittest.TestCase):
 
             self.check(b, 1, [2, 3], [[4, 5], [6, 7]])
 
+    def test_hyperjet_variable(self):
+        a = HyperJet.variable(value=3, size=5, index=3)
+
+        self.check(a, 3, [0, 0, 0, 1, 0], np.zeros((5, 5)))
+
     def test_hyperjet_variables(self):
         a, b, c = HyperJet.variables([1, 2, 3])
 
