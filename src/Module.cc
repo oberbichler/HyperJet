@@ -81,6 +81,7 @@ PYBIND11_MODULE(hyperjet, m) {
             })
         // static methods
         .def_static("atan2", &Type::atan2)
+        .def_static("variable", &Type::variable, "value"_a, "size"_a, "index"_a)
         .def_static("variables", [](const std::vector<Type::Scalar> values) {
             const auto nb_variables = values.size();
             std::vector<Type> variables(nb_variables);
@@ -203,6 +204,7 @@ PYBIND11_MODULE(hyperjet, m) {
             })
         // static methods
         .def_static("atan2", &Type::atan2)
+        .def_static("variable", &Type::variable, "value"_a, "size"_a, "index"_a)
         .def_static("variables", [](const std::vector<Type::Scalar> values) {
             const auto nb_variables = values.size();
             std::vector<Type> variables(nb_variables);
