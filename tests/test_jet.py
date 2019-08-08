@@ -246,6 +246,9 @@ class TestJet(unittest.TestCase):
         self.check(b, 2, [0, 0, 1, 0, 0, 0])
         self.check(c, 3, [0, 0, 0, 1, 0, 0])
 
+    def test_jet_cast_throws(self):
+        self.assertRaises(TypeError, lambda: float(Jet(size=3)))
+
 
 if __name__ == '__main__':
     unittest.main()
