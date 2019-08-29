@@ -82,13 +82,21 @@ public:     // methods
     }
 
 
-    inline size_t size() const
+    inline int size() const
     {
-        return m_g.size();
+        return static_cast<int>(m_g.size());
     }
 
-    Jet enlarge(const size_t left, const size_t right) const
+    Jet enlarge(const int left, const int right) const
     {
+        if (left < 0) {
+            throw std::runtime_error("Negative value for 'left'");
+        }
+        
+        if (right < 0) {
+            throw std::runtime_error("Negative value for 'right'");
+        }
+
         Jet result(static_cast<int>(this->size() + left + right));
 
         result.m_f = m_f;
@@ -460,7 +468,7 @@ public:     // python
             .def("asin", &Type::asin)
             .def("atan", &Type::atan)
             .def("cos", &Type::cos)
-            .def("enlarge", py::overload_cast<size_t, size_t>(&Type::enlarge,
+            .def("enlarge", py::overload_cast<int, int>(&Type::enlarge,
                 py::const_), "left"_a=0, "right"_a=0)
             .def("sin", &Type::sin)
             .def("sqrt", &Type::sqrt)
@@ -638,13 +646,21 @@ public:     // methods
         return m_h(row, col);
     }
 
-    inline size_t size() const
+    inline int size() const
     {
-        return m_g.size();
+        return static_cast<int>(m_g.size());
     }
 
-    HyperJet enlarge(const size_t left, const size_t right) const
+    HyperJet enlarge(const int left, const int right) const
     {
+        if (left < 0) {
+            throw std::runtime_error("Negative value for 'left'");
+        }
+        
+        if (right < 0) {
+            throw std::runtime_error("Negative value for 'right'");
+        }
+
         HyperJet result(static_cast<int>(this->size() + left + right));
 
         result.m_f = m_f;
@@ -1153,7 +1169,7 @@ public:     // python
             .def("asin", &Type::asin)
             .def("atan", &Type::atan)
             .def("cos", &Type::cos)
-            .def("enlarge", py::overload_cast<size_t, size_t>(&Type::enlarge,
+            .def("enlarge", py::overload_cast<int, int>(&Type::enlarge,
                 py::const_), "left"_a=0, "right"_a=0)
             .def("sin", &Type::sin)
             .def("sqrt", &Type::sqrt)
