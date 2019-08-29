@@ -405,10 +405,6 @@ public:     // python
 
         const std::string name = "Jet";
 
-        m.def("f", [](const Type& value) { return value.f(); }, "value"_a);
-
-        m.def("explode", &hyperjet::explode<Type>, "value"_a, "g"_a, "h"_a);
-
         py::class_<Type>(m, name.c_str())
             // constructors
             .def(py::init<int>(), "size"_a)
@@ -1091,10 +1087,6 @@ public:     // python
         using Type = hyperjet::HyperJet<double>;
 
         const std::string name = "HyperJet";
-
-        m.def("f", [](const Type& value) { return value.f(); }, "value"_a);
-
-        m.def("explode", &hyperjet::explode<Type>, "value"_a, "g"_a, "h"_a);
 
         py::class_<Type>(m, name.c_str())
             // constructors

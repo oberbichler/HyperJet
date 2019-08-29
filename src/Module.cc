@@ -26,8 +26,16 @@ PYBIND11_MODULE(hyperjet, m) {
     #endif // EIGEN_USE_BLAS
 
     m.def("explode", &hyperjet::explode<double>, "value"_a, "g"_a, "h"_a);
+    m.def("explode", &hyperjet::explode<hyperjet::Jet<double>>, "value"_a,
+        "g"_a, "h"_a);
+    m.def("explode", &hyperjet::explode<hyperjet::HyperJet<double>>, "value"_a,
+        "g"_a, "h"_a);
 
     m.def("f", [](const double value) { return value; }, "value"_a);
+    m.def("f", [](const hyperjet::Jet<double>& value) {
+        return value.f(); }, "value"_a);
+    m.def("f", [](const hyperjet::HyperJet<double>& value) {
+        return value.f(); }, "value"_a);
 
     hyperjet::Jet<double>::register_python(m);
 
