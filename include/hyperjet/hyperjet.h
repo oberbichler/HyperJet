@@ -407,6 +407,8 @@ public:     // python
 
         m.def("f", [](const Type& value) { return value.f(); }, "value"_a);
 
+        m.def("explode", &hyperjet::explode<Type>, "value"_a, "g"_a, "h"_a);
+
         py::class_<Type>(m, name.c_str())
             // constructors
             .def(py::init<int>(), "size"_a)
@@ -1092,6 +1094,8 @@ public:     // python
 
         m.def("f", [](const Type& value) { return value.f(); }, "value"_a);
 
+        m.def("explode", &hyperjet::explode<Type>, "value"_a, "g"_a, "h"_a);
+
         py::class_<Type>(m, name.c_str())
             // constructors
             .def(py::init<int>(), "size"_a)
@@ -1369,6 +1373,76 @@ template <typename T>
 inline HyperJet<T> atan2(const HyperJet<T>& a, const HyperJet<T>& b)
 {
     return HyperJet<T>::atan2(a, b);
+}
+
+// --- Utility
+
+template <int TDerivatives>
+auto zero(const int size)
+{
+    static_assert(0 <= TDerivatives && TDerivatives <= 2);
+
+    if constexpr(TDerivatives == 0) {
+        return double{0};
+    } else if constexpr(TDerivatives == 1) {
+        return Jet{size};
+    } else if constexpr(TDerivatives == 2) {
+        return HyperJet{size};
+    }
+}
+
+template <int TDerivatives>
+auto constant(const double value, const int size)
+{
+    static_assert(0 <= TDerivatives && TDerivatives <= 2);
+
+    if constexpr(TDerivatives == 0) {
+        return double{value};
+    } else if constexpr(TDerivatives == 1) {
+        return Jet{value, size};
+    } else if constexpr(TDerivatives == 2) {
+        return HyperJet{value, size};
+    }
+}
+
+template <int TDerivatives>
+auto variable(const double value, const int size, const int index)
+{
+    static_assert(0 <= TDerivatives && TDerivatives <= 2);
+
+    if constexpr(TDerivatives == 0) {
+        return value;
+    } else if constexpr(TDerivatives == 1) {
+        return Jet<>::variable(value, size, index);
+    } else if constexpr(TDerivatives == 2) {
+        return HyperJet<>::variable(value, size, index);
+    }
+}
+
+template <typename T>
+auto explode(const T& value, Eigen::Ref<Eigen::VectorXd> g, Eigen::Ref<Eigen::MatrixXd> h)
+{
+    using namespace hyperjet;
+
+    if constexpr(std::is_same<T, double>()) {
+        return value;
+    } else if constexpr(std::is_same<T, Jet<double>>()) {
+        if (g.size() >= 0) {
+            // FIXME: check size
+            g = value.g();
+        }
+        return value.f();
+    } else if constexpr(std::is_same<T, HyperJet<double>>()) {
+        if (g.size() >= 0) {
+            // FIXME: check size
+            g = value.g();
+        }
+        if (h.size() >= 0) {
+            // FIXME: check size
+            h = value.h();
+        }
+        return value.f();
+    }
 }
 
 } // namespace hyperjet

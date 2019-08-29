@@ -19,39 +19,17 @@ PYBIND11_MODULE(hyperjet, m) {
     namespace py = pybind11;
     using namespace pybind11::literals;
 
-#if defined(EIGEN_USE_BLAS)
+    #if defined(EIGEN_USE_BLAS)
     m.attr("USE_BLAS") = true;
-#else
+    #else
     m.attr("USE_BLAS") = false;
-#endif // EIGEN_USE_BLAS
+    #endif // EIGEN_USE_BLAS
 
-    m.def("assign", [](const double value,
-        Eigen::Ref<Eigen::VectorXd> g, Eigen::Ref<Eigen::MatrixXd> h) {
-        return value;
-    });
-
-    m.def("assign", [](const hyperjet::Jet<double>& jet,
-        Eigen::Ref<Eigen::VectorXd> g, Eigen::Ref<Eigen::MatrixXd> h) {
-        if (g.size() > 0) {
-            g = jet.g();
-        }
-        return jet.f();
-    });
-
-    m.def("assign", [](const hyperjet::HyperJet<double>& hyper_jet,
-        Eigen::Ref<Eigen::VectorXd> g, Eigen::Ref<Eigen::MatrixXd> h) {
-        if (g.size() > 0) {
-            g = hyper_jet.g();
-        }
-        if (h.size() > 0) {
-            h = hyper_jet.h();
-        }
-        return hyper_jet.f();
-    });
+    m.def("explode", &hyperjet::explode<double>, "value"_a, "g"_a, "h"_a);
 
     m.def("f", [](const double value) { return value; }, "value"_a);
 
     hyperjet::Jet<double>::register_python(m);
-                
+
     hyperjet::HyperJet<double>::register_python(m);
 }
