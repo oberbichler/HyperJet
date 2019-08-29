@@ -559,6 +559,147 @@ public:     // methods
     {
         return "HyperJet<" + std::to_string(m_f) + ">";
     }
+
+public:     // python
+    static void register_python(pybind11::module& m)
+    {
+        using namespace pybind11::literals;
+        namespace py = pybind11;
+
+        using Type = hyperjet::HyperJet<double>;
+
+        const std::string name = "HyperJet";
+
+        m.def("f", [](const Type& value) { return value.f(); }, "value"_a);
+
+        py::class_<Type>(m, name.c_str())
+            // constructors
+            .def(py::init<int>(), "size"_a)
+            .def(py::init<double, Type::Vector>(), "f"_a, "g"_a)
+            .def(py::init<double, Type::Vector, Type::Matrix>(), "f"_a, "g"_a,
+                "h"_a)
+            // properties
+            .def_property("f", py::overload_cast<>(&Type::f),
+                [](Type& self, double value) {
+                    self.f() = value;
+                })
+            .def_property("g", py::overload_cast<>(&Type::g),
+                [](Type& self, Eigen::Ref<const Type::Vector> value) {
+                    if (value.size() != self.size()) {
+                        throw std::runtime_error("Invalid shape!");
+                    }
+                    self.g() = value;
+                })
+            .def_property("h", py::overload_cast<>(&Type::h),
+                [](Type& self, Eigen::Ref<const Type::Matrix> value) {
+                    if (value.rows() != self.size() ||
+                        value.cols() != self.size()) {
+                        throw std::runtime_error("Invalid shape!");
+                    }
+                    self.h() = value;
+                })
+            // static methods
+            .def_static("atan2", &Type::atan2)
+            .def_static("variable", &Type::variable, "value"_a, "size"_a, "index"_a)
+            .def_static("variables", [](const std::vector<Type::Scalar> values) {
+                const auto nb_variables = values.size();
+                std::vector<Type> variables(nb_variables);
+                for (int i = 0; i < nb_variables; i++) {
+                    Type::Vector g = Type::Vector::Zero(nb_variables);
+                    g[i] = 1;
+                    variables[i] = Type(values[i], g);
+                }
+                return variables;
+            }, "values"_a)
+            .def_static("variables", [](const std::vector<Type::Scalar> values,
+                const int size, const int offset) {
+                const auto nb_variables = values.size();
+                std::vector<Type> variables(nb_variables);
+                for (int i = 0; i < nb_variables; i++) {
+                    Type::Vector g = Type::Vector::Zero(size);
+                    g[offset + i] = 1;
+                    variables[i] = Type(values[i], g);
+                }
+                return variables;
+            }, "values"_a, "size"_a, "offset"_a)
+            // methods
+            .def("__abs__", &Type::abs)
+            .def("__len__", &Type::size)
+            .def("__pow__", &Type::pow<double>)
+            .def("__pow__", &Type::pow<int>)
+            .def("__repr__", &Type::to_string)
+            .def("abs", &Type::abs)
+            .def("acos", &Type::acos)
+            .def("arccos", &Type::acos)
+            .def("arcsin", &Type::asin)
+            .def("arctan", &Type::atan)
+            .def("arctan2", &Type::atan2)
+            .def("asin", &Type::asin)
+            .def("atan", &Type::atan)
+            .def("cos", &Type::cos)
+            .def("enlarge", py::overload_cast<size_t, size_t>(&Type::enlarge,
+                py::const_), "left"_a=0, "right"_a=0)
+            .def("sin", &Type::sin)
+            .def("sqrt", &Type::sqrt)
+            .def("tan", &Type::tan)
+            // operators
+            .def(-py::self)
+            .def(py::self == py::self)
+            .def(py::self != py::self)
+            .def(py::self < py::self)
+            .def(py::self > py::self)
+            .def(py::self <= py::self)
+            .def(py::self >= py::self)
+            .def(py::self == double())
+            .def(py::self != double())
+            .def(py::self < double())
+            .def(py::self > double())
+            .def(py::self <= double())
+            .def(py::self >= double())
+            .def(double() == py::self)
+            .def(double() != py::self)
+            .def(double() < py::self)
+            .def(double() > py::self)
+            .def(double() <= py::self)
+            .def(double() >= py::self)
+            .def(py::self + py::self)
+            .def(py::self + double())
+            .def(py::self - py::self)
+            .def(py::self - double())
+            .def(py::self * py::self)
+            .def(py::self * double())
+            .def(py::self / py::self)
+            .def(py::self / double())
+            .def(py::self += py::self)
+            .def(py::self -= py::self)
+            .def(py::self *= py::self)
+            .def(py::self *= double())
+            .def(py::self /= py::self)
+            .def(py::self /= double())
+            .def(double() + py::self)
+            .def(double() - py::self)
+            .def(double() * py::self)
+            .def(double() / py::self)
+            // serialization
+            .def(py::pickle([](const Type& self) {
+                    return py::make_tuple(self.f(), self.g(), self.h());
+                }, [](py::tuple tuple) {
+                    if (tuple.size() != 3) {
+                        throw std::runtime_error("Invalid state!");
+                    }
+                    
+                    auto f = tuple[0].cast<double>();
+                    auto g = tuple[1].cast<Type::Vector>();
+                    auto h = tuple[2].cast<Type::Matrix>();
+
+                    return Type(f, g, h);
+                }
+            ))
+            .def("__copy__", [](const Type& self) { return self; })
+            .def("__deepcopy__", [](const Type& self, py::dict& memo) {
+                return self; }, "memodict"_a)
+        ;
+    }
 };
 
 using std::abs;
