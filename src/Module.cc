@@ -6,8 +6,7 @@
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
 
-#include <hyperjet/HyperJet.h>
-#include <hyperjet/Jet.h>
+#include <hyperjet/hyperjet.h>
 
 PYBIND11_MODULE(hyperjet, m) {
     m.doc() = "HyperJet by Thomas Oberbichler";
