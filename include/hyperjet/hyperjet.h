@@ -1397,7 +1397,7 @@ inline HyperJet<T> atan2(const HyperJet<T>& a, const HyperJet<T>& b)
 template <int TDerivatives>
 auto zero(const int size)
 {
-    static_assert(0 <= TDerivatives && TDerivatives <= 2);
+    static_assert(0 <= TDerivatives && TDerivatives <= 2, "Invalid Parameter");
 
     if constexpr(TDerivatives == 0) {
         return double{0};
@@ -1411,7 +1411,7 @@ auto zero(const int size)
 template <int TDerivatives>
 auto constant(const double value, const int size)
 {
-    static_assert(0 <= TDerivatives && TDerivatives <= 2);
+    static_assert(0 <= TDerivatives && TDerivatives <= 2, "Invalid Parameter");
 
     if constexpr(TDerivatives == 0) {
         return double{value};
@@ -1425,7 +1425,7 @@ auto constant(const double value, const int size)
 template <int TDerivatives>
 auto variable(const double value, const int size, const int index)
 {
-    static_assert(0 <= TDerivatives && TDerivatives <= 2);
+    static_assert(0 <= TDerivatives && TDerivatives <= 2, "Invalid Parameter");
 
     if constexpr(TDerivatives == 0) {
         return value;
