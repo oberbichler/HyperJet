@@ -1,7 +1,9 @@
 # HyperJet
 Automatic differentiation with dual numbers
 
-## Citation
+## Reference
+
+If you use HyperJet, please refer to the official GitHub repository:
 
 ```
 @misc{HyperJet,
