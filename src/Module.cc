@@ -25,11 +25,18 @@ PYBIND11_MODULE(hyperjet, m) {
     m.attr("USE_BLAS") = false;
     #endif // EIGEN_USE_BLAS
 
-    m.def("explode", &hyperjet::explode<double>, "value"_a, "g"_a, "h"_a);
-    m.def("explode", &hyperjet::explode<hyperjet::Jet<double>>, "value"_a,
-        "g"_a, "h"_a);
-    m.def("explode", &hyperjet::explode<hyperjet::HyperJet<double>>, "value"_a,
-        "g"_a, "h"_a);
+    m.def("explode", [](const double& value, Eigen::Ref<Eigen::VectorXd> g,
+        Eigen::Ref<Eigen::MatrixXd> h) {
+            return hyperjet::explode<double>(value, g, h);
+        }, "value"_a, "g"_a, "h"_a);
+    m.def("explode", [](const hyperjet::Jet<double>& value,
+        Eigen::Ref<Eigen::VectorXd> g, Eigen::Ref<Eigen::MatrixXd> h) {
+            return hyperjet::explode<hyperjet::Jet<double>>(value, g, h);
+        }, "value"_a, "g"_a, "h"_a);
+    m.def("explode", [](const hyperjet::HyperJet<double>& value,
+        Eigen::Ref<Eigen::VectorXd> g, Eigen::Ref<Eigen::MatrixXd> h) {
+            return hyperjet::explode<hyperjet::HyperJet<double>>(value, g, h);
+        }, "value"_a, "g"_a, "h"_a);
 
     m.def("f", [](const double value) { return value; }, "value"_a);
     m.def("f", [](const hyperjet::Jet<double>& value) {
