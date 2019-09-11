@@ -22,7 +22,7 @@ add_definitions(
 pybind11_add_module(hyperjet src/Module.cc)
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    target_compile_options(hyperjet -fsized-deallocation)
+    target_compile_options(hyperjet PUBLIC -fsized-deallocation)
 endif()
 
 if(BLAS_FOUND)
