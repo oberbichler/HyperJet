@@ -1,7 +1,7 @@
 # HyperJet
 Automatic differentiation with dual numbers
 
-![AppVeyor](https://img.shields.io/appveyor/ci/oberbichler/HyperJet?label=Windows&style=for-the-badge) ![Travis (.com)](https://img.shields.io/travis/com/oberbichler/HyperJet?label=Linux%2FMac&style=for-the-badge)
+[![AppVeyor](https://img.shields.io/appveyor/ci/oberbichler/HyperJet?label=Windows&style=for-the-badge)](https://ci.appveyor.com/project/oberbichler/hyperjet) [![Travis (.com)](https://img.shields.io/travis/com/oberbichler/HyperJet?label=Linux%2FMac&style=for-the-badge)](https://travis-ci.com/oberbichler/HyperJet)
 
 ## Documentation
 
