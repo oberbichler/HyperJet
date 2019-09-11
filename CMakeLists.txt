@@ -13,10 +13,6 @@ include_directories(
 
 add_subdirectory(external_libraries/pybind11)
 
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    target_compile_options(pybind11 INTERFACE -fsized-deallocation)
-endif()
-
 add_definitions(
     -DEIGEN_DEFAULT_TO_ROW_MAJOR
     -DHYPERJET_VERSION="${HYPERJET_VERSION}"
@@ -24,6 +20,10 @@ add_definitions(
 )
 
 pybind11_add_module(hyperjet src/Module.cc)
+
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    target_compile_options(hyperjet -fsized-deallocation)
+endif()
 
 if(BLAS_FOUND)
     add_definitions(-DEIGEN_USE_BLAS)
