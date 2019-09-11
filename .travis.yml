@@ -7,9 +7,19 @@ os:
 compiler:
 - gcc
 - clang
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - gcc-7
+      - g++-7
 before_install:
 - |
-  if [ "$TRAVIS_OS_NAME" = "linux" ]; then OS=Linux-x86_64; else OS=MacOSX-x86_64; fi
+  if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+    export CC=gcc-7 ;
+    export CXX=g++-7 ;
+  fi
   wget -O miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-$OS.sh
   bash miniconda.sh -b -p $HOME/miniconda
   export PATH="$HOME/miniconda/bin:$PATH"
