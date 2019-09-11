@@ -1,7 +1,9 @@
 # HyperJet
 Automatic differentiation with dual numbers
 
-## Citation
+## Reference
+
+If you use HyperJet, please refer to the official GitHub repository:
 
 ```
 @misc{HyperJet,
@@ -38,7 +40,7 @@ You can access the value, the gradiant and the hessian of the `HyperJet` by attr
 0.0
 >>> a.g
 array([0., 0.])
->>> a.g
+>>> a.h
 array([[0., 0.],
        [0., 0.]])
 ```
