@@ -1,0 +1,8 @@
+version: 0.1.{build}
+image: Visual Studio 2017
+configuration: release
+platform: x64
+clone_folder: c:\HyperJet
+build_script:
+  - call "C:\Miniconda3\Scripts\activate.bat"
+  - pip install .
