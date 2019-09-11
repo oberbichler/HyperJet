@@ -1,3 +1,12 @@
+//     __  __                          __     __
+//    / / / /_  ______  ___  _____    / /__  / /_
+//   / /_/ / / / / __ \/ _ \/ ___/_  / / _ \/ __/
+//  / __  / /_/ / /_/ /  __/ /  / /_/ /  __/ /_
+// /_/ /_/\__, / .___/\___/_/   \____/\___/\__/
+//       /____/_/
+//
+// Copyright (c) 2019 Thomas Oberbichler
+
 #pragma once
 
 #include <Eigen/Core>
@@ -92,7 +101,7 @@ public:     // methods
         if (left < 0) {
             throw std::runtime_error("Negative value for 'left'");
         }
-        
+
         if (right < 0) {
             throw std::runtime_error("Negative value for 'right'");
         }
@@ -518,7 +527,7 @@ public:     // python
                     if (tuple.size() != 2) {
                         throw std::runtime_error("Invalid state!");
                     }
-                    
+
                     auto f = tuple[0].cast<double>();
                     auto g = tuple[1].cast<Type::Vector>();
 
@@ -656,7 +665,7 @@ public:     // methods
         if (left < 0) {
             throw std::runtime_error("Negative value for 'left'");
         }
-        
+
         if (right < 0) {
             throw std::runtime_error("Negative value for 'right'");
         }
@@ -1219,7 +1228,7 @@ public:     // python
                     if (tuple.size() != 3) {
                         throw std::runtime_error("Invalid state!");
                     }
-                    
+
                     auto f = tuple[0].cast<double>();
                     auto g = tuple[1].cast<Type::Vector>();
                     auto h = tuple[2].cast<Type::Matrix>();
