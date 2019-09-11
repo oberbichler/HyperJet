@@ -38,7 +38,7 @@ You can access the value, the gradiant and the hessian of the `HyperJet` by attr
 0.0
 >>> a.g
 array([0., 0.])
->>> a.g
+>>> a.h
 array([[0., 0.],
        [0., 0.]])
 ```
