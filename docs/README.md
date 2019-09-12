@@ -1,5 +1,11 @@
 # HyperJet
-Automatic differentiation with dual numbers
+> Automatic differentiation with hyper-dual numbers
+
+## What it is
+
+HyperJet is a small but powerful library to enable automatic computation of derivatives. It implements a basic _forward mode_ automatic differentiation algorithm to compute the _first and second derivative_ of an expression with respect to multiple input variables.
+
+The library was initially developed to simplify the _development of isogeometric finite elements_. It can be easily integrated into existing _Python_ and _C++_ code.
 
 ## Reference
 
@@ -12,57 +18,3 @@ If you use HyperJet, please refer to the official GitHub repository:
   howpublished = "\url{http://github.com/oberbichler/HyperJet}",
 }
 ```
-
-## Installation
-
-```
-pip install git+https://github.com/oberbichler/HyperJet
-```
-
-## How to use it
-
-Import the module.
-
-```python
->>> import hyperjet as hj
-```
-
-Create a new `HyperJet` by specifying the size.
-
-```python
->>> a = hj.HyperJet(size=2)
-```
-
-You can access the value, the gradiant and the hessian of the `HyperJet` by attributes. By default they are set to zero.
-
-```python
->>> a.f
-0.0
->>> a.g
-array([0., 0.])
->>> a.h
-array([[0., 0.],
-       [0., 0.]])
-```
-
-You can set the data directly.
-
-```python
->>> a.f = 3
->>> a.g = [1, 0] # or a.g[0] = 1
-```
-
-It is also possible to specify the data in the constructor.
-
-```python
->>> b = hj.HyperJet(f=9, g=[0, 1])
-```
-
-Doing computations with `HyperJet`s is the same as with `float`s.
-
-```python
->>> a * b
-HyperJet<27.0000>
-```
-
-Since the result is a `HyperJet` it also stores der derivatives.
