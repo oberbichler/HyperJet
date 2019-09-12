@@ -74,7 +74,7 @@ length = np.linalg.norm(vector)     # == 5
 unit_vector = vector / length       # == [0.6, 0.8]
 ```
 
-The `HyperJet` library works together with `numpy`. You just have to change the inputs to compute the derivatives:
+The `HyperJet` library works seamlessly together with `numpy`. You just have to change the inputs to compute the derivatives:
 
 ```python
 x, y = hj.HyperJet.variables([3, 4])    # x and y are HyperJets
