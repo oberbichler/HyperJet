@@ -9,7 +9,7 @@ https://oberbichler.github.io/HyperJet/
 
 ## Try
 
-[![Binder](https://img.shields.io/badge/Launch-Binder-blue?style=for-the-badge&logo=python)](https://mybinder.org/v2/gh/oberbichler/HyperJet/master?filepath=docs%2Fexample.ipynb)
+[![Binder](https://img.shields.io/badge/Launch-Binder-blue?style=for-the-badge&logo=python)](https://mybinder.org/v2/gh/oberbichler/HyperJet/master?urlpath=%2Fnteract%2Fedit%2Fdocs%2Fexample.ipynb)
 
 ## Reference
 
