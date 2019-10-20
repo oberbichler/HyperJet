@@ -9,7 +9,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        os: [ubuntu-16.04, windows-latest, macOS-latest]
+        os: [windows-latest, macOS-latest]
         python-version: [3.5, 3.6, 3.7]
 
     steps:
@@ -20,20 +20,9 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Build wheel
       run: |
-        pip install setuptools wheel==0.31.1
+        pip install setuptools wheel
         python setup.py sdist bdist_wheel
-    - name: Create manylinux
-      run: |
-        sudo apt-get install -y autoconf
-        PATCHELF_VERSION=6bfcafbba8d89e44f9ac9582493b4f27d9d8c369
-        curl -sL -o patchelf.tar.gz https://github.com/NixOS/patchelf/archive/$PATCHELF_VERSION.tar.gz
-        tar -xzf patchelf.tar.gz
-        (cd patchelf-$PATCHELF_VERSION && sudo ./bootstrap.sh && sudo ./configure && sudo make && sudo make install)
-        pip install auditwheel
-        auditwheel repair dist/*.whl --plat manylinux2010_x86_64
-      if: matrix.os == 'ubuntu-latest'
     - name: Upload to PyPi
       run: |
         pip install twine
-        python -m twine upload -u ${{ secrets.PYPI_USER }} -p ${{ secrets.PYPI_KEY }} 
-        --repository-url https://test.pypi.org/legacy/ dist/*.whl
+        python -m twine upload -u ${{ secrets.PYPI_USER }} -p ${{ secrets.PYPI_KEY }} --repository-url https://test.pypi.org/legacy/ dist/*.whl
