@@ -9,7 +9,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+        os: [ubuntu-16.04, windows-latest, macOS-latest]
         python-version: [3.5, 3.6, 3.7]
 
     steps:
@@ -35,4 +35,5 @@ jobs:
     - name: Upload to PyPi
       run: |
         pip install twine
-        python -m twine upload -u ${{ secrets.PYPI_USER }} -p ${{ secrets.PYPI_KEY }} --repository-url https://test.pypi.org/legacy/ dist/*.whl
+        python -m twine upload -u ${{ secrets.PYPI_USER }} -p ${{ secrets.PYPI_KEY }} 
+        --repository-url https://test.pypi.org/legacy/ dist/*.whl
