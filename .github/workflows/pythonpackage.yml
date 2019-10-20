@@ -24,7 +24,11 @@ jobs:
         python setup.py sdist bdist_wheel
     - name: Create manylinux
       run: |
-        sudo apt-get install -y patchelf
+        sudo apt-get install -y patchelf autoconf
+        PATCHELF_VERSION=6bfcafbba8d89e44f9ac9582493b4f27d9d8c369
+        curl -sL -o patchelf.tar.gz https://github.com/NixOS/patchelf/archive/$PATCHELF_VERSION.tar.gz
+        tar -xzf patchelf.tar.gz
+        (cd patchelf-$PATCHELF_VERSION && ./bootstrap.sh && ./configure && make && make install)
         pip install auditwheel
         auditwheel repair dist/*.whl
       if: matrix.os == 'ubuntu-latest'
