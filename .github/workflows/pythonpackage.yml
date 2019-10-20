@@ -18,16 +18,10 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Build
+    - name: Build wheel
       run: |
-        pip install .
-    - name: Test with pytest
-      run: |
-        python -m unittest discover -s ./tests -p "test_*.py"
-    - name: Upload
-      run: |
+        python setup.py sdist bdist_wheel
         pip install twine
-        TWINE_USERNAME="$INPUT_USER" \
-        TWINE_PASSWORD="$INPUT_PASSWORD" \
-        TWINE_REPOSITORY_URL="$INPUT_REPOSITORY_URL" \
-        python3 -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+    - name: Upload to PyPi
+      run: |
+        python -m twine upload -u ${{ secret.PYPI_USER }} -p ${{ secret.PYPI_KEY }} --repository-url https://test.pypi.org/legacy/ dist/*
