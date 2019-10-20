@@ -24,7 +24,7 @@ jobs:
         python setup.py sdist bdist_wheel
     - name: Create manylinux
       run: |
-        apt-get install -y patchelf
+        sudo apt-get install -y patchelf
         pip install auditwheel
         auditwheel repair dist/*.whl
       if: matrix.os == 'ubuntu-latest'
