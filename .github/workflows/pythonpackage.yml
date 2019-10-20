@@ -24,3 +24,10 @@ jobs:
     - name: Test with pytest
       run: |
         python -m unittest discover -s ./tests -p "test_*.py"
+    - name: Upload
+      run: |
+        pip install twine
+        TWINE_USERNAME="$INPUT_USER" \
+        TWINE_PASSWORD="$INPUT_PASSWORD" \
+        TWINE_REPOSITORY_URL="$INPUT_REPOSITORY_URL" \
+        python3 -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*
