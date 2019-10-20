@@ -25,4 +25,4 @@ jobs:
     - name: Upload to PyPi
       run: |
         pip install twine
-        python -m twine upload -u ${{ secrets.PYPI_USER }} -p ${{ secrets.PYPI_KEY }} --skip-existing --repository-url https://test.pypi.org/legacy/ dist/*
+        python -m twine upload -u ${{ secrets.PYPI_USER }} -p ${{ secrets.PYPI_KEY }} --repository-url https://test.pypi.org/legacy/ dist/*.whl
