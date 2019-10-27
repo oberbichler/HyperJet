@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   test:
-    name: Test on python ${{ matrix.python-version }} and ${{ matrix.os }}
+    name: Build package on python ${{ matrix.python-version }} and ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       max-parallel: 4
@@ -28,7 +28,7 @@ jobs:
         python -m twine upload -u ${{ secrets.PYPI_USER }} -p ${{ secrets.PYPI_KEY }} --repository-url https://test.pypi.org/legacy/ dist/*.whl
 
   build_manylinux:
-    name: Build package for linux
+    name: python ${{ matrix.python }} and ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
