@@ -39,7 +39,7 @@ jobs:
     - uses: actions/checkout@v1
     - name: Build
       run: |
-        docker run -v ${PWD}:/data -w /data --env PYTHON_VERSION=${{ matrix.python }} quay.io/pypa/manylinux2010_x86_64 bash repair.sh
+        docker run -v ${PWD}:/data -w /data --env PYTHON_VERSION=${{ matrix.python }} quay.io/pypa/manylinux2010_x86_64 bash tools/repair-wheel.sh
     - name: Upload to PyPi
       run: |
         pip install twine
