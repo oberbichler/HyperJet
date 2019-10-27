@@ -27,7 +27,7 @@ jobs:
         pip install twine
         python -m twine upload -u ${{ secrets.PYPI_USER }} -p ${{ secrets.PYPI_KEY }} --repository-url https://test.pypi.org/legacy/ dist/*.whl
 
-  test:
+  build_manylinux:
     name: Build package for linux
     runs-on: ${{ matrix.os }}
     strategy:
