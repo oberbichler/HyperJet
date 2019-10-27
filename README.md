@@ -6,7 +6,7 @@ Automatic differentiation with dual numbers
 ## Installation
 
 ```
-pip install git+https://github.com/oberbichler/HyperJet
+pip install hyperjet
 ```
 
 ## Documentation
