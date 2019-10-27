@@ -1,3 +1,2 @@
-cmake
 numpy
-git+https://github.com/oberbichler/HyperJet
+hyperjet
