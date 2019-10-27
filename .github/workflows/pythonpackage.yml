@@ -35,7 +35,7 @@ jobs:
         os: [ubuntu-latest]
 
     steps:
-    - uses: quay.io/pypa/manylinux2010_x86_64
-      with:
-        entrypoint: bash
-        args: repair.sh
+    - name: Build
+      run: |
+        docker run -v %cd%:/data -w /data quay.io/pypa/manylinux2010_x86_64 
+bash repair.sh
