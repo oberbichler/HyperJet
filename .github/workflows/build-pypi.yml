@@ -1,0 +1,49 @@
+name: Build PyPI
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  test:
+    name: Build package on python ${{ matrix.python-version }} and ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      max-parallel: 4
+      matrix:
+        os: [windows-latest, macOS-latest]
+        python-version: [3.5, 3.6, 3.7]
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Build wheel
+      run: |
+        pip install setuptools wheel
+        python setup.py sdist bdist_wheel
+    - name: Upload to PyPi
+      run: |
+        pip install twine
+        python -m twine upload -u ${{ secrets.PYPI_USER }} -p ${{ secrets.PYPI_KEY }} dist/*.whl
+
+  build_manylinux:
+    name: python ${{ matrix.python }} and ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python: [cp35-cp35m, cp36-cp36m, cp37-cp37m, cp38-cp38]
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Build
+      run: |
+        docker run -v ${PWD}:/data -w /data --env PYTHON_VERSION=${{ matrix.python }} quay.io/pypa/manylinux2010_x86_64 bash tools/repair-wheel.sh
+    - name: Upload to PyPi
+      run: |
+        pip install twine
+        python -m twine upload -u ${{ secrets.PYPI_USER }} -p ${{ secrets.PYPI_KEY }} wheelhouse/*.whl
