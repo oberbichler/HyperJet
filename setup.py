@@ -59,13 +59,13 @@ class CMakeBuild(build_ext):
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
 setup(
-    name='HyperJet',
+    name='hyperjet',
     description='Automatic differentiation with dual numbers',
     version=HYPERJET_VERSION,
     url='https://github.com/oberbichler/HyperJet',
     author='Thomas Oberbichler',
     author_email='thomas.oberbichler@gmail.com',
-    ext_modules=[CMakeExtension('HyperJet')],
+    ext_modules=[CMakeExtension('hyperjet')],
     cmdclass=dict(build_ext=CMakeBuild),
     install_requires=['cmake', 'numpy'],
     test_suite='nose.collector',
