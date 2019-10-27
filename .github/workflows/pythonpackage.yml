@@ -35,6 +35,7 @@ jobs:
         os: [ubuntu-latest]
 
     steps:
+    - uses: actions/checkout@v1
     - name: Build
       run: |
         docker run -v %cd%:/data -w /data quay.io/pypa/manylinux2010_x86_64 
