@@ -26,3 +26,16 @@ jobs:
       run: |
         pip install twine
         python -m twine upload -u ${{ secrets.PYPI_USER }} -p ${{ secrets.PYPI_KEY }} --repository-url https://test.pypi.org/legacy/ dist/*.whl
+
+  test:
+    name: Build package for linux
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
+    steps:
+      uses: quay.io/pypa/manylinux2010_x86_64
+      with:
+        entrypoint: bash
+        args: repair.sh
