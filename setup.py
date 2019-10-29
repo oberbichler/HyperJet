@@ -8,7 +8,7 @@ from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
 
-HYPERJET_VERSION = '0.27.0'
+HYPERJET_VERSION = '0.27.1'
 
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
@@ -67,8 +67,6 @@ setup(
     author_email='thomas.oberbichler@gmail.com',
     ext_modules=[CMakeExtension('hyperjet')],
     cmdclass=dict(build_ext=CMakeBuild),
-    install_requires=['cmake', 'numpy'],
-    test_suite='nose.collector',
-    tests_require=['nose'],
+    install_requires=['numpy'],
     zip_safe=False,
 )
