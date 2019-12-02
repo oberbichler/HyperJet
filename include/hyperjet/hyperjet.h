@@ -23,41 +23,45 @@ namespace hyperjet {
 
 template <typename T = double>
 class Jet {
-public:     // types
+public: // types
     using Scalar = T;
     using Vector = Eigen::Matrix<T, 1, Eigen::Dynamic>;
 
-private:    // variables
+private: // variables
     T m_f;
     Vector m_g;
 
-public:     // constructors
+public: // constructors
     HYPERJET_INLINE
     Jet()
-    : m_f(0), m_g(0)
+        : m_f(0)
+        , m_g(0)
     {
     }
 
     HYPERJET_INLINE
     Jet(const int size)
-    : m_f(0), m_g(Vector::Zero(size))
+        : m_f(0)
+        , m_g(Vector::Zero(size))
     {
     }
 
     HYPERJET_INLINE
     Jet(const T f, const int size)
-    : m_f(f), m_g(Vector::Zero(size))
+        : m_f(f)
+        , m_g(Vector::Zero(size))
     {
     }
 
     template <typename Derived>
     HYPERJET_INLINE
     Jet(const T f, const Eigen::DenseBase<Derived>& g)
-    : m_f(f), m_g(g)
+        : m_f(f)
+        , m_g(g)
     {
     }
 
-public:     // static methods
+public: // static methods
     static Jet<T> variable(const double value, const int size, const int index)
     {
         Jet<T> result(value, size);
@@ -65,7 +69,7 @@ public:     // static methods
         return result;
     }
 
-public:     // methods
+public: // methods
     T& f()
     {
         return m_f;
@@ -95,7 +99,6 @@ public:     // methods
     {
         return m_g(index);
     }
-
 
     HYPERJET_INLINE int size() const
     {
@@ -418,7 +421,7 @@ public:     // methods
         return "Jet<" + std::to_string(m_f) + ">";
     }
 
-public:     // python
+public: // python
     static void register_python(pybind11::module& m)
     {
         using namespace pybind11::literals;
@@ -456,9 +459,9 @@ public:     // python
                     variables[i] = Type(values[i], g);
                 }
                 return variables;
-            }, "values"_a)
-            .def_static("variables", [](const std::vector<Type::Scalar> values,
-                const int size, const int offset) {
+            },
+                "values"_a)
+            .def_static("variables", [](const std::vector<Type::Scalar> values, const int size, const int offset) {
                 const auto nb_variables = values.size();
                 std::vector<Type> variables(nb_variables);
                 for (int i = 0; i < nb_variables; i++) {
@@ -467,7 +470,8 @@ public:     // python
                     variables[i] = Type(values[i], g);
                 }
                 return variables;
-            }, "values"_a, "size"_a, "offset"_a)
+            },
+                "values"_a, "size"_a, "offset"_a)
             // methods
             .def("__abs__", &Type::abs)
             .def("__len__", &Type::size)
@@ -483,8 +487,7 @@ public:     // python
             .def("asin", &Type::asin)
             .def("atan", &Type::atan)
             .def("cos", &Type::cos)
-            .def("enlarge", py::overload_cast<int, int>(&Type::enlarge,
-                py::const_), "left"_a=0, "right"_a=0)
+            .def("enlarge", py::overload_cast<int, int>(&Type::enlarge, py::const_), "left"_a = 0, "right"_a = 0)
             .def("sin", &Type::sin)
             .def("sqrt", &Type::sqrt)
             .def("tan", &Type::tan)
@@ -527,9 +530,7 @@ public:     // python
             .def(double() * py::self)
             .def(double() / py::self)
             // serialization
-            .def(py::pickle([](const Type& self) {
-                    return py::make_tuple(self.f(), self.g());
-                }, [](py::tuple tuple) {
+            .def(py::pickle([](const Type& self) { return py::make_tuple(self.f(), self.g()); }, [](py::tuple tuple) {
                     if (tuple.size() != 2) {
                         throw std::runtime_error("Invalid state!");
                     }
@@ -537,60 +538,66 @@ public:     // python
                     auto f = tuple[0].cast<double>();
                     auto g = tuple[1].cast<Type::Vector>();
 
-                    return Type(f, g);
-                }
-            ))
+                    return Type(f, g); }))
             .def("__copy__", [](const Type& self) { return self; })
-            .def("__deepcopy__", [](const Type& self, py::dict& memo) {
-                return self; }, "memodict"_a)
-        ;
+            .def("__deepcopy__", [](const Type& self, py::dict& memo) { return self; }, "memodict"_a);
     }
 }; // class Jet
 
 template <typename T = double>
 class HyperJet {
-public:     // types
+public: // types
     using Scalar = T;
     using Vector = Eigen::Matrix<T, 1, Eigen::Dynamic>;
     using Matrix = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
 
-private:    // variables
+private: // variables
     T m_f;
     Vector m_g;
     Matrix m_h;
 
-public:     // constructors
+public: // constructors
     HYPERJET_INLINE
     HyperJet()
-    : m_f(0), m_g(0), m_h(0, 0)
+        : m_f(0)
+        , m_g(0)
+        , m_h(0, 0)
     {
     }
 
     HYPERJET_INLINE
     HyperJet(const int size)
-    : m_f(0), m_g(Vector::Zero(size)), m_h(Matrix::Zero(size, size))
+        : m_f(0)
+        , m_g(Vector::Zero(size))
+        , m_h(Matrix::Zero(size, size))
     {
     }
 
     HYPERJET_INLINE
     HyperJet(const T value, const int size)
-    : m_f(value), m_g(Vector::Zero(size)), m_h(Matrix::Zero(size, size))
+        : m_f(value)
+        , m_g(Vector::Zero(size))
+        , m_h(Matrix::Zero(size, size))
     {
     }
 
     template <typename Derived>
     HYPERJET_INLINE
     HyperJet(const T f, const Eigen::DenseBase<Derived>& g)
-    : m_f(f), m_g(g), m_h(Matrix::Zero(g.size(), g.size()))
+        : m_f(f)
+        , m_g(g)
+        , m_h(Matrix::Zero(g.size(), g.size()))
     {
     }
 
     template <typename Derived1, typename Derived2>
     HYPERJET_INLINE
     HyperJet(const T f, const Eigen::DenseBase<Derived1>& g, const Eigen::DenseBase<Derived2>& h)
-    : m_f(f), m_g(g), m_h(h)
+        : m_f(f)
+        , m_g(g)
+        , m_h(h)
     {
-    #if defined(HYPERJET_EXCEPTIONS)
+#if defined(HYPERJET_EXCEPTIONS)
         if (h.rows() != h.cols()) {
             throw new std::runtime_error("Hessian is not a square matrix");
         }
@@ -598,10 +605,10 @@ public:     // constructors
         if (g.size() != h.rows()) {
             throw new std::runtime_error("Dimensions do not match");
         }
-    #endif
+#endif
     }
 
-public:     // static methods
+public: // static methods
     static HyperJet<T> variable(const double value, const int size,
         const int index)
     {
@@ -610,7 +617,7 @@ public:     // static methods
         return result;
     }
 
-public:     // methods
+public: // methods
     T& f()
     {
         return m_f;
@@ -701,11 +708,11 @@ public:     // methods
 
     HyperJet operator+(const HyperJet& rhs) const
     {
-    #if defined(HYPERJET_EXCEPTIONS)
+#if defined(HYPERJET_EXCEPTIONS)
         if (size() != rhs.size()) {
             throw new std::runtime_error("Dimensions do not match");
         }
-    #endif
+#endif
 
         const auto f = m_f + rhs.m_f;
         const auto g = m_g + rhs.m_g;
@@ -723,11 +730,11 @@ public:     // methods
 
     HyperJet operator-(const HyperJet& rhs) const
     {
-    #if defined(HYPERJET_EXCEPTIONS)
+#if defined(HYPERJET_EXCEPTIONS)
         if (size() != rhs.size()) {
             throw new std::runtime_error("Dimensions do not match");
         }
-    #endif
+#endif
 
         const auto f = m_f - rhs.m_f;
         const auto g = m_g - rhs.m_g;
@@ -745,11 +752,11 @@ public:     // methods
 
     HyperJet operator*(const HyperJet& rhs) const
     {
-    #if defined(HYPERJET_EXCEPTIONS)
+#if defined(HYPERJET_EXCEPTIONS)
         if (size() != rhs.size()) {
             throw new std::runtime_error("Dimensions do not match");
         }
-    #endif
+#endif
 
         const auto f = m_f * rhs.m_f;
         const auto g = m_f * rhs.m_g + rhs.m_f * m_g;
@@ -768,17 +775,15 @@ public:     // methods
 
     HyperJet operator/(const HyperJet& rhs) const
     {
-    #if defined(HYPERJET_EXCEPTIONS)
+#if defined(HYPERJET_EXCEPTIONS)
         if (size() != rhs.size()) {
             throw new std::runtime_error("Dimensions do not match");
         }
-    #endif
+#endif
 
         const auto f = m_f / rhs.m_f;
         const auto g = m_g / rhs.m_f - m_f * rhs.m_g / (rhs.m_f * rhs.m_f);
-        const auto h = (2 * m_f * rhs.m_g.transpose() * rhs.m_g +
-            std::pow(rhs.m_f, 2) * m_h - rhs.m_f * (m_g.transpose() * rhs.m_g +
-            rhs.m_g.transpose() * m_g + m_f * rhs.m_h)) / std::pow(rhs.m_f, 3);
+        const auto h = (2 * m_f * rhs.m_g.transpose() * rhs.m_g + std::pow(rhs.m_f, 2) * m_h - rhs.m_f * (m_g.transpose() * rhs.m_g + rhs.m_g.transpose() * m_g + m_f * rhs.m_h)) / std::pow(rhs.m_f, 3);
         return HyperJet(f, g, h);
     }
 
@@ -792,11 +797,11 @@ public:     // methods
 
     HyperJet& operator+=(const HyperJet& rhs)
     {
-    #if defined(HYPERJET_EXCEPTIONS)
+#if defined(HYPERJET_EXCEPTIONS)
         if (size() != rhs.size()) {
             throw new std::runtime_error("Dimensions do not match");
         }
-    #endif
+#endif
 
         m_f += rhs.m_f;
         m_g += rhs.m_g;
@@ -806,11 +811,11 @@ public:     // methods
 
     HyperJet& operator-=(const HyperJet& rhs)
     {
-    #if defined(HYPERJET_EXCEPTIONS)
+#if defined(HYPERJET_EXCEPTIONS)
         if (size() != rhs.size()) {
             throw new std::runtime_error("Dimensions do not match");
         }
-    #endif
+#endif
 
         m_f -= rhs.m_f;
         m_g -= rhs.m_g;
@@ -820,11 +825,11 @@ public:     // methods
 
     HyperJet& operator*=(const HyperJet& rhs)
     {
-    #if defined(HYPERJET_EXCEPTIONS)
+#if defined(HYPERJET_EXCEPTIONS)
         if (size() != rhs.size()) {
             throw new std::runtime_error("Dimensions do not match");
         }
-    #endif
+#endif
 
         *this = *this * rhs;
         return *this;
@@ -840,11 +845,11 @@ public:     // methods
 
     HyperJet& operator/=(const HyperJet& rhs)
     {
-    #if defined(HYPERJET_EXCEPTIONS)
+#if defined(HYPERJET_EXCEPTIONS)
         if (size() != rhs.size()) {
             throw new std::runtime_error("Dimensions do not match");
         }
-    #endif
+#endif
 
         *this = *this / rhs;
         return *this;
@@ -917,7 +922,7 @@ public:     // methods
     {
         const auto f = std::tan(m_f);
         const auto g = m_g * (f * f + 1);
-        const auto h = (2 * m_g.transpose() * m_g * f + m_h)*(f * f + 1);
+        const auto h = (2 * m_g.transpose() * m_g * f + m_h) * (f * f + 1);
         return HyperJet(f, g, h);
     }
 
@@ -925,8 +930,7 @@ public:     // methods
     {
         const auto f = std::acos(m_f);
         const auto g = -m_g / std::sqrt(-m_f * m_f + 1);
-        const auto h = -(m_g.transpose() * m_g * m_f / (-m_f * m_f + 1) + m_h) /
-            std::sqrt(-m_f * m_f + 1);
+        const auto h = -(m_g.transpose() * m_g * m_f / (-m_f * m_f + 1) + m_h) / std::sqrt(-m_f * m_f + 1);
         return HyperJet(f, g, h);
     }
 
@@ -943,28 +947,23 @@ public:     // methods
     {
         const auto f = std::atan(m_f);
         const auto g = m_g / (m_f * m_f + 1);
-        const auto h = (m_h - 2 * m_f * m_g.transpose() * m_g /
-            (m_f * m_f + 1)) / (m_f * m_f + 1);
+        const auto h = (m_h - 2 * m_f * m_g.transpose() * m_g / (m_f * m_f + 1)) / (m_f * m_f + 1);
         return HyperJet(f, g, h);
     }
 
     static HYPERJET_INLINE HyperJet atan2(const HyperJet& a, const HyperJet& b)
     {
-    #if defined(HYPERJET_EXCEPTIONS)
+#if defined(HYPERJET_EXCEPTIONS)
         if (a.size() != b.size()) {
             throw new std::runtime_error("Dimensions do not match");
         }
-    #endif
+#endif
 
         const auto tmp = a.m_f * a.m_f + b.m_f * b.m_f;
 
         const auto f = std::atan2(a.m_f, b.m_f);
         const auto g = (a.m_g * b.m_f - a.m_f * b.m_g) / tmp;
-        const auto h = (
-            2 * (a.m_f * a.m_g + b.m_f * b.m_g).transpose() * (a.m_f * b.m_g) -
-            2 * (a.m_f * a.m_g + b.m_f * b.m_g).transpose() * (b.m_f * a.m_g) +
-            tmp * (b.m_f * a.m_h - a.m_f * b.m_h + b.m_g.transpose() * a.m_g -
-            a.m_g.transpose() * b.m_g)) / std::pow(tmp, 2);
+        const auto h = (2 * (a.m_f * a.m_g + b.m_f * b.m_g).transpose() * (a.m_f * b.m_g) - 2 * (a.m_f * a.m_g + b.m_f * b.m_g).transpose() * (b.m_f * a.m_g) + tmp * (b.m_f * a.m_h - a.m_f * b.m_h + b.m_g.transpose() * a.m_g - a.m_g.transpose() * b.m_g)) / std::pow(tmp, 2);
         return HyperJet(f, g, h);
     }
 
@@ -973,73 +972,72 @@ public:     // methods
     {
         const auto f = std::pow(m_f, b);
         const auto g = b * std::pow(m_f, b - U(1)) * m_g;
-        const auto h = b * (b * m_g.transpose() * m_g + m_f * m_h -
-            m_g.transpose() * m_g) * std::pow(m_f, b - U(2));
+        const auto h = b * (b * m_g.transpose() * m_g + m_f * m_h - m_g.transpose() * m_g) * std::pow(m_f, b - U(2));
         return HyperJet(f, g, h);
     }
 
     bool operator==(const HyperJet& rhs) const
     {
-    #if defined(HYPERJET_EXCEPTIONS)
+#if defined(HYPERJET_EXCEPTIONS)
         if (size() != rhs.size()) {
             throw new std::runtime_error("Dimensions do not match");
         }
-    #endif
+#endif
 
         return m_f == rhs.m_f;
     }
 
     bool operator!=(const HyperJet& rhs) const
     {
-    #if defined(HYPERJET_EXCEPTIONS)
+#if defined(HYPERJET_EXCEPTIONS)
         if (size() != rhs.size()) {
             throw new std::runtime_error("Dimensions do not match");
         }
-    #endif
+#endif
 
         return m_f != rhs.m_f;
     }
 
     bool operator<(const HyperJet& rhs) const
     {
-    #if defined(HYPERJET_EXCEPTIONS)
+#if defined(HYPERJET_EXCEPTIONS)
         if (size() != rhs.size()) {
             throw new std::runtime_error("Dimensions do not match");
         }
-    #endif
+#endif
 
         return m_f < rhs.m_f;
     }
 
     bool operator>(const HyperJet& rhs) const
     {
-    #if defined(HYPERJET_EXCEPTIONS)
+#if defined(HYPERJET_EXCEPTIONS)
         if (size() != rhs.size()) {
             throw new std::runtime_error("Dimensions do not match");
         }
-    #endif
+#endif
 
         return m_f > rhs.m_f;
     }
 
     bool operator<=(const HyperJet& rhs) const
     {
-    #if defined(HYPERJET_EXCEPTIONS)
+#if defined(HYPERJET_EXCEPTIONS)
         if (size() != rhs.size()) {
             throw new std::runtime_error("Dimensions do not match");
         }
-    #endif
+#endif
 
         return m_f <= rhs.m_f;
     }
 
     bool operator>=(const HyperJet& rhs) const
     {
-    #if defined(HYPERJET_EXCEPTIONS)
+#if defined(HYPERJET_EXCEPTIONS)
         if (size() != rhs.size()) {
             throw new std::runtime_error("Dimensions do not match");
         }
-    #endif
+#endif
 
         return m_f >= rhs.m_f;
     }
@@ -1109,7 +1107,7 @@ public:     // methods
         return "HyperJet<" + std::to_string(m_f) + ">";
     }
 
-public:     // python
+public: // python
     static void register_python(pybind11::module& m)
     {
         using namespace pybind11::literals;
@@ -1139,8 +1137,7 @@ public:     // python
                 })
             .def_property("h", py::overload_cast<>(&Type::h),
                 [](Type& self, Eigen::Ref<const Type::Matrix> value) {
-                    if (value.rows() != self.size() ||
-                        value.cols() != self.size()) {
+                    if (value.rows() != self.size() || value.cols() != self.size()) {
                         throw std::runtime_error("Invalid shape!");
                     }
                     self.h() = value;
@@ -1157,9 +1154,9 @@ public:     // python
                     variables[i] = Type(values[i], g);
                 }
                 return variables;
-            }, "values"_a)
-            .def_static("variables", [](const std::vector<Type::Scalar> values,
-                const int size, const int offset) {
+            },
+                "values"_a)
+            .def_static("variables", [](const std::vector<Type::Scalar> values, const int size, const int offset) {
                 const auto nb_variables = values.size();
                 std::vector<Type> variables(nb_variables);
                 for (int i = 0; i < nb_variables; i++) {
@@ -1168,7 +1165,8 @@ public:     // python
                     variables[i] = Type(values[i], g);
                 }
                 return variables;
-            }, "values"_a, "size"_a, "offset"_a)
+            },
+                "values"_a, "size"_a, "offset"_a)
             // methods
             .def("__abs__", &Type::abs)
             .def("__len__", &Type::size)
@@ -1184,8 +1182,7 @@ public:     // python
             .def("asin", &Type::asin)
             .def("atan", &Type::atan)
             .def("cos", &Type::cos)
-            .def("enlarge", py::overload_cast<int, int>(&Type::enlarge,
-                py::const_), "left"_a=0, "right"_a=0)
+            .def("enlarge", py::overload_cast<int, int>(&Type::enlarge, py::const_), "left"_a = 0, "right"_a = 0)
             .def("sin", &Type::sin)
             .def("sqrt", &Type::sqrt)
             .def("tan", &Type::tan)
@@ -1228,9 +1225,7 @@ public:     // python
             .def(double() * py::self)
             .def(double() / py::self)
             // serialization
-            .def(py::pickle([](const Type& self) {
-                    return py::make_tuple(self.f(), self.g(), self.h());
-                }, [](py::tuple tuple) {
+            .def(py::pickle([](const Type& self) { return py::make_tuple(self.f(), self.g(), self.h()); }, [](py::tuple tuple) {
                     if (tuple.size() != 3) {
                         throw std::runtime_error("Invalid state!");
                     }
@@ -1239,28 +1234,24 @@ public:     // python
                     auto g = tuple[1].cast<Type::Vector>();
                     auto h = tuple[2].cast<Type::Matrix>();
 
-                    return Type(f, g, h);
-                }
-            ))
+                    return Type(f, g, h); }))
             .def("__copy__", [](const Type& self) { return self; })
-            .def("__deepcopy__", [](const Type& self, py::dict& memo) {
-                return self; }, "memodict"_a)
-        ;
+            .def("__deepcopy__", [](const Type& self, py::dict& memo) { return self; }, "memodict"_a);
     }
 };
 
 // --- Support for std Operators
 
 using std::abs;
-using std::pow;
-using std::sqrt;
-using std::cos;
-using std::sin;
-using std::tan;
 using std::acos;
 using std::asin;
 using std::atan;
 using std::atan2;
+using std::cos;
+using std::pow;
+using std::sin;
+using std::sqrt;
+using std::tan;
 
 // --- Operators for Jet
 
@@ -1405,11 +1396,11 @@ auto zero(const int size)
 {
     static_assert(0 <= TDerivatives && TDerivatives <= 2, "Invalid Parameter");
 
-    if constexpr(TDerivatives == 0) {
+    if constexpr (TDerivatives == 0) {
         return double{0};
-    } else if constexpr(TDerivatives == 1) {
+    } else if constexpr (TDerivatives == 1) {
         return Jet{size};
-    } else if constexpr(TDerivatives == 2) {
+    } else if constexpr (TDerivatives == 2) {
         return HyperJet{size};
     }
 }
@@ -1419,11 +1410,11 @@ auto constant(const double value, const int size)
 {
     static_assert(0 <= TDerivatives && TDerivatives <= 2, "Invalid Parameter");
 
-    if constexpr(TDerivatives == 0) {
+    if constexpr (TDerivatives == 0) {
         return double{value};
-    } else if constexpr(TDerivatives == 1) {
+    } else if constexpr (TDerivatives == 1) {
         return Jet{value, size};
-    } else if constexpr(TDerivatives == 2) {
+    } else if constexpr (TDerivatives == 2) {
         return HyperJet{value, size};
     }
 }
@@ -1433,11 +1424,11 @@ auto variable(const double value, const int size, const int index)
 {
     static_assert(0 <= TDerivatives && TDerivatives <= 2, "Invalid Parameter");
 
-    if constexpr(TDerivatives == 0) {
+    if constexpr (TDerivatives == 0) {
         return value;
-    } else if constexpr(TDerivatives == 1) {
+    } else if constexpr (TDerivatives == 1) {
         return Jet<>::variable(value, size, index);
-    } else if constexpr(TDerivatives == 2) {
+    } else if constexpr (TDerivatives == 2) {
         return HyperJet<>::variable(value, size, index);
     }
 }
@@ -1447,15 +1438,15 @@ auto explode(const T& value, Eigen::Ref<Eigen::VectorXd> g, Eigen::Ref<Eigen::Ma
 {
     using namespace hyperjet;
 
-    if constexpr(std::is_same<T, double>()) {
+    if constexpr (std::is_same<T, double>()) {
         return value;
-    } else if constexpr(std::is_same<T, Jet<double>>()) {
+    } else if constexpr (std::is_same<T, Jet<double>>()) {
         if (g.size() >= 0) {
             // FIXME: check size
             g = value.g();
         }
         return value.f();
-    } else if constexpr(std::is_same<T, HyperJet<double>>()) {
+    } else if constexpr (std::is_same<T, HyperJet<double>>()) {
         if (g.size() >= 0) {
             // FIXME: check size
             g = value.g();
@@ -1474,7 +1465,7 @@ namespace Eigen {
 
 // --- Support for Jet
 
-template<typename T>
+template <typename T>
 struct NumTraits<hyperjet::Jet<T>> {
     using Real = hyperjet::Jet<T>;
     using NonInteger = hyperjet::Jet<T>;
@@ -1507,7 +1498,7 @@ struct NumTraits<hyperjet::Jet<T>> {
         RequireInitialization = 1
     };
 
-    template<bool Vectorized>
+    template <bool Vectorized>
     struct Div {
         enum {
 #if defined(EIGEN_VECTORIZE_AVX)
@@ -1542,7 +1533,7 @@ struct ScalarBinaryOpTraits<T, hyperjet::Jet<T>, BinaryOp> {
 
 // --- Support for HyperJet
 
-template<typename T>
+template <typename T>
 struct NumTraits<hyperjet::HyperJet<T>> {
     using Real = hyperjet::HyperJet<T>;
     using NonInteger = hyperjet::HyperJet<T>;
@@ -1575,7 +1566,7 @@ struct NumTraits<hyperjet::HyperJet<T>> {
         RequireInitialization = 1
     };
 
-    template<bool Vectorized>
+    template <bool Vectorized>
     struct Div {
         enum {
 #if defined(EIGEN_VECTORIZE_AVX)
@@ -1608,4 +1599,4 @@ struct ScalarBinaryOpTraits<T, hyperjet::HyperJet<T>, BinaryOp> {
     typedef hyperjet::HyperJet<T> ReturnType;
 };
 
-}  // namespace Eigen
+} // namespace Eigen
