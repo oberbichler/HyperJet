@@ -29,11 +29,11 @@ HYPERJET_INLINE index length(const T& container)
     return static_cast<index>(container.size());
 }
 
-template <typename T = double>
+template <typename T = double, index TSize = Eigen::Dynamic>
 class Jet {
 public: // types
     using Scalar = T;
-    using Vector = Eigen::Matrix<T, 1, Eigen::Dynamic>;
+    using Vector = Eigen::Matrix<T, 1, TSize>;
 
 private: // variables
     T m_f;
@@ -70,17 +70,17 @@ public: // constructors
     }
 
 public: // static methods
-    static Jet<T> variable(const double value, const index size, const index index)
+    static Jet<T, TSize> variable(const double value, const index size, const index index)
     {
-        Jet<T> result(value, size);
+        Jet<T, TSize> result(value, size);
         result.g(index) = 1;
         return result;
     }
 
-    static std::vector<Jet<T>> variables(const std::vector<Jet<T>::Scalar> values)
+    static std::vector<Jet<T, TSize>> variables(const std::vector<Jet<T, TSize>::Scalar> values)
     {
         const auto nb_variables = length(values);
-        std::vector<Jet<T>> variables(nb_variables);
+        std::vector<Jet<T, TSize>> variables(nb_variables);
         for (index i = 0; i < nb_variables; i++) {
             variables[i] = variable(values[i], nb_variables, i);
         }
@@ -552,12 +552,12 @@ public: // python
     }
 }; // class Jet
 
-template <typename T = double>
+template <typename T = double, index TSize = Eigen::Dynamic>
 class HyperJet {
 public: // types
     using Scalar = T;
-    using Vector = Eigen::Matrix<T, 1, Eigen::Dynamic>;
-    using Matrix = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
+    using Vector = Eigen::Matrix<T, 1, TSize>;
+    using Matrix = Eigen::Matrix<T, TSize, TSize>;
 
 private: // variables
     T m_f;
@@ -617,18 +617,18 @@ public: // constructors
     }
 
 public: // static methods
-    static HyperJet<T> variable(const double value, const index size,
+    static HyperJet<T, TSize> variable(const double value, const index size,
         const index index)
     {
-        HyperJet<T> result(value, size);
+        HyperJet<T, TSize> result(value, size);
         result.g(index) = 1;
         return result;
     }
 
-    static std::vector<HyperJet<T>> variables(const std::vector<HyperJet<T>::Scalar> values)
+    static std::vector<HyperJet<T, TSize>> variables(const std::vector<HyperJet<T, TSize>::Scalar> values)
     {
         const auto nb_variables = length(values);
-        std::vector<HyperJet<T>> variables(nb_variables);
+        std::vector<HyperJet<T, TSize>> variables(nb_variables);
         for (index i = 0; i < nb_variables; i++) {
             variables[i] = variable(values[i], nb_variables, i);
         }
@@ -1263,138 +1263,138 @@ using std::tan;
 
 // --- Operators for Jet
 
-template <typename T>
-HYPERJET_INLINE Jet<T> abs(const Jet<T>& a)
+template <typename T, index TSize>
+HYPERJET_INLINE Jet<T, TSize> abs(const Jet<T, TSize>& a)
 {
     return a.abs();
 }
 
-template <typename T>
-HYPERJET_INLINE Jet<T> pow(const Jet<T>& a, const index b)
+template <typename T, index TSize>
+HYPERJET_INLINE Jet<T, TSize> pow(const Jet<T, TSize>& a, const index b)
 {
     return a.pow(b);
 }
 
-template <typename T>
-HYPERJET_INLINE Jet<T> pow(const Jet<T>& a, const double b)
+template <typename T, index TSize>
+HYPERJET_INLINE Jet<T, TSize> pow(const Jet<T, TSize>& a, const double b)
 {
     return a.pow(b);
 }
 
-template <typename T>
-HYPERJET_INLINE Jet<T> sqrt(const Jet<T>& a)
+template <typename T, index TSize>
+HYPERJET_INLINE Jet<T, TSize> sqrt(const Jet<T, TSize>& a)
 {
     return a.sqrt();
 }
 
-template <typename T>
-HYPERJET_INLINE Jet<T> cos(const Jet<T>& a)
+template <typename T, index TSize>
+HYPERJET_INLINE Jet<T, TSize> cos(const Jet<T, TSize>& a)
 {
     return a.cos();
 }
 
-template <typename T>
-HYPERJET_INLINE Jet<T> sin(const Jet<T>& a)
+template <typename T, index TSize>
+HYPERJET_INLINE Jet<T, TSize> sin(const Jet<T, TSize>& a)
 {
     return a.sin();
 }
 
-template <typename T>
-HYPERJET_INLINE Jet<T> tan(const Jet<T>& a)
+template <typename T, index TSize>
+HYPERJET_INLINE Jet<T, TSize> tan(const Jet<T, TSize>& a)
 {
     return a.tan();
 }
 
-template <typename T>
-HYPERJET_INLINE Jet<T> acos(const Jet<T>& a)
+template <typename T, index TSize>
+HYPERJET_INLINE Jet<T, TSize> acos(const Jet<T, TSize>& a)
 {
     return a.acos();
 }
 
-template <typename T>
-HYPERJET_INLINE Jet<T> asin(const Jet<T>& a)
+template <typename T, index TSize>
+HYPERJET_INLINE Jet<T, TSize> asin(const Jet<T, TSize>& a)
 {
     return a.asin();
 }
 
-template <typename T>
-HYPERJET_INLINE Jet<T> atan(const Jet<T>& a)
+template <typename T, index TSize>
+HYPERJET_INLINE Jet<T, TSize> atan(const Jet<T, TSize>& a)
 {
     return a.atan();
 }
 
-template <typename T>
-HYPERJET_INLINE Jet<T> atan2(const Jet<T>& a, const Jet<T>& b)
+template <typename T, index TSize>
+HYPERJET_INLINE Jet<T, TSize> atan2(const Jet<T, TSize>& a, const Jet<T, TSize>& b)
 {
-    return Jet<T>::atan2(a, b);
+    return Jet<T, TSize>::atan2(a, b);
 }
 
 // --- Operators for HyperJet
 
-template <typename T>
-HYPERJET_INLINE HyperJet<T> abs(const HyperJet<T>& a)
+template <typename T, index TSize>
+HYPERJET_INLINE HyperJet<T, TSize> abs(const HyperJet<T, TSize>& a)
 {
     return a.abs();
 }
 
-template <typename T>
-HYPERJET_INLINE HyperJet<T> pow(const HyperJet<T>& a, const index b)
+template <typename T, index TSize>
+HYPERJET_INLINE HyperJet<T, TSize> pow(const HyperJet<T, TSize>& a, const index b)
 {
     return a.pow(b);
 }
 
-template <typename T>
-HYPERJET_INLINE HyperJet<T> pow(const HyperJet<T>& a, const double b)
+template <typename T, index TSize>
+HYPERJET_INLINE HyperJet<T, TSize> pow(const HyperJet<T, TSize>& a, const double b)
 {
     return a.pow(b);
 }
 
-template <typename T>
-HYPERJET_INLINE HyperJet<T> sqrt(const HyperJet<T>& a)
+template <typename T, index TSize>
+HYPERJET_INLINE HyperJet<T, TSize> sqrt(const HyperJet<T, TSize>& a)
 {
     return a.sqrt();
 }
 
-template <typename T>
-HYPERJET_INLINE HyperJet<T> cos(const HyperJet<T>& a)
+template <typename T, index TSize>
+HYPERJET_INLINE HyperJet<T, TSize> cos(const HyperJet<T, TSize>& a)
 {
     return a.cos();
 }
 
-template <typename T>
-HYPERJET_INLINE HyperJet<T> sin(const HyperJet<T>& a)
+template <typename T, index TSize>
+HYPERJET_INLINE HyperJet<T, TSize> sin(const HyperJet<T, TSize>& a)
 {
     return a.sin();
 }
 
-template <typename T>
-HYPERJET_INLINE HyperJet<T> tan(const HyperJet<T>& a)
+template <typename T, index TSize>
+HYPERJET_INLINE HyperJet<T, TSize> tan(const HyperJet<T, TSize>& a)
 {
     return a.tan();
 }
 
-template <typename T>
-HYPERJET_INLINE HyperJet<T> acos(const HyperJet<T>& a)
+template <typename T, index TSize>
+HYPERJET_INLINE HyperJet<T, TSize> acos(const HyperJet<T, TSize>& a)
 {
     return a.acos();
 }
 
-template <typename T>
-HYPERJET_INLINE HyperJet<T> asin(const HyperJet<T>& a)
+template <typename T, index TSize>
+HYPERJET_INLINE HyperJet<T, TSize> asin(const HyperJet<T, TSize>& a)
 {
     return a.asin();
 }
 
-template <typename T>
-HYPERJET_INLINE HyperJet<T> atan(const HyperJet<T>& a)
+template <typename T, index TSize>
+HYPERJET_INLINE HyperJet<T, TSize> atan(const HyperJet<T, TSize>& a)
 {
     return a.atan();
 }
 
-template <typename T>
-HYPERJET_INLINE HyperJet<T> atan2(const HyperJet<T>& a, const HyperJet<T>& b)
+template <typename T, index TSize>
+HYPERJET_INLINE HyperJet<T, TSize> atan2(const HyperJet<T, TSize>& a, const HyperJet<T, TSize>& b)
 {
-    return HyperJet<T>::atan2(a, b);
+    return HyperJet<T, TSize>::atan2(a, b);
 }
 
 // --- Utility

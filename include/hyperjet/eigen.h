@@ -11,16 +11,18 @@
 
 #include "hyperjet.h"
 
+#include <algorithm>
+
 namespace Eigen {
 
 template <typename T>
 struct NumTraits;
 
-template <>
-struct NumTraits<hyperjet::Jet<double>> : NumTraits<double> {
-    using Real = hyperjet::Jet<double>;
-    using NonInteger = hyperjet::Jet<double>;
-    using Nested = hyperjet::Jet<double>;
+template <std::ptrdiff_t TSize>
+struct NumTraits<hyperjet::Jet<double, TSize>> : NumTraits<double> {
+    using Real = hyperjet::Jet<double, TSize>;
+    using NonInteger = hyperjet::Jet<double, TSize>;
+    using Nested = hyperjet::Jet<double, TSize>;
     enum {
         IsComplex = 0,
         IsInteger = 0,
@@ -32,11 +34,11 @@ struct NumTraits<hyperjet::Jet<double>> : NumTraits<double> {
     };
 };
 
-template <>
-struct NumTraits<hyperjet::HyperJet<double>> : NumTraits<double> {
-    using Real = hyperjet::HyperJet<double>;
-    using NonInteger = hyperjet::HyperJet<double>;
-    using Nested = hyperjet::HyperJet<double>;
+template <std::ptrdiff_t TSize>
+struct NumTraits<hyperjet::HyperJet<double, TSize>> : NumTraits<double> {
+    using Real = hyperjet::HyperJet<double, TSize>;
+    using NonInteger = hyperjet::HyperJet<double, TSize>;
+    using Nested = hyperjet::HyperJet<double, TSize>;
     enum {
         IsComplex = 0,
         IsInteger = 0,
@@ -48,49 +50,24 @@ struct NumTraits<hyperjet::HyperJet<double>> : NumTraits<double> {
     };
 };
 
-template <typename BinOp>
-struct ScalarBinaryOpTraits<hyperjet::Jet<double>, double, BinOp> {
-    using ReturnType = hyperjet::Jet<double>;
+template <typename BinOp, std::ptrdiff_t TSize>
+struct ScalarBinaryOpTraits<hyperjet::Jet<double, TSize>, double, BinOp> {
+    using ReturnType = hyperjet::Jet<double, TSize>;
 };
 
-template <typename BinOp>
-struct ScalarBinaryOpTraits<hyperjet::HyperJet<double>, double, BinOp> {
-    using ReturnType = hyperjet::HyperJet<double>;
+template <typename BinOp, std::ptrdiff_t TSize>
+struct ScalarBinaryOpTraits<hyperjet::HyperJet<double, TSize>, double, BinOp> {
+    using ReturnType = hyperjet::HyperJet<double, TSize>;
 };
 
-template <typename BinOp>
-struct ScalarBinaryOpTraits<double, hyperjet::Jet<double>, BinOp> {
-    using ReturnType = hyperjet::Jet<double>;
+template <typename BinOp, std::ptrdiff_t TSize>
+struct ScalarBinaryOpTraits<double, hyperjet::Jet<double, TSize>, BinOp> {
+    using ReturnType = hyperjet::Jet<double, TSize>;
 };
 
-template <typename BinOp>
-struct ScalarBinaryOpTraits<double, hyperjet::HyperJet<double>, BinOp> {
-    using ReturnType = hyperjet::HyperJet<double>;
+template <typename BinOp, std::ptrdiff_t TSize>
+struct ScalarBinaryOpTraits<double, hyperjet::HyperJet<double, TSize>, BinOp> {
+    using ReturnType = hyperjet::HyperJet<double, TSize>;
 };
-
-#define EIGEN_MAKE_TYPEDEFS(Type, TypeSuffix, Size, SizeSuffix)                     \
-    using Matrix##SizeSuffix##TypeSuffix = Matrix<Type, Size, Size, 0, Size, Size>; \
-    using Vector##SizeSuffix##TypeSuffix = Matrix<Type, Size, 1, 0, Size, 1>;       \
-    using RowVector##SizeSuffix##TypeSuffix = Matrix<Type, 1, Size, 1, 1, Size>;
-
-#define EIGEN_MAKE_FIXED_TYPEDEFS(Type, TypeSuffix, Size)                    \
-    using Matrix##Size##X##TypeSuffix = Matrix<Type, Size, -1, 0, Size, -1>; \
-    using Matrix##X##Size##TypeSuffix = Matrix<Type, -1, Size, 0, -1, Size>;
-
-#define EIGEN_MAKE_TYPEDEFS_ALL_SIZES(Type, TypeSuffix) \
-    EIGEN_MAKE_TYPEDEFS(Type, TypeSuffix, 2, 2)         \
-    EIGEN_MAKE_TYPEDEFS(Type, TypeSuffix, 3, 3)         \
-    EIGEN_MAKE_TYPEDEFS(Type, TypeSuffix, 4, 4)         \
-    EIGEN_MAKE_TYPEDEFS(Type, TypeSuffix, -1, X)        \
-    EIGEN_MAKE_FIXED_TYPEDEFS(Type, TypeSuffix, 2)      \
-    EIGEN_MAKE_FIXED_TYPEDEFS(Type, TypeSuffix, 3)      \
-    EIGEN_MAKE_FIXED_TYPEDEFS(Type, TypeSuffix, 4)
-
-EIGEN_MAKE_TYPEDEFS_ALL_SIZES(hyperjet::Jet<double>, hg)
-EIGEN_MAKE_TYPEDEFS_ALL_SIZES(hyperjet::HyperJet<double>, hg)
-
-#undef EIGEN_MAKE_TYPEDEFS_ALL_SIZES
-#undef EIGEN_MAKE_TYPEDEFS
-#undef EIGEN_MAKE_FIXED_TYPEDEFS
 
 } // namespace Eigen
