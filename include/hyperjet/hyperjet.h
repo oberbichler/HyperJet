@@ -69,6 +69,16 @@ public: // static methods
         return result;
     }
 
+    static std::vector<Jet<T>> variables(const std::vector<Jet<T>::Scalar> values)
+    {
+        const auto nb_variables = values.size();
+        std::vector<Jet<T>> variables(nb_variables);
+        for (int i = 0; i < nb_variables; i++) {
+            variables[i] = variable(values[i], nb_variables, i);
+        }
+        return variables;
+    }
+
 public: // methods
     T& f()
     {
@@ -450,17 +460,7 @@ public: // python
             // static methods
             .def_static("atan2", &Type::atan2)
             .def_static("variable", &Type::variable, "value"_a, "size"_a, "index"_a)
-            .def_static("variables", [](const std::vector<Type::Scalar> values) {
-                const auto nb_variables = values.size();
-                std::vector<Type> variables(nb_variables);
-                for (int i = 0; i < nb_variables; i++) {
-                    Type::Vector g = Type::Vector::Zero(nb_variables);
-                    g[i] = 1;
-                    variables[i] = Type(values[i], g);
-                }
-                return variables;
-            },
-                "values"_a)
+            .def_static("variables", &Type::variables, "values"_a)
             .def_static("variables", [](const std::vector<Type::Scalar> values, const int size, const int offset) {
                 const auto nb_variables = values.size();
                 std::vector<Type> variables(nb_variables);
@@ -615,6 +615,16 @@ public: // static methods
         HyperJet<T> result(value, size);
         result.g(index) = 1;
         return result;
+    }
+
+    static std::vector<HyperJet<T>> variables(const std::vector<HyperJet<T>::Scalar> values)
+    {
+        const auto nb_variables = values.size();
+        std::vector<HyperJet<T>> variables(nb_variables);
+        for (int i = 0; i < nb_variables; i++) {
+            variables[i] = variable(values[i], nb_variables, i);
+        }
+        return variables;
     }
 
 public: // methods
@@ -1145,17 +1155,7 @@ public: // python
             // static methods
             .def_static("atan2", &Type::atan2)
             .def_static("variable", &Type::variable, "value"_a, "size"_a, "index"_a)
-            .def_static("variables", [](const std::vector<Type::Scalar> values) {
-                const auto nb_variables = values.size();
-                std::vector<Type> variables(nb_variables);
-                for (int i = 0; i < nb_variables; i++) {
-                    Type::Vector g = Type::Vector::Zero(nb_variables);
-                    g[i] = 1;
-                    variables[i] = Type(values[i], g);
-                }
-                return variables;
-            },
-                "values"_a)
+            .def_static("variables", &Type::variables, "values"_a)
             .def_static("variables", [](const std::vector<Type::Scalar> values, const int size, const int offset) {
                 const auto nb_variables = values.size();
                 std::vector<Type> variables(nb_variables);
