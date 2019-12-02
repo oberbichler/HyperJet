@@ -1459,4 +1459,30 @@ auto explode(const T& value, Eigen::Ref<Eigen::VectorXd> g, Eigen::Ref<Eigen::Ma
     }
 }
 
+template <typename T>
+auto add_explode(const T& value, Eigen::Ref<Eigen::VectorXd> g, Eigen::Ref<Eigen::MatrixXd> h)
+{
+    using namespace hyperjet;
+
+    if constexpr(std::is_same<T, double>()) {
+        return value;
+    } else if constexpr(std::is_same<T, Jet<double>>()) {
+        if (g.size() >= 0) {
+            // FIXME: check size
+            g += value.g();
+        }
+        return value.f();
+    } else if constexpr(std::is_same<T, HyperJet<double>>()) {
+        if (g.size() >= 0) {
+            // FIXME: check size
+            g += value.g();
+        }
+        if (h.size() >= 0) {
+            // FIXME: check size
+            h += value.h();
+        }
+        return value.f();
+    }
+}
+
 } // namespace hyperjet
