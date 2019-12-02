@@ -18,7 +18,7 @@ namespace hyperjet {
 #if defined(_MSC_VER)
 #define HYPERJET_INLINE __forceinline
 #else
-#define HYPERJET_INLINE __attribute__((always_inline)) HYPERJET_INLINE
+#define HYPERJET_INLINE __attribute__((always_inline)) inline
 #endif
 
 using index = std::ptrdiff_t;
