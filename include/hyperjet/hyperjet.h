@@ -15,6 +15,12 @@
 
 namespace hyperjet {
 
+#if defined(_MSC_VER)
+#define HYPERJET_INLINE __forceinline
+#else
+#define HYPERJET_INLINE __attribute__((always_inline)) HYPERJET_INLINE
+#endif
+
 template <typename T = double>
 class Jet {
 public:     // types
@@ -26,26 +32,26 @@ private:    // variables
     Vector m_g;
 
 public:     // constructors
-    EIGEN_STRONG_INLINE
+    HYPERJET_INLINE
     Jet()
     : m_f(0), m_g(0)
     {
     }
 
-    EIGEN_STRONG_INLINE
+    HYPERJET_INLINE
     Jet(const int size)
     : m_f(0), m_g(Vector::Zero(size))
     {
     }
 
-    EIGEN_STRONG_INLINE
+    HYPERJET_INLINE
     Jet(const T f, const int size)
     : m_f(f), m_g(Vector::Zero(size))
     {
     }
 
     template <typename Derived>
-    EIGEN_STRONG_INLINE
+    HYPERJET_INLINE
     Jet(const T f, const Eigen::DenseBase<Derived>& g)
     : m_f(f), m_g(g)
     {
@@ -91,7 +97,7 @@ public:     // methods
     }
 
 
-    inline int size() const
+    HYPERJET_INLINE int size() const
     {
         return static_cast<int>(m_g.size());
     }
@@ -246,61 +252,61 @@ public:     // methods
         return Jet(f, g);
     }
 
-    inline Jet abs() const
+    HYPERJET_INLINE Jet abs() const
     {
         return m_f < 0 ? -(*this) : *this;
     }
 
-    inline Jet sqrt() const
+    HYPERJET_INLINE Jet sqrt() const
     {
         const auto f = std::sqrt(m_f);
         const auto g = m_g / (2 * f);
         return Jet(f, g);
     }
 
-    inline Jet cos() const
+    HYPERJET_INLINE Jet cos() const
     {
         const auto f = std::cos(m_f);
         const auto g = -std::sin(m_f) * m_g;
         return Jet(f, g);
     }
 
-    inline Jet sin() const
+    HYPERJET_INLINE Jet sin() const
     {
         const auto f = std::sin(m_f);
         const auto g = std::cos(m_f) * m_g;
         return Jet(f, g);
     }
 
-    inline Jet tan() const
+    HYPERJET_INLINE Jet tan() const
     {
         const auto f = std::tan(m_f);
         const auto g = m_g * (f * f + 1);
         return Jet(f, g);
     }
 
-    inline Jet acos() const
+    HYPERJET_INLINE Jet acos() const
     {
         const auto f = std::acos(m_f);
         const auto g = -m_g / std::sqrt(-m_f * m_f + 1);
         return Jet(f, g);
     }
 
-    inline Jet asin() const
+    HYPERJET_INLINE Jet asin() const
     {
         const auto f = std::asin(m_f);
         const auto g = m_g / std::sqrt(1 - m_f * m_f);
         return Jet(f, g);
     }
 
-    inline Jet atan() const
+    HYPERJET_INLINE Jet atan() const
     {
         const auto f = std::atan(m_f);
         const auto g = m_g / (m_f * m_f + 1);
         return Jet(f, g);
     }
 
-    static inline Jet atan2(const Jet& a, const Jet& b)
+    static HYPERJET_INLINE Jet atan2(const Jet& a, const Jet& b)
     {
         const auto tmp = a.m_f * a.m_f + b.m_f * b.m_f;
 
@@ -310,7 +316,7 @@ public:     // methods
     }
 
     template <typename U>
-    inline Jet pow(const U b) const
+    HYPERJET_INLINE Jet pow(const U b) const
     {
         const auto f = std::pow(m_f, b);
         const auto g = b * std::pow(m_f, b - U(1)) * m_g;
@@ -554,33 +560,33 @@ private:    // variables
     Matrix m_h;
 
 public:     // constructors
-    EIGEN_STRONG_INLINE
+    HYPERJET_INLINE
     HyperJet()
     : m_f(0), m_g(0), m_h(0, 0)
     {
     }
 
-    EIGEN_STRONG_INLINE
+    HYPERJET_INLINE
     HyperJet(const int size)
     : m_f(0), m_g(Vector::Zero(size)), m_h(Matrix::Zero(size, size))
     {
     }
 
-    EIGEN_STRONG_INLINE
+    HYPERJET_INLINE
     HyperJet(const T value, const int size)
     : m_f(value), m_g(Vector::Zero(size)), m_h(Matrix::Zero(size, size))
     {
     }
 
     template <typename Derived>
-    EIGEN_STRONG_INLINE
+    HYPERJET_INLINE
     HyperJet(const T f, const Eigen::DenseBase<Derived>& g)
     : m_f(f), m_g(g), m_h(Matrix::Zero(g.size(), g.size()))
     {
     }
 
     template <typename Derived1, typename Derived2>
-    EIGEN_STRONG_INLINE
+    HYPERJET_INLINE
     HyperJet(const T f, const Eigen::DenseBase<Derived1>& g, const Eigen::DenseBase<Derived2>& h)
     : m_f(f), m_g(g), m_h(h)
     {
@@ -655,7 +661,7 @@ public:     // methods
         return m_h(row, col);
     }
 
-    inline int size() const
+    HYPERJET_INLINE int size() const
     {
         return static_cast<int>(m_g.size());
     }
@@ -878,12 +884,12 @@ public:     // methods
         return HyperJet(f, g, h);
     }
 
-    inline HyperJet abs() const
+    HYPERJET_INLINE HyperJet abs() const
     {
         return m_f < 0 ? -(*this) : *this;
     }
 
-    inline HyperJet sqrt() const
+    HYPERJET_INLINE HyperJet sqrt() const
     {
         const auto f = std::sqrt(m_f);
         const auto g = m_g / (2 * f);
@@ -891,7 +897,7 @@ public:     // methods
         return HyperJet(f, g, h);
     }
 
-    inline HyperJet cos() const
+    HYPERJET_INLINE HyperJet cos() const
     {
         const auto f = std::cos(m_f);
         const auto g = -std::sin(m_f) * m_g;
@@ -899,7 +905,7 @@ public:     // methods
         return HyperJet(f, g, h);
     }
 
-    inline HyperJet sin() const
+    HYPERJET_INLINE HyperJet sin() const
     {
         const auto f = std::sin(m_f);
         const auto g = std::cos(m_f) * m_g;
@@ -907,7 +913,7 @@ public:     // methods
         return HyperJet(f, g, h);
     }
 
-    inline HyperJet tan() const
+    HYPERJET_INLINE HyperJet tan() const
     {
         const auto f = std::tan(m_f);
         const auto g = m_g * (f * f + 1);
@@ -915,7 +921,7 @@ public:     // methods
         return HyperJet(f, g, h);
     }
 
-    inline HyperJet acos() const
+    HYPERJET_INLINE HyperJet acos() const
     {
         const auto f = std::acos(m_f);
         const auto g = -m_g / std::sqrt(-m_f * m_f + 1);
@@ -924,7 +930,7 @@ public:     // methods
         return HyperJet(f, g, h);
     }
 
-    inline HyperJet asin() const
+    HYPERJET_INLINE HyperJet asin() const
     {
         const auto f = std::asin(m_f);
         const auto g = m_g / std::sqrt(1 - m_f * m_f);
@@ -933,7 +939,7 @@ public:     // methods
         return HyperJet(f, g, h);
     }
 
-    inline HyperJet atan() const
+    HYPERJET_INLINE HyperJet atan() const
     {
         const auto f = std::atan(m_f);
         const auto g = m_g / (m_f * m_f + 1);
@@ -942,7 +948,7 @@ public:     // methods
         return HyperJet(f, g, h);
     }
 
-    static inline HyperJet atan2(const HyperJet& a, const HyperJet& b)
+    static HYPERJET_INLINE HyperJet atan2(const HyperJet& a, const HyperJet& b)
     {
     #if defined(HYPERJET_EXCEPTIONS)
         if (a.size() != b.size()) {
@@ -963,7 +969,7 @@ public:     // methods
     }
 
     template <typename U>
-    inline HyperJet pow(const U b) const
+    HYPERJET_INLINE HyperJet pow(const U b) const
     {
         const auto f = std::pow(m_f, b);
         const auto g = b * std::pow(m_f, b - U(1)) * m_g;
@@ -1259,67 +1265,67 @@ using std::atan2;
 // --- Operators for Jet
 
 template <typename T>
-inline Jet<T> abs(const Jet<T>& a)
+HYPERJET_INLINE Jet<T> abs(const Jet<T>& a)
 {
     return a.abs();
 }
 
 template <typename T>
-inline Jet<T> pow(const Jet<T>& a, const int b)
+HYPERJET_INLINE Jet<T> pow(const Jet<T>& a, const int b)
 {
     return a.pow(b);
 }
 
 template <typename T>
-inline Jet<T> pow(const Jet<T>& a, const double b)
+HYPERJET_INLINE Jet<T> pow(const Jet<T>& a, const double b)
 {
     return a.pow(b);
 }
 
 template <typename T>
-inline Jet<T> sqrt(const Jet<T>& a)
+HYPERJET_INLINE Jet<T> sqrt(const Jet<T>& a)
 {
     return a.sqrt();
 }
 
 template <typename T>
-inline Jet<T> cos(const Jet<T>& a)
+HYPERJET_INLINE Jet<T> cos(const Jet<T>& a)
 {
     return a.cos();
 }
 
 template <typename T>
-inline Jet<T> sin(const Jet<T>& a)
+HYPERJET_INLINE Jet<T> sin(const Jet<T>& a)
 {
     return a.sin();
 }
 
 template <typename T>
-inline Jet<T> tan(const Jet<T>& a)
+HYPERJET_INLINE Jet<T> tan(const Jet<T>& a)
 {
     return a.tan();
 }
 
 template <typename T>
-inline Jet<T> acos(const Jet<T>& a)
+HYPERJET_INLINE Jet<T> acos(const Jet<T>& a)
 {
     return a.acos();
 }
 
 template <typename T>
-inline Jet<T> asin(const Jet<T>& a)
+HYPERJET_INLINE Jet<T> asin(const Jet<T>& a)
 {
     return a.asin();
 }
 
 template <typename T>
-inline Jet<T> atan(const Jet<T>& a)
+HYPERJET_INLINE Jet<T> atan(const Jet<T>& a)
 {
     return a.atan();
 }
 
 template <typename T>
-inline Jet<T> atan2(const Jet<T>& a, const Jet<T>& b)
+HYPERJET_INLINE Jet<T> atan2(const Jet<T>& a, const Jet<T>& b)
 {
     return Jet<T>::atan2(a, b);
 }
@@ -1327,67 +1333,67 @@ inline Jet<T> atan2(const Jet<T>& a, const Jet<T>& b)
 // --- Operators for HyperJet
 
 template <typename T>
-inline HyperJet<T> abs(const HyperJet<T>& a)
+HYPERJET_INLINE HyperJet<T> abs(const HyperJet<T>& a)
 {
     return a.abs();
 }
 
 template <typename T>
-inline HyperJet<T> pow(const HyperJet<T>& a, const int b)
+HYPERJET_INLINE HyperJet<T> pow(const HyperJet<T>& a, const int b)
 {
     return a.pow(b);
 }
 
 template <typename T>
-inline HyperJet<T> pow(const HyperJet<T>& a, const double b)
+HYPERJET_INLINE HyperJet<T> pow(const HyperJet<T>& a, const double b)
 {
     return a.pow(b);
 }
 
 template <typename T>
-inline HyperJet<T> sqrt(const HyperJet<T>& a)
+HYPERJET_INLINE HyperJet<T> sqrt(const HyperJet<T>& a)
 {
     return a.sqrt();
 }
 
 template <typename T>
-inline HyperJet<T> cos(const HyperJet<T>& a)
+HYPERJET_INLINE HyperJet<T> cos(const HyperJet<T>& a)
 {
     return a.cos();
 }
 
 template <typename T>
-inline HyperJet<T> sin(const HyperJet<T>& a)
+HYPERJET_INLINE HyperJet<T> sin(const HyperJet<T>& a)
 {
     return a.sin();
 }
 
 template <typename T>
-inline HyperJet<T> tan(const HyperJet<T>& a)
+HYPERJET_INLINE HyperJet<T> tan(const HyperJet<T>& a)
 {
     return a.tan();
 }
 
 template <typename T>
-inline HyperJet<T> acos(const HyperJet<T>& a)
+HYPERJET_INLINE HyperJet<T> acos(const HyperJet<T>& a)
 {
     return a.acos();
 }
 
 template <typename T>
-inline HyperJet<T> asin(const HyperJet<T>& a)
+HYPERJET_INLINE HyperJet<T> asin(const HyperJet<T>& a)
 {
     return a.asin();
 }
 
 template <typename T>
-inline HyperJet<T> atan(const HyperJet<T>& a)
+HYPERJET_INLINE HyperJet<T> atan(const HyperJet<T>& a)
 {
     return a.atan();
 }
 
 template <typename T>
-inline HyperJet<T> atan2(const HyperJet<T>& a, const HyperJet<T>& b)
+HYPERJET_INLINE HyperJet<T> atan2(const HyperJet<T>& a, const HyperJet<T>& b)
 {
     return HyperJet<T>::atan2(a, b);
 }
@@ -1480,12 +1486,12 @@ struct NumTraits<hyperjet::Jet<T>> {
         return hyperjet::Jet<T>(1e-12, 0);
     }
 
-    static inline Real epsilon()
+    static HYPERJET_INLINE Real epsilon()
     {
         return Real(std::numeric_limits<T>::epsilon());
     }
 
-    static inline int digits10()
+    static HYPERJET_INLINE int digits10()
     {
         return NumTraits<T>::digits10();
     }
@@ -1513,12 +1519,12 @@ struct NumTraits<hyperjet::Jet<T>> {
         };
     };
 
-    static inline Real highest()
+    static HYPERJET_INLINE Real highest()
     {
         return Real(std::numeric_limits<T>::max());
     }
 
-    static inline Real lowest()
+    static HYPERJET_INLINE Real lowest()
     {
         return Real(-std::numeric_limits<T>::max());
     }
@@ -1548,12 +1554,12 @@ struct NumTraits<hyperjet::HyperJet<T>> {
         return hyperjet::HyperJet<T>(1e-12, 0);
     }
 
-    static inline Real epsilon()
+    static HYPERJET_INLINE Real epsilon()
     {
         return Real(std::numeric_limits<T>::epsilon());
     }
 
-    static inline int digits10()
+    static HYPERJET_INLINE int digits10()
     {
         return NumTraits<T>::digits10();
     }
@@ -1581,12 +1587,12 @@ struct NumTraits<hyperjet::HyperJet<T>> {
         };
     };
 
-    static inline Real highest()
+    static HYPERJET_INLINE Real highest()
     {
         return Real(std::numeric_limits<T>::max());
     }
 
-    static inline Real lowest()
+    static HYPERJET_INLINE Real lowest()
     {
         return Real(-std::numeric_limits<T>::max());
     }
