@@ -47,9 +47,9 @@ jobs:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
       run: |
-        for PYBIN in /opt/python/*/bin; do
+        for PYBIN in /opt/python/cp3*/bin; do
           "${PYBIN}/pip" install setuptools cmake wheel twine
-          "${PYBIN}/pip" install -r /requirements.txt
+          "${PYBIN}/pip" install -r requirements.txt
           "${PYBIN}/pip" wheel . -w wheelhouse/
         done
 
