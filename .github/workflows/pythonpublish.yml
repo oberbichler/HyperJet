@@ -53,10 +53,10 @@ jobs:
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         PYTHON_VERSION: ${{ matrix.python-version }}
       run: |
-        if [ "${PYTHON_VERSION}" == "3.5" ]; then set PYBIN=/opt/python/cp35m/bin fi
-        if [ "${PYTHON_VERSION}" == "3.6" ]; then set PYBIN=/opt/python/cp36m/bin fi
-        if [ "${PYTHON_VERSION}" == "3.7" ]; then set PYBIN=/opt/python/cp37m/bin fi
-        if [ "${PYTHON_VERSION}" == "3.8" ]; then set PYBIN=/opt/python/cp38/bin fi
+        if [ "${PYTHON_VERSION}" == "3.5" ]; then set PYBIN=/opt/python/cp35m/bin; fi
+        if [ "${PYTHON_VERSION}" == "3.6" ]; then set PYBIN=/opt/python/cp36m/bin; fi
+        if [ "${PYTHON_VERSION}" == "3.7" ]; then set PYBIN=/opt/python/cp37m/bin; fi
+        if [ "${PYTHON_VERSION}" == "3.8" ]; then set PYBIN=/opt/python/cp38/bin; fi
 
         "${PYBIN}/pip" install setuptools cmake wheel twine
         "${PYBIN}/pip" install -r requirements.txt
