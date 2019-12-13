@@ -40,22 +40,29 @@ jobs:
       env:
         PLAT: manylinux2010_x86_64
 
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: [3.5, 3.6, 3.7, 3.8]
+
     steps:
     - uses: actions/checkout@v1
     - name: Build and publish
       env:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        PYTHON_VERSION: ${{ matrix.python-version }}
       run: |
-        for PYBIN in /opt/python/cp3*/bin; do
-          "${PYBIN}/pip" install setuptools cmake wheel twine
-          "${PYBIN}/pip" install -r requirements.txt
-          "${PYBIN}/pip" wheel . -w wheelhouse/
-        done
+        if [ "${PYTHON_VERSION}" == "3.5" ]; then set PYBIN=/opt/python/cp35m/bin fi
+        if [ "${PYTHON_VERSION}" == "3.6" ]; then set PYBIN=/opt/python/cp36m/bin fi
+        if [ "${PYTHON_VERSION}" == "3.7" ]; then set PYBIN=/opt/python/cp37m/bin fi
+        if [ "${PYTHON_VERSION}" == "3.8" ]; then set PYBIN=/opt/python/cp38/bin fi
 
-        for whl in wheelhouse/*.whl; do
-          auditwheel repair "$whl" --plat $PLAT -w wheelhouse/
-        done
+        "${PYBIN}/pip" install setuptools cmake wheel twine
+        "${PYBIN}/pip" install -r requirements.txt
+        "${PYBIN}/pip" wheel . -w wheelhouse/
+
+        auditwheel repair "$whl" --plat $PLAT -w wheelhouse/
 
         # twine upload wheelhouse/*.whl
 
