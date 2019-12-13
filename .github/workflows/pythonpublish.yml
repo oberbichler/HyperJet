@@ -33,7 +33,7 @@ jobs:
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
       run: |
         python setup.py bdist_wheel
-        # twine upload dist/*.whl
+        twine upload dist/*.whl
 
   deploy_linux:
     name: Ubuntu-${{ matrix.python-version }}
@@ -94,4 +94,4 @@ jobs:
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
       run: |
         python setup.py sdist
-        # twine upload dist/*
+        twine upload dist/*
