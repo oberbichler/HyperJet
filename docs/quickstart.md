@@ -40,6 +40,8 @@ result.f            # == -6             (Function value)
 result.g            # == [-4,  1]       (Gradient)
 ```
 
+!> In this example you do not need to modify the implementation of your function `f` because `HyperJet` supports all the operations that are performed.
+
 By using a `HyperJet` you can also compute the second derivative:
 
 ```python
