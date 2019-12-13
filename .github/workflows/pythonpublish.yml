@@ -58,7 +58,7 @@ jobs:
         if [ "${PYTHON_VERSION}" == "3.7" ]; then PYBIN=/opt/python/cp37-cp37m/bin; fi
         if [ "${PYTHON_VERSION}" == "3.8" ]; then PYBIN=/opt/python/cp38-cp38/bin; fi
 
-        PATH="${PYBIN}:$PATH
+        PATH=${PYBIN}:$PATH
 
         pip install setuptools cmake wheel twine
         pip install -r requirements.txt
