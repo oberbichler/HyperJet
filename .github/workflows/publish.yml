@@ -6,7 +6,7 @@ on:
 
 jobs:
   win_mac:
-    name: ${{ matrix.os }}-${{ matrix.python-version }}
+    name: Publish-${{ matrix.os }}-${{ matrix.python-version }}
 
     runs-on: ${{ matrix.os }}
 
@@ -36,7 +36,7 @@ jobs:
         twine upload dist/*.whl
 
   linux:
-    name: Ubuntu-${{ matrix.python-version }}
+    name: Publish-ubuntu-latest-${{ matrix.python-version }}
 
     runs-on: ubuntu-latest
 
@@ -75,7 +75,7 @@ jobs:
         done
 
   source:
-    name: Source
+    name: Publish-source
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
