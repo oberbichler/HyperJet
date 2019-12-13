@@ -37,10 +37,8 @@ jobs:
 
     container:
       image: oberbichler/manylinux2010_x86_64
-
-    strategy:
-      matrix:
-        python-version: [3.5, 3.6, 3.7, 3.8]
+      env:
+        PLAT: manylinux2010_x86_64
 
     steps:
     - uses: actions/checkout@v1
@@ -51,17 +49,21 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install setuptools wheel twine
+        pip install setuptools cmake wheel twine
     - name: Build and publish
       env:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
       run: |
-        pip install cmake
-        python setup.py bdist_wheel
-        auditwheel repair hyperjet-*.whl
+        for PYBIN in /opt/python/*/bin; do
+            "${PYBIN}/pip" install -r /requirements.txt
+            "${PYBIN}/pip" wheel . -w wheelhouse/
+        done
 
-        docker run -v ${PWD}:/data -w /data --env PYTHON_VERSION=${{ matrix.python-version }} quay.io/pypa/manylinux2010_x86_64 bash tools/repair-wheel.sh
+        for whl in wheelhouse/*.whl; do
+            auditwheel repair "$whl" --plat $PLAT -w wheelhouse/
+        done
+
         # twine upload wheelhouse/*.whl
 
   deploy_source:
