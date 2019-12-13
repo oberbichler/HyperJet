@@ -65,7 +65,9 @@ jobs:
         pip install -r requirements.txt
         pip wheel . -w wheelhouse/
 
-        auditwheel repair "$whl" --plat $PLAT -w wheelhouse/
+        for whl in wheelhouse/*.whl; do
+          auditwheel repair "$whl" --plat $PLAT -w wheelhouse/
+        done
 
         # twine upload wheelhouse/*.whl
 
