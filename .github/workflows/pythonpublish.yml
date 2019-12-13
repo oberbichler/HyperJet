@@ -66,6 +66,7 @@ jobs:
         pip wheel . -w wheelhouse/
 
         for whl in wheelhouse/*.whl; do
+          echo $whl
           auditwheel repair "$whl" --plat $PLAT -w wheelhouse/
         done
 
