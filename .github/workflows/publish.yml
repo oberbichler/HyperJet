@@ -34,6 +34,7 @@ jobs:
       run: |
         python setup.py bdist_wheel
         twine upload dist/*.whl
+  
   linux:
     name: publish (ubuntu-latest, ${{ matrix.python-version }})
 
@@ -69,6 +70,7 @@ jobs:
           auditwheel repair "$whl" --plat $PLAT -w wheelhouse/
           twine upload "$whl"
         done
+  
   source:
     name: publish (source)
     runs-on: ubuntu-latest
