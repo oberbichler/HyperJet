@@ -66,11 +66,13 @@ jobs:
         pip install --upgrade pip
         pip install -r requirements.txt
         pip wheel . -w wheelhouse/
-        for whl in wheelhouse/hyperjet-*-manylinux2010_x86_64.whl; do
+        for whl in wheelhouse/hyperjet-*.whl; do
           auditwheel repair "$whl" --plat $PLAT -w wheelhouse/
+        done
+        for whl in wheelhouse/hyperjet-*.whl; do
           twine upload "$whl"
         done
-  
+        
   source:
     name: publish (source)
     runs-on: ubuntu-latest
