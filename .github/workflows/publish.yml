@@ -6,7 +6,7 @@ on:
 
 jobs:
   win_mac:
-    name: Publish-${{ matrix.os }}-${{ matrix.python-version }}
+    name: publish (${{ matrix.os }}, ${{ matrix.python-version }})
 
     runs-on: ${{ matrix.os }}
 
@@ -34,9 +34,8 @@ jobs:
       run: |
         python setup.py bdist_wheel
         twine upload dist/*.whl
-
   linux:
-    name: Publish-ubuntu-latest-${{ matrix.python-version }}
+    name: publish (ubuntu-latest, ${{ matrix.python-version }})
 
     runs-on: ubuntu-latest
 
@@ -62,20 +61,16 @@ jobs:
         if [ "${PYTHON_VERSION}" == "3.6" ]; then PYBIN=/opt/python/cp36-cp36m/bin; fi
         if [ "${PYTHON_VERSION}" == "3.7" ]; then PYBIN=/opt/python/cp37-cp37m/bin; fi
         if [ "${PYTHON_VERSION}" == "3.8" ]; then PYBIN=/opt/python/cp38-cp38/bin; fi
-
         PATH=${PYBIN}:$PATH
-
         pip install --upgrade pip
         pip install -r requirements.txt
         pip wheel . -w wheelhouse/
-
         for whl in wheelhouse/hyperjet-*.whl; do
           auditwheel repair "$whl" --plat $PLAT -w wheelhouse/
           twine upload "$whl"
         done
-
   source:
-    name: Publish-source
+    name: publish (source)
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
