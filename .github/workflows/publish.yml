@@ -69,7 +69,7 @@ jobs:
         for whl in wheelhouse/hyperjet-*.whl; do
           auditwheel repair "$whl" --plat $PLAT -w wheelhouse/
         done
-        for whl in wheelhouse/hyperjet-*.whl; do
+        for whl in wheelhouse/hyperjet-*-${PLAT}.whl; do
           twine upload "$whl"
         done
         
