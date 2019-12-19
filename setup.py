@@ -67,6 +67,6 @@ setup(
     author_email='thomas.oberbichler@gmail.com',
     ext_modules=[CMakeExtension('hyperjet')],
     cmdclass=dict(build_ext=CMakeBuild),
-    install_requires=['numpy'],
+    install_requires=['msvc-runtime ; platform_system=="Windows"', 'numpy'],
     zip_safe=False,
 )
