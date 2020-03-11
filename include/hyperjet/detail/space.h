@@ -28,7 +28,6 @@ struct Space<0, TScalar, TSize> {
 
     static Scalar constant(TScalar value)
     {
-        static_assert(0 <= TOrder && TOrder <= 2);
         static_assert(-1 <= TSize);
 
         return Scalar(value);
@@ -36,7 +35,6 @@ struct Space<0, TScalar, TSize> {
 
     static Scalar variable(index i, Scalar value)
     {
-        static_assert(0 <= TOrder && TOrder <= 2);
         static_assert(-1 <= TSize);
 
         return value;
@@ -88,7 +86,6 @@ struct Space<1, TScalar, TSize> {
 
     static Scalar constant(TScalar value)
     {
-        static_assert(0 <= TOrder && TOrder <= 2);
         static_assert(-1 <= TSize);
 
         return Scalar(value);
@@ -96,7 +93,6 @@ struct Space<1, TScalar, TSize> {
 
     static Scalar variable(index i, TScalar value)
     {
-        static_assert(0 <= TOrder && TOrder <= 2);
         static_assert(-1 <= TSize);
 
         Scalar result(value);
@@ -156,7 +152,6 @@ struct Space<2, TScalar, TSize> {
 
     static Scalar constant(TScalar value)
     {
-        static_assert(0 <= TOrder && TOrder <= 2);
         static_assert(-1 <= TSize);
 
         return Scalar(value);
@@ -164,7 +159,6 @@ struct Space<2, TScalar, TSize> {
 
     static Scalar variable(index i, TScalar value)
     {
-        static_assert(0 <= TOrder && TOrder <= 2);
         static_assert(-1 <= TSize);
 
         Scalar result(value);
