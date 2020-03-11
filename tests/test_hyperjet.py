@@ -1,5 +1,5 @@
 import unittest
-from hyperjet import HyperJet
+from hyperjet import HyperJetXd as HyperJet
 import numpy as np
 from numpy.testing import assert_array_almost_equal, assert_almost_equal
 from math import sqrt, cos, sin, tan, acos, asin, atan, pi
@@ -27,7 +27,7 @@ class TestHyperJet(unittest.TestCase):
         assert_array_almost_equal(jet.h, h)
 
     def test_hyperjet_getter_and_setter(self):
-        u = HyperJet(2)
+        u = HyperJet.empty(size=2)
 
         u.f = 1
         u.g = [2, 3]
@@ -239,7 +239,7 @@ class TestHyperJet(unittest.TestCase):
             self.check(b, 1, [2, 3], [[4, 5], [6, 7]])
 
     def test_hyperjet_variable(self):
-        a = HyperJet.variable(value=3, size=5, index=3)
+        a = HyperJet.variable(f=3, size=5, index=3)
 
         self.check(a, 3, [0, 0, 0, 1, 0], np.zeros((5, 5)))
 
