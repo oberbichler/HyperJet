@@ -203,7 +203,7 @@ struct Space<2, TScalar, TSize> {
             g = variable.g();
         }
 
-        if (h..size() >= 0) {
+        if (h.size() >= 0) {
             assert(h.rows() == variable.h().rows() && h.cols() == variable.h().cols());
             h = variable.h();
         }
