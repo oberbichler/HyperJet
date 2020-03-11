@@ -1,5 +1,5 @@
 import unittest
-from hyperjet import JetXd as Jet
+from hyperjet import Jet
 import numpy as np
 from numpy.testing import assert_array_almost_equal, assert_almost_equal
 from math import sqrt, cos, sin, tan, acos, asin, atan, pi
