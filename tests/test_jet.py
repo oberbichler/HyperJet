@@ -26,7 +26,7 @@ class TestJet(unittest.TestCase):
         assert_array_almost_equal(jet.g, g)
 
     def test_hyperjet_getter_and_setter(self):
-        u = Jet(2)
+        u = Jet.empty(2)
 
         u.f = 1
         u.g = [2, 3]
@@ -228,7 +228,7 @@ class TestJet(unittest.TestCase):
             self.check(b, 1, [2, 3])
 
     def test_jet_variable(self):
-        a = Jet.variable(value=3, size=5, index=3)
+        a = Jet.variable(f=3, size=5, index=3)
 
         self.check(a, 3, [0, 0, 0, 1, 0])
 
