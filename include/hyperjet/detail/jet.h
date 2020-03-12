@@ -86,7 +86,7 @@ public: // methods
     HYPERJET_INLINE static Type variable(const index i, const TScalar f)
     {
         assert(TSize != -1);
-        auto result = Type(Scalar(f), Vector::Zero(size));
+        auto result = Type(Scalar(f), Vector::Zero(TSize));
         result.g(i) = Scalar(1);
         return result;
     }
