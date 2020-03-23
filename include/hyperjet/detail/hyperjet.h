@@ -100,6 +100,32 @@ public: // methods
         return Type(Scalar(f), Vector::Zero(size), Matrix::Zero(size, size));
     }
 
+    HYPERJET_INLINE static std::vector<Type> constants(std::vector<Scalar> values)
+    {
+        const auto nb_variables = length(values);
+        
+        std::vector<Type> variables(nb_variables);
+        
+        for (index i = 0; i < nb_variables; i++) {
+            variables[i] = Type::constant(values.size(), values[i]);
+        }
+        
+        return variables;
+    }
+
+    HYPERJET_INLINE static std::vector<Type> constants(const index size, std::vector<Scalar> values, const index offset)
+    {
+        const auto nb_variables = length(values);
+        
+        std::vector<Type> variables(nb_variables);
+        
+        for (index i = 0; i < nb_variables; i++) {
+            variables[i] = Type::constant(size, values[i]);
+        }
+        
+        return variables;
+    }
+
     HYPERJET_INLINE static Type variable(const index i, const TScalar f)
     {
         assert(TSize != -1);
@@ -129,7 +155,7 @@ public: // methods
         return variables;
     }
 
-    HYPERJET_INLINE static std::vector<Type> variables(std::vector<Scalar> values, const index size, const index offset)
+    HYPERJET_INLINE static std::vector<Type> variables(const index size, std::vector<Scalar> values, const index offset)
     {
         const auto nb_variables = length(values);
         
@@ -742,9 +768,11 @@ public: // python
             .def_static("empty", py::overload_cast<index>(&Type::empty), "size"_a)
             .def_static("zero", py::overload_cast<index>(&Type::zero), "size"_a)
             .def_static("constant", py::overload_cast<index, Scalar>(&Type::constant), "size"_a, "f"_a)
+            .def_static("constants", py::overload_cast<std::vector<Scalar>>(&Type::constants), "values"_a)
+            .def_static("constants", py::overload_cast<index, std::vector<Scalar>, index>(&Type::constants), "size"_a, "values"_a, "offset"_a=0)
             .def_static("variable", py::overload_cast<index, index, Scalar>(&Type::variable), "size"_a, "index"_a, "f"_a)
             .def_static("variables", py::overload_cast<std::vector<Scalar>>(&Type::variables), "values"_a)
-            .def_static("variables", py::overload_cast<std::vector<Scalar>, index, index>(&Type::variables), "values"_a, "size"_a, "offset"_a)
+            .def_static("variables", py::overload_cast<index, std::vector<Scalar>, index>(&Type::variables), "size"_a, "values"_a, "offset"_a=0)
             // methods
             .def("__abs__", &Type::abs)
             .def("__len__", &Type::size)
