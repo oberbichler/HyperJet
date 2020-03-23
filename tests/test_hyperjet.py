@@ -251,7 +251,7 @@ class TestHyperJet(unittest.TestCase):
         self.check(c, 3, [0, 0, 1], np.zeros((3, 3)))
 
     def test_hyperjet_variables_with_offset(self):
-        a, b, c = HyperJet.variables([1, 2, 3], size=6, offset=1)
+        a, b, c = HyperJet.variables(size=6, values=[1, 2, 3], offset=1)
 
         self.check(a, 1, [0, 1, 0, 0, 0, 0], np.zeros((6, 6)))
         self.check(b, 2, [0, 0, 1, 0, 0, 0], np.zeros((6, 6)))
