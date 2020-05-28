@@ -315,7 +315,7 @@ public: // methods
         const index size = g.size();
 
         for (index i = 0; i < size; i++) {
-            g(i) = xs[i].g().dot(this->g());
+            g(i) += xs[i].g().dot(this->g());
 
             for (index j = i; j < size; j++) {
                 for (index r = 0; r < this->size(); r++) {
