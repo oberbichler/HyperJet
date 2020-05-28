@@ -1,7 +1,5 @@
 import hyperjet as hj
-import numpy as np
 
-import os
 import pytest
 
 from numpy.testing import assert_equal, assert_array_almost_equal, assert_almost_equal
