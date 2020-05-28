@@ -13,6 +13,7 @@
 
 #include <assert.h>
 #include <ostream>
+#include <sstream>
 #include <string>
 #include <type_traits>
 
