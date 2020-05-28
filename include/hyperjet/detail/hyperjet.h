@@ -262,28 +262,7 @@ public: // methods
 
         auto result = HyperJet<TScalar, Dynamic>::zero(size);
 
-        for (index i = 0; i < size; i++) {
-            for (index r = 0; r < this->size(); r++) {
-                assert(xs[r].size() == size);
-                result.g(i) += g(r) * xs[r].g(i);
-            }
-
-            for (index j = i; j < size; j++) {
-                for (index r = 0; r < this->size(); r++) {
-                    result.h(i, j) += g(r) * xs[r].h(i, j);
-
-                    for (index s = 0; s < this->size(); s++) {
-                        result.h(i, j) += h(r, s) * xs[r].g(i) * xs[s].g(j);
-                    }
-                }
-            }
-        }
-
-        for (index i = 0; i < size; i++) {
-            for (index j = 0; j < i; j++) {
-                result.h(i, j) = result.h(j, i);
-            }
-        }
+        backward_to(xs, result.g(), result.h(), true);
 
         return result;
     }
