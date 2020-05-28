@@ -8,7 +8,7 @@ from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
 
-HYPERJET_VERSION = '0.30.0'
+HYPERJET_VERSION = '0.31.0'
 
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
