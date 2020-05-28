@@ -405,3 +405,15 @@ def test_repr():
 
     assert_equal(str(a), "4j")
 
+
+def test_backward():
+    f = hj.Jet(f=284578770, g=[1767570, 428099])
+
+    xs = [
+        hj.Jet(f=161, g=[44, 7, 49]),
+        hj.Jet(f=1329, g=[378, 3, 1325]),
+    ]
+
+    r = f.backward(xs)
+
+    assert_almost_equal(r.g, [239594502, 13657287, 653842105])
