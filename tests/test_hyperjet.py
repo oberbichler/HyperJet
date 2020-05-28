@@ -6,8 +6,9 @@ import pytest
 from numpy.testing import assert_equal, assert_array_almost_equal, assert_almost_equal
 from math import sqrt, cos, sin, tan, acos, asin, atan, pi
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
+
     pytest.main(sys.argv)
 
 
@@ -16,16 +17,20 @@ def sample():
     a = 3
     b = 5
 
-    u = hj.HyperJet(75, [b**2, 2*a*b], [[0, 2*b], [2*b, 2*a]])
-    v = hj.HyperJet(225, [2*a*b**2, 2*a**2*b], [[2*b**2, 4*a*b], [4*a*b, 2*a**2]])
+    u = hj.HyperJet(75, [b ** 2, 2 * a * b], [[0, 2 * b], [2 * b, 2 * a]])
+    v = hj.HyperJet(
+        225,
+        [2 * a * b ** 2, 2 * a ** 2 * b],
+        [[2 * b ** 2, 4 * a * b], [4 * a * b, 2 * a ** 2]],
+    )
 
     return u, v
 
 
 @pytest.fixture
 def sample_trig():
-    u = hj.HyperJet(1/2, [1/6, 1/5], [[0, 1/15], [1/15, 1/25]])
-    v = hj.HyperJet(-1/4, [-1/6, -1/10], [[-1/18, -1/15], [-1/15, -1/50]])
+    u = hj.HyperJet(1 / 2, [1 / 6, 1 / 5], [[0, 1 / 15], [1 / 15, 1 / 25]])
+    v = hj.HyperJet(-1 / 4, [-1 / 6, -1 / 10], [[-1 / 18, -1 / 15], [-1 / 15, -1 / 50]])
 
     return u, v
 
@@ -49,12 +54,12 @@ def test_getter_and_setter():
     with pytest.raises(RuntimeError) as ex:
         u.g = [1, 2, 3]
 
-    assert_equal('Invalid shape!', str(ex.value))
+    assert_equal("Invalid shape!", str(ex.value))
 
     with pytest.raises(RuntimeError) as ex:
         u.h = [[1, 2, 3], [1, 2, 3]]
 
-    assert_equal('Invalid shape!', str(ex.value))
+    assert_equal("Invalid shape!", str(ex.value))
 
 
 def test_add(sample):
@@ -80,63 +85,172 @@ def test_mul(sample):
 
 def test_div(sample):
     u, v = sample
-    check(u / v, 1/3, [-1/9, 0], [[2/27, 0], [0, 0]])
-    check(3 / u, 1/25, [-1/75, -2/125], [[2/225, 2/375], [2/375, 6/625]])
-    check(u / 3, 25, [25/3, 10], [[0, 10/3], [10/3, 2]])
+    check(u / v, 1 / 3, [-1 / 9, 0], [[2 / 27, 0], [0, 0]])
+    check(3 / u, 1 / 25, [-1 / 75, -2 / 125], [[2 / 225, 2 / 375], [2 / 375, 6 / 625]])
+    check(u / 3, 25, [25 / 3, 10], [[0, 10 / 3], [10 / 3, 2]])
 
 
 def test_sqrt(sample):
     u, v = sample
-    check(u.sqrt(), 5*sqrt(3), [5*sqrt(3)/6, sqrt(3)], [[-5*sqrt(3)/36, sqrt(3)/6], [sqrt(3)/6, 0]])
+    check(
+        u.sqrt(),
+        5 * sqrt(3),
+        [5 * sqrt(3) / 6, sqrt(3)],
+        [[-5 * sqrt(3) / 36, sqrt(3) / 6], [sqrt(3) / 6, 0]],
+    )
     check(v.sqrt(), 15, [5, 3], [[0, 1], [1, 0]])
 
 
 def test_cos(sample):
     u, v = sample
-    check(u.cos(), cos(75), [-25*sin(75), -30*sin(75)], [[-625*cos(75), -750*cos(75) - 10*sin(75)], [-750*cos(75) - 10*sin(75), -900*cos(75) - 6*sin(75)]])
-    check(v.cos(), cos(225), [-150*sin(225), -90*sin(225)], [[-22500*cos(225) - 50*sin(225), -13500*cos(225) - 60*sin(225)], [-13500*cos(225) - 60*sin(225), -8100*cos(225) - 18*sin(225)]])
+    check(
+        u.cos(),
+        cos(75),
+        [-25 * sin(75), -30 * sin(75)],
+        [
+            [-625 * cos(75), -750 * cos(75) - 10 * sin(75)],
+            [-750 * cos(75) - 10 * sin(75), -900 * cos(75) - 6 * sin(75)],
+        ],
+    )
+    check(
+        v.cos(),
+        cos(225),
+        [-150 * sin(225), -90 * sin(225)],
+        [
+            [-22500 * cos(225) - 50 * sin(225), -13500 * cos(225) - 60 * sin(225)],
+            [-13500 * cos(225) - 60 * sin(225), -8100 * cos(225) - 18 * sin(225)],
+        ],
+    )
 
 
 def test_sin(sample):
     u, v = sample
-    check(u.sin(), sin(75), [25*cos(75), 30*cos(75)], [[-625*sin(75), 10*cos(75) - 750*sin(75)], [10*cos(75) - 750*sin(75), 6*cos(75) - 900*sin(75)]])
-    check(v.sin(), sin(225), [150*cos(225), 90*cos(225)], [[50*cos(225) - 22500*sin(225), 60*cos(225) - 13500*sin(225)], [60*cos(225) - 13500*sin(225), 18*cos(225) - 8100*sin(225)]])
+    check(
+        u.sin(),
+        sin(75),
+        [25 * cos(75), 30 * cos(75)],
+        [
+            [-625 * sin(75), 10 * cos(75) - 750 * sin(75)],
+            [10 * cos(75) - 750 * sin(75), 6 * cos(75) - 900 * sin(75)],
+        ],
+    )
+    check(
+        v.sin(),
+        sin(225),
+        [150 * cos(225), 90 * cos(225)],
+        [
+            [50 * cos(225) - 22500 * sin(225), 60 * cos(225) - 13500 * sin(225)],
+            [60 * cos(225) - 13500 * sin(225), 18 * cos(225) - 8100 * sin(225)],
+        ],
+    )
 
 
 def test_tan(sample):
     u, v = sample
-    check(u.tan(), tan(75), [25*tan(75)**2 + 25, 30*tan(75)**2 + 30], [[1250*(tan(75)**2 + 1)*tan(75), 10*(150*tan(75) + 1)*(tan(75)**2 + 1)], [10*(150*tan(75) + 1)*(tan(75)**2 + 1), 6*(300*tan(75) + 1)*(tan(75)**2 + 1)]])
-    check(v.tan(), tan(225), [150 + 150*tan(225)**2, 90 + 90*tan(225)**2], [[50*(1 + tan(225)**2)*(900*tan(225) + 1), 60*(1 + tan(225)**2)*(450*tan(225) + 1)], [60*(1 + tan(225)**2)*(450*tan(225) + 1), 18*(1 + tan(225)**2)*(900*tan(225) + 1)]])
+    check(
+        u.tan(),
+        tan(75),
+        [25 * tan(75) ** 2 + 25, 30 * tan(75) ** 2 + 30],
+        [
+            [
+                1250 * (tan(75) ** 2 + 1) * tan(75),
+                10 * (150 * tan(75) + 1) * (tan(75) ** 2 + 1),
+            ],
+            [
+                10 * (150 * tan(75) + 1) * (tan(75) ** 2 + 1),
+                6 * (300 * tan(75) + 1) * (tan(75) ** 2 + 1),
+            ],
+        ],
+    )
+    check(
+        v.tan(),
+        tan(225),
+        [150 + 150 * tan(225) ** 2, 90 + 90 * tan(225) ** 2],
+        [
+            [
+                50 * (1 + tan(225) ** 2) * (900 * tan(225) + 1),
+                60 * (1 + tan(225) ** 2) * (450 * tan(225) + 1),
+            ],
+            [
+                60 * (1 + tan(225) ** 2) * (450 * tan(225) + 1),
+                18 * (1 + tan(225) ** 2) * (900 * tan(225) + 1),
+            ],
+        ],
+    )
 
 
 def test_acos(sample_trig):
     u, v = sample_trig
-    check(u.acos(), pi/3, [-sqrt(3)/9, -2*sqrt(3)/15], [[-sqrt(3)/81, -8*sqrt(3)/135], [-8*sqrt(3)/135, -2*sqrt(3)/45]])
-    check(v.acos(), acos(-1/4), [2*sqrt(15)/45, 2*sqrt(15)/75], [[34*sqrt(15)/2025, 64*sqrt(15)/3375], [64*sqrt(15)/3375, 34*sqrt(15)/5625]])
+    check(
+        u.acos(),
+        pi / 3,
+        [-sqrt(3) / 9, -2 * sqrt(3) / 15],
+        [[-sqrt(3) / 81, -8 * sqrt(3) / 135], [-8 * sqrt(3) / 135, -2 * sqrt(3) / 45]],
+    )
+    check(
+        v.acos(),
+        acos(-1 / 4),
+        [2 * sqrt(15) / 45, 2 * sqrt(15) / 75],
+        [
+            [34 * sqrt(15) / 2025, 64 * sqrt(15) / 3375],
+            [64 * sqrt(15) / 3375, 34 * sqrt(15) / 5625],
+        ],
+    )
 
 
 def test_asin(sample_trig):
     u, v = sample_trig
-    check(u.atan(), atan(1/2), [2/15, 4/25], [[-4/225, 4/125], [4/125, 4/625]])
-    check(v.atan(), -atan(1/4), [-8/51, -8/85], [[-104/2601, -16/289], [-16/289, -104/7225]])
+    check(
+        u.atan(),
+        atan(1 / 2),
+        [2 / 15, 4 / 25],
+        [[-4 / 225, 4 / 125], [4 / 125, 4 / 625]],
+    )
+    check(
+        v.atan(),
+        -atan(1 / 4),
+        [-8 / 51, -8 / 85],
+        [[-104 / 2601, -16 / 289], [-16 / 289, -104 / 7225]],
+    )
 
 
 def test_atan(sample):
     u, v = sample
-    check(u.atan(), atan(75), [25/5626, 15/2813], [[-46875/15825938, -14060/7912969], [-14060/7912969, -25311/7912969]])
-    check(v.atan(), atan(225), [75/25313, 45/25313], [[-1898425/640747969, -759360/640747969], [-759360/640747969, -683433/640747969]])
+    check(
+        u.atan(),
+        atan(75),
+        [25 / 5626, 15 / 2813],
+        [[-46875 / 15825938, -14060 / 7912969], [-14060 / 7912969, -25311 / 7912969]],
+    )
+    check(
+        v.atan(),
+        atan(225),
+        [75 / 25313, 45 / 25313],
+        [
+            [-1898425 / 640747969, -759360 / 640747969],
+            [-759360 / 640747969, -683433 / 640747969],
+        ],
+    )
 
 
 def test_atan2(sample):
     u, v = sample
-    check(hj.HyperJet.atan2(u, v), atan(1/3), [-1/10, 0], [[3/50, 0], [0, 0]])
-    check(hj.HyperJet.atan2(v, u), atan(3), [1/10, 0], [[-3/50, 0], [0, 0]])
+    check(hj.HyperJet.atan2(u, v), atan(1 / 3), [-1 / 10, 0], [[3 / 50, 0], [0, 0]])
+    check(hj.HyperJet.atan2(v, u), atan(3), [1 / 10, 0], [[-3 / 50, 0], [0, 0]])
 
 
 def test_pow(sample):
     u, v = sample
-    check(u**3, 421875, [421875, 506250], [[281250, 506250], [506250, 506250]])
-    check(v**(-1/3), 15**(1/3)/15, [-2*15**(1/3)/135, -2*15**(1/3)/225], [[2*15**(1/3)/243, 4*15**(1/3)/2025], [4*15**(1/3)/2025, 2*15**(1/3)/675]])
+    check(u ** 3, 421875, [421875, 506250], [[281250, 506250], [506250, 506250]])
+    check(
+        v ** (-1 / 3),
+        15 ** (1 / 3) / 15,
+        [-2 * 15 ** (1 / 3) / 135, -2 * 15 ** (1 / 3) / 225],
+        [
+            [2 * 15 ** (1 / 3) / 243, 4 * 15 ** (1 / 3) / 2025],
+            [4 * 15 ** (1 / 3) / 2025, 2 * 15 ** (1 / 3) / 675],
+        ],
+    )
 
 
 def test_equal_than():
@@ -229,7 +343,9 @@ def test_enlarge():
     assert_equal(len(b), 4)
     assert_equal(b.f, 7)
     assert_array_almost_equal(b.g, [0, 1, 2, 0])
-    assert_array_almost_equal(b.h, [[0, 0, 0, 0], [0, 1, 2, 0], [0, 3, 4, 0], [0, 0, 0, 0]])
+    assert_array_almost_equal(
+        b.h, [[0, 0, 0, 0], [0, 1, 2, 0], [0, 3, 4, 0], [0, 0, 0, 0]]
+    )
 
 
 def test_pickle():
@@ -296,19 +412,22 @@ def test_cast_throws():
     with pytest.raises(TypeError) as ex:
         float(hj.HyperJet(f=3))
 
-    assert_equal('float() argument must be a string or a number, not \'hyperjet.HyperJet\'', str(ex.value))
+    assert_equal(
+        "float() argument must be a string or a number, not 'hyperjet.HyperJet'",
+        str(ex.value),
+    )
 
 
 def test_throws_when_dimensions_dont_match():
     with pytest.raises(RuntimeError) as ex:
         hj.HyperJet(1, [1, 2], [[1, 2, 3], [4, 5, 6]])
 
-    assert_equal('Invalid shape!', str(ex.value))
+    assert_equal("Invalid shape!", str(ex.value))
 
     with pytest.raises(RuntimeError) as ex:
         hj.HyperJet(1, [1, 2, 3], [[1, 2], [3, 4]])
 
-    assert_equal('Invalid shape!', str(ex.value))
+    assert_equal("Invalid shape!", str(ex.value))
 
     lhs = hj.HyperJet(2, [1, 2])
     rhs = hj.HyperJet(3, [1, 2, 3])
@@ -316,79 +435,80 @@ def test_throws_when_dimensions_dont_match():
     with pytest.raises(RuntimeError) as ex:
         lhs + rhs
 
-    assert_equal('Caught an unknown exception!', str(ex.value))
+    assert_equal("Caught an unknown exception!", str(ex.value))
 
     with pytest.raises(RuntimeError) as ex:
         lhs - rhs
 
-    assert_equal('Caught an unknown exception!', str(ex.value))
+    assert_equal("Caught an unknown exception!", str(ex.value))
 
     with pytest.raises(RuntimeError) as ex:
         lhs * rhs
 
-    assert_equal('Caught an unknown exception!', str(ex.value))
+    assert_equal("Caught an unknown exception!", str(ex.value))
 
     with pytest.raises(RuntimeError) as ex:
         lhs / rhs
 
-    assert_equal('Caught an unknown exception!', str(ex.value))
+    assert_equal("Caught an unknown exception!", str(ex.value))
 
     with pytest.raises(RuntimeError) as ex:
         lhs += rhs
 
-    assert_equal('Caught an unknown exception!', str(ex.value))
+    assert_equal("Caught an unknown exception!", str(ex.value))
 
     with pytest.raises(RuntimeError) as ex:
         lhs -= rhs
 
-    assert_equal('Caught an unknown exception!', str(ex.value))
+    assert_equal("Caught an unknown exception!", str(ex.value))
 
     with pytest.raises(RuntimeError) as ex:
         lhs *= rhs
 
-    assert_equal('Caught an unknown exception!', str(ex.value))
+    assert_equal("Caught an unknown exception!", str(ex.value))
 
     with pytest.raises(RuntimeError) as ex:
         lhs /= rhs
 
-    assert_equal('Caught an unknown exception!', str(ex.value))
+    assert_equal("Caught an unknown exception!", str(ex.value))
 
     with pytest.raises(RuntimeError) as ex:
         hj.HyperJet.atan2(lhs, rhs)
 
-    assert_equal('Caught an unknown exception!', str(ex.value))
+    assert_equal("Caught an unknown exception!", str(ex.value))
 
     with pytest.raises(RuntimeError) as ex:
         lhs == rhs
 
-    assert_equal('Caught an unknown exception!', str(ex.value))
+    assert_equal("Caught an unknown exception!", str(ex.value))
 
     with pytest.raises(RuntimeError) as ex:
         lhs != rhs
 
-    assert_equal('Caught an unknown exception!', str(ex.value))
+    assert_equal("Caught an unknown exception!", str(ex.value))
 
     with pytest.raises(RuntimeError) as ex:
         lhs < rhs
 
-    assert_equal('Caught an unknown exception!', str(ex.value))
+    assert_equal("Caught an unknown exception!", str(ex.value))
 
     with pytest.raises(RuntimeError) as ex:
         lhs > rhs
 
-    assert_equal('Caught an unknown exception!', str(ex.value))
+    assert_equal("Caught an unknown exception!", str(ex.value))
 
     with pytest.raises(RuntimeError) as ex:
         lhs <= rhs
 
-    assert_equal('Caught an unknown exception!', str(ex.value))
+    assert_equal("Caught an unknown exception!", str(ex.value))
 
     with pytest.raises(RuntimeError) as ex:
         lhs >= rhs
 
-    assert_equal('Caught an unknown exception!', str(ex.value))
+    assert_equal("Caught an unknown exception!", str(ex.value))
 
 
 def test_repr():
     a = hj.HyperJet(f=4)
-    assert(str(a) == '4hj')
+    assert str(a) == "4hj"
+
