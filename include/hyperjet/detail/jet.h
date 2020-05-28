@@ -193,7 +193,7 @@ public: // methods
     {
         const index size = xs[0].size();
 
-        auto result = HyperJet<TScalar, Dynamic>::zero(size);
+        auto result = Jet<TScalar, Dynamic>::zero(size);
 
         for (index i = 0; i < size; i++) {
             for (index r = 0; r < this->size(); r++) {
