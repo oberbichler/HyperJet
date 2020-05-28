@@ -25,6 +25,6 @@ PYBIND11_MODULE(hyperjet, m) {
     m.attr("USE_BLAS") = false;
     #endif // EIGEN_USE_BLAS
 
-    hyperjet::Jet<double, -1>::register_python(m, "Jet");
-    hyperjet::HyperJet<double, -1>::register_python(m, "HyperJet");
+    hyperjet::Jet<double, hyperjet::Dynamic>::register_python(m, "Jet");
+    hyperjet::HyperJet<double, hyperjet::Dynamic>::register_python(m, "HyperJet");
 }

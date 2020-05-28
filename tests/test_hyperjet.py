@@ -1,6 +1,5 @@
 import hyperjet as hj
 import numpy as np
-
 import pytest
 
 from numpy.testing import assert_equal, assert_array_almost_equal, assert_almost_equal
@@ -512,3 +511,33 @@ def test_repr():
     a = hj.HyperJet(f=4)
     assert str(a) == "4hj"
 
+
+def test_backward():
+    f = hj.HyperJet(f=284578770, g=[1767570, 428099], h=[[0, 2659], [2659, 322]])
+
+    xs = [
+        hj.HyperJet(f=161, g=[44, 7, 49], h=[[6, 1, 14], [1, 0, 0], [14, 0, 0]]),
+        hj.HyperJet(f=1329, g=[378, 3, 1325], h=[[54, 0, 378], [0, 0, 1], [378, 1, 882]]),
+    ]
+
+    r = f.backward(xs)
+
+    assert_almost_equal(r.g, [239594502, 13657287, 653842105])
+    assert_almost_equal(r.h, [[168180390, 9519420, 552110800], [9519420, 114576, 26761147], [552110800, 26761147, 1288165718]])
+
+
+def test_backward_to():
+    f = hj.HyperJet(f=284578770, g=[1767570, 428099], h=[[0, 2659], [2659, 322]])
+
+    xs = [
+        hj.HyperJet(f=161, g=[44, 7, 49], h=[[6, 1, 14], [1, 0, 0], [14, 0, 0]]),
+        hj.HyperJet(f=1329, g=[378, 3, 1325], h=[[54, 0, 378], [0, 0, 1], [378, 1, 882]]),
+    ]
+
+    g = np.zeros(3)
+    h = np.zeros((3, 3))
+
+    f.backward_to(xs, g, h, False)
+
+    assert_almost_equal(g, [239594502, 13657287, 653842105])
+    assert_almost_equal(h, [[168180390, 9519420, 552110800], [0, 114576, 26761147], [0, 0, 1288165718]])

@@ -189,6 +189,29 @@ public: // methods
         return result;
     }
 
+    auto backward(const std::vector<Jet<TScalar, Dynamic>>& xs) const
+    {
+        const index size = xs[0].size();
+
+        auto result = Jet<TScalar, Dynamic>::zero(size);
+
+        backward_to(xs, result.g());
+
+        return result;
+    }
+
+    void backward_to(const std::vector<Jet<TScalar, Dynamic>>& xs, Eigen::Ref<Eigen::VectorXd> g) const
+    {
+        const index size = g.size();
+
+        for (index i = 0; i < size; i++) {
+            for (index r = 0; r < this->size(); r++) {
+                assert(xs[r].size() == size);
+                g(i) += this->g(r) * xs[r].g(i);
+            }
+        }
+    }
+
     std::string to_string() const
     {
         std::stringstream ss;
@@ -693,6 +716,8 @@ public: // python
             .def("arctan2", &Type::atan2)
             .def("asin", &Type::asin)
             .def("atan", &Type::atan)
+            .def("backward", &Type::backward, "xs"_a)
+            .def("backward_to", &Type::backward_to, "xs"_a, "g"_a)
             .def("cos", &Type::cos)
             .def("enlarge", py::overload_cast<index, index>(&Type::enlarge, py::const_), "left"_a = 0, "right"_a = 0)
             .def("sin", &Type::sin)
