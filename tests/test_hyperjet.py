@@ -315,6 +315,11 @@ class TestHyperJet(unittest.TestCase):
         with self.assertRaises(RuntimeError) as _:
             lhs >= rhs
 
+    def test_repr(self):
+        a = HyperJet(f=4)
+        s = str(a)
+        assert(s == '4hj')
+
 
 if __name__ == '__main__':
     unittest.main()

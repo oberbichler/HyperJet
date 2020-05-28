@@ -249,6 +249,11 @@ class TestJet(unittest.TestCase):
     def test_jet_cast_throws(self):
         self.assertRaises(TypeError, lambda: float(Jet(size=3)))
 
+    def test_repr(self):
+        a = Jet(f=4)
+        s = str(a)
+        assert(s == '4j')
+
 
 if __name__ == '__main__':
     unittest.main()
