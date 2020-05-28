@@ -299,6 +299,44 @@ public: // methods
         }
     }
 
+    auto forward(const std::vector<HyperJet<TScalar, Dynamic>>& xs) const
+    {
+        const index size = xs[0].size();
+
+        auto result = HyperJet<TScalar, Dynamic>::zero(size);
+
+        forward_to(xs, result.g(), result.h(), true);
+
+        return result;
+    }
+
+    void forward_to(const std::vector<HyperJet<TScalar, Dynamic>>& xs, Eigen::Ref<Eigen::VectorXd> g, Eigen::Ref<Eigen::MatrixXd> h, const bool full) const
+    {
+        const index size = g.size();
+
+        for (index i = 0; i < size; i++) {
+            g(i) += xs[i].g().dot(this->g());
+
+            for (index j = i; j < size; j++) {
+                for (index r = 0; r < this->size(); r++) {
+                    for (index s = 0; s < this->size(); s++) {
+                        h(i, j) += this->g(r) * xs[i].h(r, s) + this->h(r, s) * xs[i].g(r) * xs[j].g(r);
+                    }
+                }
+            }
+        }
+
+        if (!full) {
+            return;
+        }
+
+        for (index i = 0; i < size; i++) {
+            for (index j = 0; j < i; j++) {
+                h(i, j) = h(j, i);
+            }
+        }
+    }
+
     std::string to_string() const
     {
         std::stringstream ss;
@@ -841,6 +879,8 @@ public: // python
             .def("backward_to", &Type::backward_to, "xs"_a, "g"_a, "h"_a, "full"_a=true)
             .def("cos", &Type::cos)
             .def("enlarge", py::overload_cast<index, index>(&Type::enlarge, py::const_), "left"_a = 0, "right"_a = 0)
+            .def("forward", &Type::forward, "xs"_a)
+            .def("forward_to", &Type::forward_to, "xs"_a, "g"_a, "h"_a, "full"_a=true)
             .def("sin", &Type::sin)
             .def("sqrt", &Type::sqrt)
             .def("tan", &Type::tan)

@@ -212,6 +212,26 @@ public: // methods
         }
     }
 
+    auto forward(const std::vector<Jet<TScalar, Dynamic>>& xs) const
+    {
+        const index size = xs[0].size();
+
+        auto result = Jet<TScalar, Dynamic>::zero(size);
+
+        forward_to(xs, result.g());
+
+        return result;
+    }
+
+    void forward_to(const std::vector<Jet<TScalar, Dynamic>>& xs, Eigen::Ref<Eigen::VectorXd> g) const
+    {
+        const index size = g.size();
+
+        for (index i = 0; i < size; i++) {
+            g(i) = xs[i].g().dot(this->g());
+        }
+    }
+
     std::string to_string() const
     {
         std::stringstream ss;
@@ -720,6 +740,8 @@ public: // python
             .def("backward_to", &Type::backward_to, "xs"_a, "g"_a)
             .def("cos", &Type::cos)
             .def("enlarge", py::overload_cast<index, index>(&Type::enlarge, py::const_), "left"_a = 0, "right"_a = 0)
+            .def("forward", &Type::forward, "xs"_a)
+            .def("forward_to", &Type::forward_to, "xs"_a, "g"_a)
             .def("sin", &Type::sin)
             .def("sqrt", &Type::sqrt)
             .def("tan", &Type::tan)
