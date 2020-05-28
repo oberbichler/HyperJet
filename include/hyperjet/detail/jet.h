@@ -189,10 +189,17 @@ public: // methods
         return result;
     }
 
+    std::string to_string() const
+    {
+        std::stringstream ss;
+        ss << *this;
+        return ss.str();
+    }
+
 public: // operators
     friend std::ostream& operator<<(std::ostream& out, const Jet<TScalar, TSize>& value)
     {
-        out << "Jet<" << value.m_f << ">";
+        out << value.m_f << "j";
         return out;
     }
 
@@ -677,7 +684,7 @@ public: // python
             .def("__len__", &Type::size)
             .def("__pow__", &Type::pow<double>)
             .def("__pow__", &Type::pow<index>)
-            // .def("__repr__", &Type::to_string)
+            .def("__repr__", &Type::to_string)
             .def("abs", &Type::abs)
             .def("acos", &Type::acos)
             .def("arccos", &Type::acos)
