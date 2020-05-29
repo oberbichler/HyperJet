@@ -301,7 +301,7 @@ public: // methods
 
     auto forward(const std::vector<HyperJet<TScalar, Dynamic>>& xs) const
     {
-        const index size = xs[0].size();
+        const index size = length(xs);
 
         auto result = HyperJet<TScalar, Dynamic>::zero(size);
 
