@@ -261,6 +261,8 @@ public: // methods
         const index size = xs[0].size();
 
         auto result = HyperJet<TScalar, Dynamic>::zero(size);
+        
+        result.f = f();
 
         backward_to(xs, result.g(), result.h(), true);
 
@@ -304,7 +306,9 @@ public: // methods
         const index size = length(xs);
 
         auto result = HyperJet<TScalar, Dynamic>::zero(size);
-
+        
+        result.f = f();
+        
         forward_to(xs, result.g(), result.h(), true);
 
         return result;
