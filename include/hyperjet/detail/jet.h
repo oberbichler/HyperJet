@@ -195,7 +195,7 @@ public: // methods
 
         auto result = Jet<TScalar, Dynamic>::zero(size);
 
-        result.f = f();
+        result.f() = f();
         
         backward_to(xs, result.g());
 
@@ -220,7 +220,7 @@ public: // methods
 
         auto result = Jet<TScalar, Dynamic>::zero(size);
         
-        result.f = f();
+        result.f() = f();
 
         forward_to(xs, result.g());
 
