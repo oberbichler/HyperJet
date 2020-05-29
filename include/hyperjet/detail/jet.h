@@ -214,7 +214,7 @@ public: // methods
 
     auto forward(const std::vector<Jet<TScalar, Dynamic>>& xs) const
     {
-        const index size = xs[0].size();
+        const index size = length(xs);
 
         auto result = Jet<TScalar, Dynamic>::zero(size);
 
