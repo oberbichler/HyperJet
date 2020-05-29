@@ -262,7 +262,7 @@ public: // methods
 
         auto result = HyperJet<TScalar, Dynamic>::zero(size);
         
-        result.f = f();
+        result.f() = f();
 
         backward_to(xs, result.g(), result.h(), true);
 
@@ -307,7 +307,7 @@ public: // methods
 
         auto result = HyperJet<TScalar, Dynamic>::zero(size);
         
-        result.f = f();
+        result.f() = f();
         
         forward_to(xs, result.g(), result.h(), true);
 
