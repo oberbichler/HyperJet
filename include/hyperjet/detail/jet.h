@@ -195,6 +195,8 @@ public: // methods
 
         auto result = Jet<TScalar, Dynamic>::zero(size);
 
+        result.f = f();
+        
         backward_to(xs, result.g());
 
         return result;
@@ -217,6 +219,8 @@ public: // methods
         const index size = length(xs);
 
         auto result = Jet<TScalar, Dynamic>::zero(size);
+        
+        result.f = f();
 
         forward_to(xs, result.g());
 
