@@ -11,7 +11,7 @@
 PYBIND11_MODULE(hyperjet, m) {
     m.doc() = "HyperJet by Thomas Oberbichler";
     m.attr("__author__") = "Thomas Oberbichler";
-    m.attr("__copyright__") = "Copyright (c) 2019, Thomas Oberbichler";
+    m.attr("__copyright__") = "Copyright (c) 2019-2020, Thomas Oberbichler";
     m.attr("__version__") = HYPERJET_VERSION;
     m.attr("__email__") = "thomas.oberbichler@gmail.com";
     m.attr("__status__") = "Development";
@@ -25,6 +25,12 @@ PYBIND11_MODULE(hyperjet, m) {
     m.attr("USE_BLAS") = false;
     #endif // EIGEN_USE_BLAS
 
-    hyperjet::Jet<double, hyperjet::Dynamic>::register_python(m, "Jet");
-    hyperjet::HyperJet<double, hyperjet::Dynamic>::register_python(m, "HyperJet");
+    namespace hj = hyperjet;
+
+    hj::Jet<double, hj::Dynamic>::register_python(m, "Jet");
+    hj::HyperJet<double, hj::Dynamic>::register_python(m, "HyperJet");
+
+    m.def("explode", py::overload_cast<const double, Eigen::Ref<Eigen::Matrix<double, 1, hj::Dynamic>>, Eigen::Ref<Eigen::Matrix<double, hj::Dynamic, hj::Dynamic>>>(&hj::explode<double, hj::Dynamic>), "value"_a, "g"_a, "h"_a);
+    m.def("explode", py::overload_cast<const hj::Jet<double, hj::Dynamic>&, Eigen::Ref<Eigen::Matrix<double, 1, hj::Dynamic>>, Eigen::Ref<Eigen::Matrix<double, hj::Dynamic, hj::Dynamic>>>(&hj::explode<double, hj::Dynamic>), "value"_a, "g"_a, "h"_a);
+    m.def("explode", py::overload_cast<const hj::HyperJet<double, hj::Dynamic>&, Eigen::Ref<Eigen::Matrix<double, 1, hj::Dynamic>>, Eigen::Ref<Eigen::Matrix<double, hj::Dynamic, hj::Dynamic>>>(&hj::explode<double, hj::Dynamic>), "value"_a, "g"_a, "h"_a);
 }
