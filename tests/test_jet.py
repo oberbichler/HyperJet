@@ -432,3 +432,42 @@ def test_backward_to():
     f.backward_to(xs, g)
 
     assert_almost_equal(g, [239594502, 13657287, 653842105])
+
+
+def test_explode_f():
+    value = hj.Jet(f=284578770, g=[1767570, 428099])
+
+    g = np.zeros(0)
+    h = np.zeros((0, 0))
+
+    f = hj.explode(value, g, h)
+
+    assert_almost_equal(f, 284578770)
+    assert_almost_equal(g, np.zeros(0))
+    assert_almost_equal(h, np.zeros((0, 0)))
+
+
+def test_explode_f_and_g():
+    value = hj.Jet(f=284578770, g=[1767570, 428099])
+
+    g = np.zeros(2)
+    h = np.zeros((0, 0))
+
+    f = hj.explode(value, g, h)
+
+    assert_almost_equal(f, 284578770)
+    assert_almost_equal(g, [1767570, 428099])
+    assert_almost_equal(h, np.zeros((0, 0)))
+
+
+def test_explode_f_g_and_h():
+    value = hj.Jet(f=284578770, g=[1767570, 428099])
+
+    g = np.zeros(2)
+    h = np.zeros((2, 2))
+
+    f = hj.explode(value, g, h)
+
+    assert_almost_equal(f, 284578770)
+    assert_almost_equal(g, [1767570, 428099])
+    assert_almost_equal(h, np.zeros((2, 2)))

@@ -265,4 +265,34 @@ using Space2d14 = Space<2, double, 14>;
 using Space2d15 = Space<2, double, 15>;
 using Space2d16 = Space<2, double, 16>;
 
+template <typename TScalar, index TSize>
+TScalar explode(const TScalar value, Eigen::Ref<Eigen::Matrix<TScalar, 1, TSize>> g, Eigen::Ref<Eigen::Matrix<TScalar, TSize, TSize>> h)
+{
+    return value;
+}
+
+template <typename TScalar, index TSize>
+TScalar explode(const Jet<TScalar, TSize>& value, Eigen::Ref<Eigen::Matrix<TScalar, 1, TSize>> g, Eigen::Ref<Eigen::Matrix<TScalar, TSize, TSize>> h)
+{
+    if (g.size() != 0) {
+        g = value.g();
+    }
+
+    return value.f();
+}
+
+template <typename TScalar, index TSize>
+TScalar explode(const HyperJet<TScalar, TSize>& value, Eigen::Ref<Eigen::Matrix<TScalar, 1, TSize>> g, Eigen::Ref<Eigen::Matrix<TScalar, TSize, TSize>> h)
+{
+    if (g.size() != 0) {
+        g = value.g();
+    }
+
+    if (h.size() != 0) {
+        h = value.h();
+    }
+
+    return value.f();
+}
+
 } // namespace hyperjet
