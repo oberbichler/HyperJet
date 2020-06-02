@@ -11,7 +11,7 @@
 PYBIND11_MODULE(hyperjet, m) {
     m.doc() = "HyperJet by Thomas Oberbichler";
     m.attr("__author__") = "Thomas Oberbichler";
-    m.attr("__copyright__") = "Copyright (c) 2019, Thomas Oberbichler";
+    m.attr("__copyright__") = "Copyright (c) 2019-2020, Thomas Oberbichler";
     m.attr("__version__") = HYPERJET_VERSION;
     m.attr("__email__") = "thomas.oberbichler@gmail.com";
     m.attr("__status__") = "Development";
