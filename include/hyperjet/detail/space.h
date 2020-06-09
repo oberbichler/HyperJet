@@ -26,6 +26,13 @@ struct Space<0, TScalar, TSize> {
     template <index TRows, index TCols>
     using Matrix = Eigen::Matrix<Scalar, TRows, TCols>;
 
+    static Scalar empty()
+    {
+        static_assert(-1 <= TSize);
+
+        return Scalar();
+    }
+
     static Scalar constant(TScalar value)
     {
         static_assert(-1 <= TSize);
@@ -83,6 +90,13 @@ struct Space<1, TScalar, TSize> {
 
     template <index TRows, index TCols>
     using Matrix = Eigen::Matrix<Scalar, TRows, TCols>;
+
+    static Scalar empty()
+    {
+        static_assert(-1 <= TSize);
+
+        return Scalar::empty();
+    }
 
     static Scalar constant(TScalar value)
     {
@@ -149,6 +163,13 @@ struct Space<2, TScalar, TSize> {
 
     template <index TRows, index TCols>
     using Matrix = Eigen::Matrix<Scalar, TRows, TCols>;
+
+    static Scalar empty()
+    {
+        static_assert(-1 <= TSize);
+
+        return Scalar::empty();
+    }
 
     static Scalar constant(TScalar value)
     {
