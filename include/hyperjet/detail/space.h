@@ -26,6 +26,13 @@ struct Space<0, TScalar, TSize> {
     template <index TRows, index TCols>
     using Matrix = Eigen::Matrix<Scalar, TRows, TCols>;
 
+    static Scalar empty()
+    {
+        static_assert(-1 <= TSize);
+
+        return Scalar();
+    }
+
     static Scalar constant(TScalar value)
     {
         static_assert(-1 <= TSize);
@@ -38,6 +45,20 @@ struct Space<0, TScalar, TSize> {
         static_assert(-1 <= TSize);
 
         return value;
+    }
+
+    template <index TOffset, index TDerivedSize>
+    HYPERJET_INLINE static Eigen::Matrix<Scalar, 1, TDerivedSize> variables(Eigen::Matrix<TScalar, 1, TDerivedSize> value)
+    {
+        static_assert(-1 <= TSize);
+
+        Eigen::Matrix<Scalar, 1, TDerivedSize> result;
+
+        for (index i = 0; i < TDerivedSize; i++) {
+            result(i) = variable(TOffset + i, value(i));
+        }
+
+        return result;
     }
 
     static TScalar f(const Scalar& variable)
@@ -84,6 +105,13 @@ struct Space<1, TScalar, TSize> {
     template <index TRows, index TCols>
     using Matrix = Eigen::Matrix<Scalar, TRows, TCols>;
 
+    static Scalar empty()
+    {
+        static_assert(-1 <= TSize);
+
+        return Scalar::empty();
+    }
+
     static Scalar constant(TScalar value)
     {
         static_assert(-1 <= TSize);
@@ -97,6 +125,20 @@ struct Space<1, TScalar, TSize> {
 
         Scalar result(value);
         result.g(i) = 1.0;
+        return result;
+    }
+
+    template <index TOffset, index TDerivedSize>
+    HYPERJET_INLINE static Eigen::Matrix<Scalar, 1, TDerivedSize> variables(Eigen::Matrix<TScalar, 1, TDerivedSize> value)
+    {
+        static_assert(-1 <= TSize);
+
+        Eigen::Matrix<Scalar, 1, TDerivedSize> result;
+
+        for (index i = 0; i < TDerivedSize; i++) {
+            result(i) = variable(TOffset + i, value(i));
+        }
+
         return result;
     }
 
@@ -150,6 +192,13 @@ struct Space<2, TScalar, TSize> {
     template <index TRows, index TCols>
     using Matrix = Eigen::Matrix<Scalar, TRows, TCols>;
 
+    static Scalar empty()
+    {
+        static_assert(-1 <= TSize);
+
+        return Scalar::empty();
+    }
+
     static Scalar constant(TScalar value)
     {
         static_assert(-1 <= TSize);
@@ -163,6 +212,20 @@ struct Space<2, TScalar, TSize> {
 
         Scalar result(value);
         result.g(i) = 1.0;
+        return result;
+    }
+
+    template <index TOffset, index TDerivedSize>
+    HYPERJET_INLINE static Eigen::Matrix<Scalar, 1, TDerivedSize> variables(Eigen::Matrix<TScalar, 1, TDerivedSize> value)
+    {
+        static_assert(-1 <= TSize);
+
+        Eigen::Matrix<Scalar, 1, TDerivedSize> result;
+
+        for (index i = 0; i < TDerivedSize; i++) {
+            result(i) = variable(TOffset + i, value(i));
+        }
+
         return result;
     }
 
