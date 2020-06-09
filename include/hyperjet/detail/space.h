@@ -47,14 +47,14 @@ struct Space<0, TScalar, TSize> {
         return value;
     }
 
-    template <index TOffset, index TSize>
-    HYPERJET_INLINE static Eigen::Matrix<Scalar, 1, TSize> variables(Eigen::Matrix<TScalar, 1, TSize> value)
+    template <index TOffset, index TDerivedSize>
+    HYPERJET_INLINE static Eigen::Matrix<Scalar, 1, TDerivedSize> variables(Eigen::Matrix<TScalar, 1, TDerivedSize> value)
     {
         static_assert(-1 <= TSize);
 
-        Eigen::Matrix<Scalar, 1, TSize> result;
+        Eigen::Matrix<Scalar, 1, TDerivedSize> result;
 
-        for (index i = 0; i < TSize; i++) {
+        for (index i = 0; i < TDerivedSize; i++) {
             result(i) = variable(TOffset + i, value(i));
         }
 
@@ -128,14 +128,14 @@ struct Space<1, TScalar, TSize> {
         return result;
     }
 
-    template <index TOffset, index TSize>
-    HYPERJET_INLINE static Eigen::Matrix<Scalar, 1, TSize> variables(Eigen::Matrix<TScalar, 1, TSize> value)
+    template <index TOffset, index TDerivedSize>
+    HYPERJET_INLINE static Eigen::Matrix<Scalar, 1, TDerivedSize> variables(Eigen::Matrix<TScalar, 1, TDerivedSize> value)
     {
         static_assert(-1 <= TSize);
 
-        Eigen::Matrix<Scalar, 1, TSize> result;
+        Eigen::Matrix<Scalar, 1, TDerivedSize> result;
 
-        for (index i = 0; i < TSize; i++) {
+        for (index i = 0; i < TDerivedSize; i++) {
             result(i) = variable(TOffset + i, value(i));
         }
 
@@ -215,14 +215,14 @@ struct Space<2, TScalar, TSize> {
         return result;
     }
 
-    template <index TOffset, index TSize>
-    HYPERJET_INLINE static Eigen::Matrix<Scalar, 1, TSize> variables(Eigen::Matrix<TScalar, 1, TSize> value)
+    template <index TOffset, index TDerivedSize>
+    HYPERJET_INLINE static Eigen::Matrix<Scalar, 1, TDerivedSize> variables(Eigen::Matrix<TScalar, 1, TDerivedSize> value)
     {
         static_assert(-1 <= TSize);
 
-        Eigen::Matrix<Scalar, 1, TSize> result;
+        Eigen::Matrix<Scalar, 1, TDerivedSize> result;
 
-        for (index i = 0; i < TSize; i++) {
+        for (index i = 0; i < TDerivedSize; i++) {
             result(i) = variable(TOffset + i, value(i));
         }
 
