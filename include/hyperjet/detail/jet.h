@@ -50,7 +50,7 @@ public: // methods
     HYPERJET_INLINE static Type empty()
     {
         assert(TSize != -1);
-        return Type(Scalar(), Vector(TSize), Matrix(TSize, TSize));
+        return Type(Scalar(), Vector(TSize));
     }
 
     HYPERJET_INLINE static Type empty(const index size)
