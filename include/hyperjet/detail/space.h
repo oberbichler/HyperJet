@@ -47,6 +47,20 @@ struct Space<0, TScalar, TSize> {
         return value;
     }
 
+    template <index TOffset, index TSize>
+    HYPERJET_INLINE static Eigen::Matrix<Scalar, 1, TSize> variables(Eigen::Matrix<TScalar, 1, TSize> value)
+    {
+        static_assert(-1 <= TSize);
+
+        Eigen::Matrix<Scalar, 1, TSize> result;
+
+        for (index i = 0; i < TSize; i++) {
+            result(i) = variable(TOffset + i, value(i));
+        }
+
+        return result;
+    }
+
     static TScalar f(const Scalar& variable)
     {
         return variable;
@@ -111,6 +125,20 @@ struct Space<1, TScalar, TSize> {
 
         Scalar result(value);
         result.g(i) = 1.0;
+        return result;
+    }
+
+    template <index TOffset, index TSize>
+    HYPERJET_INLINE static Eigen::Matrix<Scalar, 1, TSize> variables(Eigen::Matrix<TScalar, 1, TSize> value)
+    {
+        static_assert(-1 <= TSize);
+
+        Eigen::Matrix<Scalar, 1, TSize> result;
+
+        for (index i = 0; i < TSize; i++) {
+            result(i) = variable(TOffset + i, value(i));
+        }
+
         return result;
     }
 
@@ -184,6 +212,20 @@ struct Space<2, TScalar, TSize> {
 
         Scalar result(value);
         result.g(i) = 1.0;
+        return result;
+    }
+
+    template <index TOffset, index TSize>
+    HYPERJET_INLINE static Eigen::Matrix<Scalar, 1, TSize> variables(Eigen::Matrix<TScalar, 1, TSize> value)
+    {
+        static_assert(-1 <= TSize);
+
+        Eigen::Matrix<Scalar, 1, TSize> result;
+
+        for (index i = 0; i < TSize; i++) {
+            result(i) = variable(TOffset + i, value(i));
+        }
+
         return result;
     }
 
