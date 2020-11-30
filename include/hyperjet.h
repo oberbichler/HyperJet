@@ -27,7 +27,7 @@ public:
     using Type = DDScalar<TScalar, TSize>;
     using Scalar = TScalar;
 
-    std::array<Scalar, (TSize + 1) * (TSize + 2)> m_data;
+    std::array<Scalar, (TSize + 1) * (TSize + 2) / 2> m_data;
 
     DDScalar()
     {
