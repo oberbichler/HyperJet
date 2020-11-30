@@ -26,4 +26,4 @@ jobs:
 
     - name: Test
       working-directory: ${{runner.workspace}}/build
-      run: ctest -C $BUILD_TYPE
+      run: .\bin\tests.exe
