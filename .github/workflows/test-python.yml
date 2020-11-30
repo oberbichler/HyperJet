@@ -13,9 +13,9 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
         python-version: [3.8]
-      include:
-        - python-version: 3.6
-          os: ubuntu-latest
+        include:
+          - python-version: 3.6
+            os: ubuntu-latest
 
     steps:
     - name: Checkout
