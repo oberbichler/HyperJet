@@ -59,10 +59,26 @@ TEST_CASE("Benchmarks") {
         return dd1 * dd2;
     };
 
+    BENCHMARK("S * DD") {
+        return 3.5 * dd1;
+    };
+
+    BENCHMARK("DD * S") {
+        return dd1 * 3.5;
+    };
+
     // --- div
 
     BENCHMARK("DD / DD") {
         return dd1 / dd2;
+    };
+
+    BENCHMARK("DD / S") {
+        return dd1 / 3.5;
+    };
+
+    BENCHMARK("S / DD") {
+        return 3.5 / dd1;
     };
 
     // --- pow
