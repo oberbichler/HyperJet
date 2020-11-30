@@ -238,7 +238,7 @@ public:
         Type result;
 
         for (index i = 0; i < length(result.m_data); i++) {
-            result.m_data[i] = a.m_data[i] * b;
+            result.m_data[i] = m_data[i] * b;
         }
 
         return result;
@@ -279,7 +279,7 @@ public:
 
     Type operator /(const Scalar b) const
     {
-        return 1 / b * a;
+        return 1 / b * (*this);
     }
 
     friend Type operator /(const Scalar a, const Type& b)
