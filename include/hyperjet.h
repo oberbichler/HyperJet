@@ -28,8 +28,9 @@ class DDScalar
 public:
     using Type = DDScalar<TScalar, TSize>;
     using Scalar = TScalar;
+    using Data = std::array<Scalar, (TSize + 1) * (TSize + 2) / 2>;
 
-    std::array<Scalar, (TSize + 1) * (TSize + 2) / 2> m_data;
+    Data m_data;
 
     DDScalar()
     {
@@ -43,6 +44,10 @@ public:
     DDScalar(std::initializer_list<TScalar> data)
     {
         std::copy(data.begin(), data.end(), m_data.begin());
+    }
+
+    DDScalar(const Data& data) : m_data(data)
+    {
     }
 
     static Type constant(const Scalar f)
