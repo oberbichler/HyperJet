@@ -600,6 +600,98 @@ public:
     {
         return m_data[0] < 0 ? -(*this) : *this;
     }
+
+    // comparison
+
+    bool operator==(const Type& b) const
+    {
+        return m_data[0] == b.m_data[0];
+    }
+
+    bool operator!=(const Type& b) const
+    {
+        return m_data[0] != b.m_data[0];
+    }
+
+    bool operator<(const Type& b) const
+    {
+        return m_data[0] < b.m_data[0];
+    }
+
+    bool operator>(const Type& b) const
+    {
+        return m_data[0] > b.m_data[0];
+    }
+
+    bool operator<=(const Type& b) const
+    {
+        return m_data[0] <= b.m_data[0];
+    }
+
+    bool operator>=(const Type& b) const
+    {
+        return m_data[0] >= b.m_data[0];
+    }
+
+    bool operator==(const Scalar b) const
+    {
+        return m_data[0] == b;
+    }
+
+    bool operator!=(const Scalar b) const
+    {
+        return m_data[0] != b;
+    }
+
+    bool operator<(const Scalar b) const
+    {
+        return m_data[0] < b;
+    }
+
+    bool operator>(const Scalar b) const
+    {
+        return m_data[0] > b;
+    }
+
+    bool operator<=(const Scalar b) const
+    {
+        return m_data[0] <= b;
+    }
+
+    bool operator>=(const Scalar b) const
+    {
+        return m_data[0] >= b;
+    }
+
+    friend bool operator==(const Scalar a, const Type& b)
+    {
+        return b.operator==(a);
+    }
+
+    friend bool operator!=(const Scalar a, const Type& b)
+    {
+        return b.operator!=(a);
+    }
+
+    friend bool operator<(const Scalar a, const Type& b)
+    {
+        return b.operator>(a);
+    }
+
+    friend bool operator>(const Scalar a, const Type& b)
+    {
+        return b.operator<(a);
+    }
+
+    friend bool operator<=(const Scalar a, const Type& b)
+    {
+        return b.operator>=(a);
+    }
+
+    friend bool operator>=(const Scalar a, const Type& b)
+    {
+        return b.operator<=(a);
+    }
 };
 
 // std::pow
