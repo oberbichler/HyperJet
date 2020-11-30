@@ -593,6 +593,13 @@ public:
 
         return result;
     }
+
+    // abs
+
+    Type abs() const
+    {
+        return m_data[0] < 0 ? -(*this) : *this;
+    }
 };
 
 // std::pow
