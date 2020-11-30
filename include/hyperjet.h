@@ -695,7 +695,7 @@ using std::atan2;
 template <typename TScalar, index TSize>
 DDScalar<TScalar, TSize> atan2(const DDScalar<TScalar, TSize>& a, const DDScalar<TScalar, TSize>& b)
 {
-    return a.atan2(b);
+    return DDScalar<TScalar, TSize>::atan2(a, b);
 }
 
 } // namespace hyperjet
