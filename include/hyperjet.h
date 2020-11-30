@@ -234,6 +234,22 @@ public:
         return result;
     }
 
+    Type& operator -=(const Type& b)
+    {
+        for (index i = 0; i < length(m_data); i++) {
+            m_data[i] -= b.m_data[i];
+        }
+
+        return *this;
+    }
+
+    Type& operator -=(const Scalar& b)
+    {
+        m_data[0] -= b;
+
+        return *this;
+    }
+
     // --- mul
 
     Type operator *(const Type& b) const
