@@ -564,30 +564,30 @@ public:
         return result;
     }
 
-    Type atan2(const Type& b) const
+    static Type atan2(const Type& a, const Type& b)
     {
         using std::atan2;
 
-        const double tmp = m_data[0] * m_data[0] + b.m_data[0] * b.m_data[0];
+        const double tmp = a.m_data[0] * a.m_data[0] + b.m_data[0] * b.m_data[0];
 
         const double d_a = b.m_data[0] / tmp;
-        const double d_b = -m_data[0] / tmp;
+        const double d_b = -a.m_data[0] / tmp;
         const double d_aa = d_b * d_a * 2; // = -d_bb
         const double d_ab = d_b * d_b - d_a * d_a;
 
         Type result;
 
-        result.m_data[0] = atan2(m_data[0], b.m_data[0]);
+        result.m_data[0] = atan2(a.m_data[0], b.m_data[0]);
 
         for (index i = 1; i < length(result.m_data); i++) {
-            result.m_data[i] = d_a * m_data[i] + d_b * b.m_data[i];
+            result.m_data[i] = d_a * a. m_data[i] + d_b * b.m_data[i];
         }
 
         auto* it = &result.m_data[1 + TSize];
 
         for (index i = 0; i < TSize; i++) {
             for (index j = i; j < TSize; j++) {
-                *it++ += d_aa * (m_data[1 + i] * m_data[1 + j] - b.m_data[1 + i] * b.m_data[1 + j]) + d_ab * (m_data[1 + i] * b.m_data[1 + j] + b.m_data[1 + i] * m_data[1 + j]);
+                *it++ += d_aa * (a.m_data[1 + i] * a.m_data[1 + j] - b.m_data[1 + i] * b.m_data[1 + j]) + d_ab * (a.m_data[1 + i] * b.m_data[1 + j] + b.m_data[1 + i] * a.m_data[1 + j]);
             }
         }
 
