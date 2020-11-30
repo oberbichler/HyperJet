@@ -3,6 +3,8 @@
 #include <cstddef> // ptrdiff_t
 #include <initializer_list> // initializer_list
 #include <ostream> // ostream
+#include <string> // string
+#include <sstream> // stringstream
 
 namespace hyperjet {
 
@@ -130,6 +132,15 @@ public:
     {
         out << value.m_data[0] << "hj";
         return out;
+    }
+
+    std::string to_string()
+    {
+        std::stringstream output;
+
+        output << *this;
+
+        return output.str();
     }
 
     // --- neg
