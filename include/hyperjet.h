@@ -50,6 +50,12 @@ public:
     {
     }
 
+    constexpr index size() const
+    {
+        // size = (std::sqrt(1 + 8 * length(m_data)) - 3) / 2;
+        return TSize;
+    }
+
     static Type constant(const Scalar f)
     {
         Type result;
