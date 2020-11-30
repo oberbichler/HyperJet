@@ -84,7 +84,7 @@ void register_ddscalar(pybind11::module& m, const std::string& name)
                     throw std::runtime_error("Invalid state!");
                 }
 
-                const auto data = tuple[0].cast<Type::Data>();
+                const auto data = tuple[0].cast<typename Type::Data>();
 
                 return Type(data);
             }))
