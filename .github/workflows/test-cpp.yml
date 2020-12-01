@@ -35,5 +35,12 @@ jobs:
       run: cmake --build . --config $BUILD_TYPE
 
     - name: Test
+      if: ${{ !startsWith(runner.os, 'Windows') }}
       working-directory: ${{runner.workspace}}/build
-      run: cmake -E execute_process tests
+      run: ./tests
+
+    - name: Test
+      if: startsWith(runner.os, 'Windows')
+      working-directory: ${{runner.workspace}}/build
+      run: ./tests.exe
+      shell: cmd
