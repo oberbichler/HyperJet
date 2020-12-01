@@ -303,6 +303,39 @@ public:
         return b * a;
     }
 
+    Type& operator *=(const Type& b)
+    {
+        const Data a_m_data = m_data;
+
+        const double d_a = b.m_data[0];
+        const double d_b = m_data[0];
+
+        m_data[0] *= b.m_data[0];
+
+        for (index i = 1; i < length(m_data); i++) {
+            m_data[i] = d_a * m_data[i] + d_b * b.m_data[i];
+        }
+
+        auto* it = &m_data[1 + TSize];
+
+        for (index i = 0; i < TSize; i++) {
+            for (index j = i; j < TSize; j++) {
+                *it++ += a_m_data[1 + i] * b.m_data[1 + j] + a_m_data[1 + j] * b.m_data[1 + i];
+            }
+        }
+
+        return *this;
+    }
+
+    Type& operator *=(const Scalar& b)
+    {
+        for (index i = 0; i < length(m_data); i++) {
+            m_data[i] = m_data[i] * b;
+        }
+
+        return *this;
+    }
+
     // --- div
 
     Type operator /(const Type& b) const
