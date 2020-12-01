@@ -23,13 +23,7 @@ jobs:
 
     - name: Create Build Environment
       shell: bash
-      run: mkdir ${{runner.workspace}}/build
-
-    - name: Echo
-      shell: bash
-      working-directory: ${{runner.workspace}}/build
-      run: |
-        echo $GITHUB_WORKSPACE
+      run: mkdir $GITHUB_WORKSPACE/build
 
     - name: Configure CMake
       shell: bash
