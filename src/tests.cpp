@@ -232,6 +232,22 @@ TEST_CASE("Div") {
     REQUIRE( r1.h(2, 2) ==  1.43750_a );
 }
 
+TEST_CASE("IncDiv") {
+    auto r1 = dd1;
+    r1 /= dd2;
+
+    REQUIRE( r1.f()     ==  0.75000_a );
+    REQUIRE( r1.g(0)    == -1.06250_a );
+    REQUIRE( r1.g(1)    ==  1.31250_a );
+    REQUIRE( r1.g(2)    ==  1.00000_a );
+    REQUIRE( r1.h(0, 0) ==  2.59375_a );
+    REQUIRE( r1.h(0, 1) == -2.28125_a );
+    REQUIRE( r1.h(0, 2) ==  0.12500_a );
+    REQUIRE( r1.h(1, 1) == -1.84375_a );
+    REQUIRE( r1.h(1, 2) ==  0.56250_a );
+    REQUIRE( r1.h(2, 2) ==  1.43750_a );
+}
+
 TEST_CASE("Pow") {
     using std::pow;
 
