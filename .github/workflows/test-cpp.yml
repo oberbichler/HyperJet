@@ -42,5 +42,5 @@ jobs:
     - name: Test
       if: startsWith(runner.os, 'Windows')
       working-directory: ${{runner.workspace}}/build
-      run: $GITHUB_WORKSPACE\build\tests.exe
+      run: ${{runner.workspace}}\build\tests.exe
       shell: cmd
