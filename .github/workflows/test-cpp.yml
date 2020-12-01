@@ -42,5 +42,5 @@ jobs:
     - name: Test
       if: startsWith(runner.os, 'Windows')
       working-directory: ${{runner.workspace}}/build
-      run: tests.exe
+      run: .\tests.exe
       shell: cmd
