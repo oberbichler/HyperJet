@@ -85,6 +85,36 @@ TEST_CASE("Add") {
     REQUIRE( r3.h(2, 2) == 8.0_a );
 }
 
+TEST_CASE("IncAdd") {
+    auto r1 = dd1;
+    r1 += dd2;
+
+    REQUIRE( r1.f()     ==  7_a );
+    REQUIRE( r1.g(0)    ==  8_a );
+    REQUIRE( r1.g(1)    ==  7_a );
+    REQUIRE( r1.g(2)    ==  4_a );
+    REQUIRE( r1.h(0, 0) ==  6_a );
+    REQUIRE( r1.h(0, 1) == 13_a );
+    REQUIRE( r1.h(0, 2) == 11_a );
+    REQUIRE( r1.h(1, 1) == 11_a );
+    REQUIRE( r1.h(1, 2) == 12_a );
+    REQUIRE( r1.h(2, 2) == 11_a );
+
+    auto r2 = dd1;
+    r2 += 3.5;
+
+    REQUIRE( r2.f()     == 6.5_a );
+    REQUIRE( r2.g(0)    == 1.0_a );
+    REQUIRE( r2.g(1)    == 6.0_a );
+    REQUIRE( r2.g(2)    == 4.0_a );
+    REQUIRE( r2.h(0, 0) == 0.0_a );
+    REQUIRE( r2.h(0, 1) == 5.0_a );
+    REQUIRE( r2.h(0, 2) == 9.0_a );
+    REQUIRE( r2.h(1, 1) == 2.0_a );
+    REQUIRE( r2.h(1, 2) == 7.0_a );
+    REQUIRE( r2.h(2, 2) == 8.0_a );
+}
+
 TEST_CASE("Sub") {
     const auto r1 = dd1 - dd2;
 
