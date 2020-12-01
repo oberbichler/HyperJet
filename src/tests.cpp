@@ -156,6 +156,36 @@ TEST_CASE("Sub") {
     REQUIRE( r3.h(2, 2) == -8.0_a );
 }
 
+TEST_CASE("IncSub") {
+    auto r1 = dd1;
+    r1 -= dd2;
+
+    REQUIRE( r1.f()     == -1.0_a );
+    REQUIRE( r1.g(0)    == -6.0_a );
+    REQUIRE( r1.g(1)    ==  5.0_a );
+    REQUIRE( r1.g(2)    ==  4.0_a );
+    REQUIRE( r1.h(0, 0) == -6.0_a );
+    REQUIRE( r1.h(0, 1) == -3.0_a );
+    REQUIRE( r1.h(0, 2) ==  7.0_a );
+    REQUIRE( r1.h(1, 1) == -7.0_a );
+    REQUIRE( r1.h(1, 2) ==  2.0_a );
+    REQUIRE( r1.h(2, 2) ==  5.0_a );
+
+    auto r2 = dd1;
+    r2 -= 3.5;
+
+    REQUIRE( r2.f()     == -0.5_a );
+    REQUIRE( r2.g(0)    ==  1.0_a );
+    REQUIRE( r2.g(1)    ==  6.0_a );
+    REQUIRE( r2.g(2)    ==  4.0_a );
+    REQUIRE( r2.h(0, 0) ==  0.0_a );
+    REQUIRE( r2.h(0, 1) ==  5.0_a );
+    REQUIRE( r2.h(0, 2) ==  9.0_a );
+    REQUIRE( r2.h(1, 1) ==  2.0_a );
+    REQUIRE( r2.h(1, 2) ==  7.0_a );
+    REQUIRE( r2.h(2, 2) ==  8.0_a );
+}
+
 TEST_CASE("Mul") {
     const auto r1 = dd1 * dd2;
 
