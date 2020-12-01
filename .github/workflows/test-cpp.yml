@@ -23,7 +23,7 @@ jobs:
 
     - name: Create Build Environment
       shell: bash
-      run: cmake -E make_directory ${{runner.workspace}}/build
+      run: mkdir ${{runner.workspace}}/build
 
     - name: Echo
       shell: bash
