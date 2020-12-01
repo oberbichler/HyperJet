@@ -39,6 +39,18 @@ TEST_CASE("Benchmarks") {
         return 3.5 + dd1;
     };
 
+    BENCHMARK("DD += DD") {
+        auto r = dd1;
+        r += dd2;
+        return r;
+    };
+
+    BENCHMARK("DD += S") {
+        auto r = dd1;
+        r += 3.5;
+        return r;
+    };
+
     // --- sub
 
     BENCHMARK("DD - DD") {
