@@ -374,6 +374,39 @@ public:
         return 0;;
     }
 
+    Type& operator /=(const Type& b)
+    {
+        const Data a_m_data = m_data;
+
+        const double d_a = 1 / b.m_data[0];
+        const double d_b = -m_data[0] / std::pow(b.m_data[0], 2);
+        const double dd_ab = -1 / std::pow(b.m_data[0], 2);
+        const double dd_bb = 2 * m_data[0] / std::pow(b.m_data[0], 3);
+
+        m_data[0] = m_data[0] * d_a;
+
+        for (index i = 1; i < length(m_data); i++) {
+            m_data[i] = d_a * m_data[i] + d_b * b.m_data[i];
+        }
+
+        auto* it = &m_data[1 + TSize];
+
+        for (index i = 0; i < TSize; i++) {
+            for (index j = i; j < TSize; j++) {
+                *it++ += dd_bb * b.m_data[1 + i] * b.m_data[1 + j] + dd_ab * (a_m_data[1 + i] * b.m_data[1 + j] + a_m_data[1 + j] * b.m_data[1 + i]);
+            }
+        }
+
+        return *this;
+    }
+
+    Type& operator /=(const Scalar& b)
+    {
+        operator *=(1 / b);
+
+        return *this;
+    }
+
     // --- pow
 
     Type pow(const Scalar b) const
