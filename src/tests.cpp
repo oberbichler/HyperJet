@@ -201,6 +201,22 @@ TEST_CASE("Mul") {
     REQUIRE( r1.h(2, 2) == 41.0_a );
 }
 
+TEST_CASE("IncMul") {
+    auto r1 = dd1;
+    r1 *= dd2;
+
+    REQUIRE( r1.f()     == 12.0_a );
+    REQUIRE( r1.g(0)    == 25.0_a );
+    REQUIRE( r1.g(1)    == 27.0_a );
+    REQUIRE( r1.g(2)    == 16.0_a );
+    REQUIRE( r1.h(0, 0) == 32.0_a );
+    REQUIRE( r1.h(0, 1) == 87.0_a );
+    REQUIRE( r1.h(0, 2) == 70.0_a );
+    REQUIRE( r1.h(1, 1) == 47.0_a );
+    REQUIRE( r1.h(1, 2) == 47.0_a );
+    REQUIRE( r1.h(2, 2) == 41.0_a );
+}
+
 TEST_CASE("Div") {
     const auto r1 = dd1 / dd2;
 
