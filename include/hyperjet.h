@@ -16,6 +16,8 @@ namespace hyperjet {
 
 using index = std::ptrdiff_t;
 
+const index Dynamic = -1;
+
 template <typename T>
 HYPERJET_INLINE index length(const T& container)
 {
