@@ -7,7 +7,7 @@ env:
 
 jobs:
   build:
-    name: build (${{ matrix.os }}
+    name: build (${{ matrix.os }})
     
     runs-on: ${{ matrix.os }}
 
@@ -28,7 +28,9 @@ jobs:
     - name: Configure CMake
       shell: bash
       working-directory: ${{runner.workspace}}/build
-      run: cmake "$GITHUB_WORKSPACE" -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+      run: |
+        echo $GITHUB_WORKSPACE
+        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
 
     - name: Build
       shell: bash
