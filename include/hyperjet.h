@@ -3,8 +3,10 @@
 #include <cstddef> // ptrdiff_t
 #include <initializer_list> // initializer_list
 #include <ostream> // ostream
-#include <string> // string
 #include <sstream> // stringstream
+#include <string> // string
+#include <type_traits> // conditional
+#include <vector> // vector
 
 namespace hyperjet {
 
@@ -24,54 +26,221 @@ HYPERJET_INLINE index length(const T& container)
     return static_cast<index>(container.size());
 }
 
-template <typename TScalar, index TSize>
-class DDScalar
+template <typename T>
+HYPERJET_INLINE index size_from_data_length(const T& container)
 {
+    return (std::sqrt(1 + 8 * length(container)) - 3) / 2;
+}
+
+HYPERJET_INLINE index data_length_from_size(const index size)
+{
+    return (size + 1) * (size + 2) / 2;
+}
+
+HYPERJET_INLINE constexpr bool throw_exceptions()
+{
+#if defined(HYPERJET_NO_EXCEPTIONS)
+    return false;
+#else
+    return true;
+#endif
+}
+
+template <index TSize>
+HYPERJET_INLINE void check_valid_size(const index size)
+{
+    if constexpr (TSize == Dynamic) {
+        if constexpr (throw_exceptions()) {
+            if (size < 0) {
+                throw std::runtime_error("Negative size");
+            }
+        } else {
+            assert(size >= 0 && "Negative size");
+        }
+    } else {
+        if constexpr (throw_exceptions()) {
+            if (size != TSize) {
+                throw std::runtime_error("Invalid size");
+            }
+        } else {
+            assert(size == TSize && "Invalid size");
+        }
+    }
+}
+
+template <typename TScalar, index TSize>
+class DDScalar {
 public:
     using Type = DDScalar<TScalar, TSize>;
     using Scalar = TScalar;
-    using Data = std::array<Scalar, (TSize + 1) * (TSize + 2) / 2>;
+    using Data = typename std::conditional<TSize == Dynamic, std::vector<Scalar>, std::array<Scalar, (TSize + 1) * (TSize + 2) / 2>>::type;
 
+    index m_size;
     Data m_data;
 
     DDScalar()
     {
+        if constexpr (is_dynamic()) {
+            m_size = 1;
+            m_data = Data(1);
+        } else {
+            static_assert(TSize >= 0);
+        }
     }
 
     DDScalar(const TScalar f)
     {
+        if constexpr (is_dynamic()) {
+            m_size = 1;
+            m_data = Data(1);
+        } else {
+            static_assert(TSize >= 0);
+        }
         m_data[0] = f;
     }
 
+    DDScalar(const Data& data)
+        : m_data(data)
+    {
+        static_assert(!is_dynamic());
+    }
+
+    DDScalar(const Data& data, const index size)
+        : m_data(data)
+        , m_size(size)
+    {
+        static_assert(is_dynamic());
+    }
+
     DDScalar(std::initializer_list<TScalar> data)
+        : m_size(size_from_data_length(data))
     {
         std::copy(data.begin(), data.end(), m_data.begin());
     }
 
-    DDScalar(const Data& data) : m_data(data)
+    Data& data()
     {
+        return m_data;
+    }
+
+    const Data& data() const
+    {
+        return m_data;
     }
 
     constexpr index size() const
     {
-        // size = (std::sqrt(1 + 8 * length(m_data)) - 3) / 2;
-        return TSize;
+        if (is_dynamic()) {
+            return m_size;
+        } else {
+            return TSize;
+        }
+    }
+
+    void resize(const index size)
+    {
+        static_assert(is_dynamic());
+        m_size = size;
+        const index n = data_length_from_size(size);
+        m_data.resize(n);
+    }
+
+    static constexpr bool is_dynamic()
+    {
+        return TSize == Dynamic;
+    }
+
+    static Type empty()
+    {
+        if constexpr (is_dynamic()) {
+            Data data(1);
+            Type result(data, 0);
+            return result;
+        } else {
+            Data data;
+            Type result(data);
+            return result;
+        }
+    }
+
+    static Type empty(const index size)
+    {
+        if constexpr (is_dynamic()) {
+            const index n = data_length_from_size(size);
+            const Data data(n);
+            Type result(data, size);
+            return result;
+        } else {
+            check_valid_size<TSize>(size);
+            return empty();
+        }
+    }
+
+    static Type zero()
+    {
+        if constexpr (is_dynamic()) {
+            Data data(1);
+            Type result(data, 0);
+            return result;
+        } else {
+            Data data;
+            data.fill(0);
+            Type result(data);
+            return result;
+        }
+    }
+
+    static Type zero(const index size)
+    {
+        if constexpr (is_dynamic()) {
+            const Data data(data_length_from_size(size), 0);
+            Type result(data, size);
+            return result;
+        } else {
+            check_valid_size<TSize>(size);
+            return zero();
+        }
     }
 
     static Type constant(const Scalar f)
     {
-        Type result;
+        Type result = zero();
         result.f() = f;
         return result;
     }
 
-    template <index TIndex>
-    static Type variable(const Scalar f)
+    static Type constant(const Scalar f, const index size)
     {
-        Type result;
+        if constexpr (is_dynamic()) {
+            Type result = zero(size);
+            result.f() = f;
+            return result;
+        } else {
+            check_valid_size<TSize>(size);
+            return constant(f);
+        }
+    }
+
+    static Type variable(const index i, const Scalar f)
+    {
+        static_assert(!is_dynamic());
+        Type result = zero();
         result.f() = f;
-        result.g(TIndex) = 1;
+        result.g(i) = 1;
         return result;
+    }
+
+    static Type variable(const index i, const Scalar f, const index size)
+    {
+        if constexpr (is_dynamic()) {
+            Type result = zero(size);
+            result.f() = f;
+            result.g(i) = 1;
+            return result;
+        } else {
+            check_valid_size<TSize>(size);
+            return variable(i, f);
+        }
     }
 
     Scalar& f()
@@ -91,36 +260,36 @@ public:
 
     Scalar& g(const index i)
     {
-        assert(i < TSize);
+        assert(i < size());
 
         return m_data[1 + i];
     }
 
     Scalar g(const index i) const
     {
-        assert(i < TSize);
+        assert(0 <= i && i < size());
 
         return m_data[1 + i];
     }
 
     Scalar& h(const index i)
     {
-        assert(i < TSize * (TSize + 1) / 2);
+        assert(0 <= i && i < size() * (size() + 1) / 2);
 
         return m_data[1 + TSize + i];
     }
 
     Scalar h(const index i) const
     {
-        assert(i < TSize * (TSize + 1) / 2);
+        assert(0 <= i && i < size() * (size() + 1) / 2);
 
         return m_data[1 + TSize + i];
     }
 
     Scalar& h(const index i, const index j)
     {
-        assert(i < TSize);
-        assert(j < TSize);
+        assert(0 <= i && i < size());
+        assert(0 <= j && j < size());
 
         if (i > j) {
             return m_data[1 + TSize + (2 * TSize - 1 - j) * j / 2 + i];
@@ -158,7 +327,7 @@ public:
 
     // --- neg
 
-    Type operator -() const
+    Type operator-() const
     {
         Type result;
 
@@ -171,36 +340,32 @@ public:
 
     // --- add
 
-    Type operator +(const Type& b) const
+    Type operator+(const Type& b) const
     {
-        Type result;
+        Type result = *this;
 
         for (index i = 0; i < length(result.m_data); i++) {
-            result.m_data[i] = m_data[i] + b.m_data[i];
+            result.m_data[i] += b.m_data[i];
         }
 
         return result;
     }
 
-    Type operator +(const Scalar b) const
+    Type operator+(const Scalar b) const
     {
-        Type result;
-
-        for (index i = 0; i < length(result.m_data); i++) {
-            result.m_data[i] = m_data[i];
-        }
+        Type result = *this;
 
         result.m_data[0] += b;
 
         return result;
     }
 
-    friend Type operator +(const Scalar a, const Type& b)
+    friend Type operator+(const Scalar a, const Type& b)
     {
         return b + a;
     }
 
-    Type& operator +=(const Type& b)
+    Type& operator+=(const Type& b)
     {
         for (index i = 0; i < length(m_data); i++) {
             m_data[i] += b.m_data[i];
@@ -209,7 +374,7 @@ public:
         return *this;
     }
 
-    Type& operator +=(const Scalar& b)
+    Type& operator+=(const Scalar& b)
     {
         m_data[0] += b;
 
@@ -218,23 +383,23 @@ public:
 
     // --- sub
 
-    Type operator -(const Type& b) const
+    Type operator-(const Type& b) const
     {
-        Type result;
+        Type result = *this;
 
         for (index i = 0; i < length(result.m_data); i++) {
-            result.m_data[i] = m_data[i] - b.m_data[i];
+            result.m_data[i] -= b.m_data[i];
         }
 
         return result;
     }
 
-    Type operator -(const Scalar b) const
+    Type operator-(const Scalar b) const
     {
         return -b + *this;
     }
 
-    friend Type operator -(const Scalar a, const Type& b)
+    friend Type operator-(const Scalar a, const Type& b)
     {
         Type result;
 
@@ -247,7 +412,7 @@ public:
         return result;
     }
 
-    Type& operator -=(const Type& b)
+    Type& operator-=(const Type& b)
     {
         for (index i = 0; i < length(m_data); i++) {
             m_data[i] -= b.m_data[i];
@@ -256,7 +421,7 @@ public:
         return *this;
     }
 
-    Type& operator -=(const Scalar& b)
+    Type& operator-=(const Scalar& b)
     {
         m_data[0] -= b;
 
@@ -265,7 +430,7 @@ public:
 
     // --- mul
 
-    Type operator *(const Type& b) const
+    Type operator*(const Type& b) const
     {
         const double d_a = b.m_data[0];
         const double d_b = m_data[0];
@@ -289,7 +454,7 @@ public:
         return result;
     }
 
-    Type operator *(const Scalar b) const
+    Type operator*(const Scalar b) const
     {
         Type result;
 
@@ -299,13 +464,13 @@ public:
 
         return result;
     }
-    
-    friend Type operator *(const Scalar a, const Type& b)
+
+    friend Type operator*(const Scalar a, const Type& b)
     {
         return b * a;
     }
 
-    Type& operator *=(const Type& b)
+    Type& operator*=(const Type& b)
     {
         const Data a_m_data = m_data;
 
@@ -329,7 +494,7 @@ public:
         return *this;
     }
 
-    Type& operator *=(const Scalar& b)
+    Type& operator*=(const Scalar& b)
     {
         for (index i = 0; i < length(m_data); i++) {
             m_data[i] = m_data[i] * b;
@@ -340,7 +505,7 @@ public:
 
     // --- div
 
-    Type operator /(const Type& b) const
+    Type operator/(const Type& b) const
     {
         const double d_a = 1 / b.m_data[0];
         const double d_b = -m_data[0] / std::pow(b.m_data[0], 2);
@@ -366,17 +531,18 @@ public:
         return result;
     }
 
-    Type operator /(const Scalar b) const
+    Type operator/(const Scalar b) const
     {
         return 1 / b * (*this);
     }
 
-    friend Type operator /(const Scalar a, const Type& b)
+    friend Type operator/(const Scalar a, const Type& b)
     {
-        return 0;;
+        return 0;
+        ;
     }
 
-    Type& operator /=(const Type& b)
+    Type& operator/=(const Type& b)
     {
         const Data a_m_data = m_data;
 
@@ -402,9 +568,9 @@ public:
         return *this;
     }
 
-    Type& operator /=(const Scalar& b)
+    Type& operator/=(const Scalar& b)
     {
-        operator *=(1 / b);
+        operator*=(1 / b);
 
         return *this;
     }
@@ -648,7 +814,7 @@ public:
         result.m_data[0] = atan2(a.m_data[0], b.m_data[0]);
 
         for (index i = 1; i < length(result.m_data); i++) {
-            result.m_data[i] = d_a * a. m_data[i] + d_b * b.m_data[i];
+            result.m_data[i] = d_a * a.m_data[i] + d_b * b.m_data[i];
         }
 
         auto* it = &result.m_data[1 + TSize];
@@ -868,8 +1034,7 @@ template <typename T>
 struct NumTraits;
 
 template <typename TScalar, std::ptrdiff_t TSize>
-struct NumTraits<hyperjet::DDScalar<TScalar, TSize>> : NumTraits<TScalar>
-{
+struct NumTraits<hyperjet::DDScalar<TScalar, TSize>> : NumTraits<TScalar> {
     using Real = hyperjet::DDScalar<TScalar, TSize>;
     using NonInteger = hyperjet::DDScalar<TScalar, TSize>;
     using Nested = hyperjet::DDScalar<TScalar, TSize>;
@@ -886,14 +1051,12 @@ struct NumTraits<hyperjet::DDScalar<TScalar, TSize>> : NumTraits<TScalar>
 };
 
 template <typename BinOp, typename TScalar, std::ptrdiff_t TSize>
-struct ScalarBinaryOpTraits<hyperjet::DDScalar<TScalar, TSize>, TScalar, BinOp>
-{
+struct ScalarBinaryOpTraits<hyperjet::DDScalar<TScalar, TSize>, TScalar, BinOp> {
     using ReturnType = hyperjet::DDScalar<TScalar, TSize>;
 };
 
 template <typename BinOp, typename TScalar, std::ptrdiff_t TSize>
-struct ScalarBinaryOpTraits<TScalar, hyperjet::DDScalar<TScalar, TSize>, BinOp>
-{
+struct ScalarBinaryOpTraits<TScalar, hyperjet::DDScalar<TScalar, TSize>, BinOp> {
     using ReturnType = hyperjet::DDScalar<TScalar, TSize>;
 };
 
