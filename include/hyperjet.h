@@ -281,11 +281,11 @@ public:
         }
     }
 
-    static std::array<Type, TSize> variables(std::array<Scalar, TSize> values)
+    static std::array<Type, TSize < 0 ? 0 : TSize> variables(std::array<Scalar, TSize < 0 ? 0 : TSize> values)
     {
         static_assert(!is_dynamic());
 
-        std::array<Type, TSize> vars;
+        std::array<Type, TSize < 0 ? 0 : TSize> vars;
 
         for (index i = 0; i < TSize; i++) {
             vars[i] = variable(i, values[i]);
