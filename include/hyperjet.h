@@ -293,7 +293,7 @@ public:
 
     void set_f(const double value)
     {
-        m_data[0] = value;
+        f() = value;
     }
 
     Scalar& g(const index i)
@@ -310,6 +310,11 @@ public:
         return m_data[1 + i];
     }
 
+    void set_g(const index i, const double value)
+    {
+        g(i) = value;
+    }
+
     Scalar& h(const index i)
     {
         assert(0 <= i && i < size() * (size() + 1) / 2);
@@ -324,28 +329,30 @@ public:
         return m_data[1 + TSize + i];
     }
 
+    void set_h(const index i, const double value)
+    {
+        h(i) = value;
+    }
+
     Scalar& h(const index i, const index j)
     {
         assert(0 <= i && i < size());
-        assert(0 <= j && j < size());
-
-        if (i > j) {
-            return m_data[1 + TSize + (2 * TSize - 1 - j) * j / 2 + i];
-        }
+        assert(i <= j && j < size());
 
         return m_data[1 + TSize + (2 * TSize - 1 - i) * i / 2 + j];
     }
 
     Scalar h(const index i, const index j) const
     {
-        assert(i < TSize);
-        assert(j < TSize);
-
-        if (i > j) {
-            return m_data[1 + TSize + (2 * TSize - 1 - j) * j / 2 + i];
-        }
+        assert(0 <= i && i < size());
+        assert(i <= j && j < size());
 
         return m_data[1 + TSize + (2 * TSize - 1 - i) * i / 2 + j];
+    }
+
+    void set_h(const index i, const index j, const double value)
+    {
+        h(i, j) = value;
     }
 
     friend std::ostream& operator<<(std::ostream& out, const Type& value)
@@ -367,7 +374,7 @@ public:
 
     Type operator-() const
     {
-        Type result;
+        Type result = Type::empty(size());
 
         for (index i = 0; i < length(result.m_data); i++) {
             result.m_data[i] = -m_data[i];
@@ -443,7 +450,7 @@ public:
 
     friend Type operator-(const Scalar a, const Type& b)
     {
-        Type result;
+        Type result = Type::empty(b.size());
 
         for (index i = 0; i < length(result.m_data); i++) {
             result.m_data[i] = -b.m_data[i];
@@ -477,7 +484,7 @@ public:
         const double d_a = b.m_data[0];
         const double d_b = m_data[0];
 
-        Type result;
+        Type result = Type::empty(size());
 
         result.m_data[0] = m_data[0] * b.m_data[0];
 
@@ -485,7 +492,7 @@ public:
             result.m_data[i] = d_a * m_data[i] + d_b * b.m_data[i];
         }
 
-        auto* it = &result.m_data[1 + TSize];
+        auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
             for (index j = i; j < size(); j++) {
@@ -498,7 +505,7 @@ public:
 
     Type operator*(const Scalar b) const
     {
-        Type result;
+        Type result = Type::empty(size());
 
         for (index i = 0; i < length(result.m_data); i++) {
             result.m_data[i] = m_data[i] * b;
@@ -525,7 +532,7 @@ public:
             m_data[i] = d_a * m_data[i] + d_b * b.m_data[i];
         }
 
-        auto* it = &m_data[1 + TSize];
+        auto* it = &m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
             for (index j = i; j < size(); j++) {
@@ -554,7 +561,7 @@ public:
         const double dd_ab = -1 / std::pow(b.m_data[0], 2);
         const double dd_bb = 2 * m_data[0] / std::pow(b.m_data[0], 3);
 
-        Type result;
+        Type result = Type::empty(size());
 
         result.m_data[0] = m_data[0] * d_a;
 
@@ -562,7 +569,7 @@ public:
             result.m_data[i] = d_a * m_data[i] + d_b * b.m_data[i];
         }
 
-        auto* it = &result.m_data[1 + TSize];
+        auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
             for (index j = i; j < size(); j++) {
@@ -599,7 +606,7 @@ public:
             m_data[i] = d_a * m_data[i] + d_b * b.m_data[i];
         }
 
-        auto* it = &m_data[1 + TSize];
+        auto* it = &m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
             for (index j = i; j < size(); j++) {
@@ -626,7 +633,7 @@ public:
         const double d = b * pow(m_data[0], b - 1);
         const double dd = (b - 1) * b * pow(m_data[0], b - 2);
 
-        Type result;
+        Type result = Type::empty(size());
 
         result.m_data[0] = pow(m_data[0], b);
 
@@ -634,7 +641,7 @@ public:
             result.m_data[i] = d * m_data[i];
         }
 
-        auto* it = &result.m_data[1 + TSize];
+        auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
             for (index j = i; j < size(); j++) {
@@ -653,7 +660,7 @@ public:
         const double d = 1 / (2 * sqrt(m_data[0]));
         const double dd = -d / (2 * m_data[0]);
 
-        Type result;
+        Type result = Type::empty(size());
 
         result.m_data[0] = sqrt(m_data[0]);
 
@@ -661,7 +668,7 @@ public:
             result.m_data[i] = d * m_data[i];
         }
 
-        auto* it = &result.m_data[1 + TSize];
+        auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
             for (index j = i; j < size(); j++) {
@@ -682,7 +689,7 @@ public:
         const double d = -sin(m_data[0]);
         const double dd = -cos(m_data[0]);
 
-        Type result;
+        Type result = Type::empty(size());
 
         result.m_data[0] = cos(m_data[0]);
 
@@ -690,7 +697,7 @@ public:
             result.m_data[i] = d * m_data[i];
         }
 
-        auto* it = &result.m_data[1 + TSize];
+        auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
             for (index j = i; j < size(); j++) {
@@ -709,7 +716,7 @@ public:
         const double d = cos(m_data[0]);
         const double dd = -sin(m_data[0]);
 
-        Type result;
+        Type result = Type::empty(size());
 
         result.m_data[0] = sin(m_data[0]);
 
@@ -717,7 +724,7 @@ public:
             result.m_data[i] = d * m_data[i];
         }
 
-        auto* it = &result.m_data[1 + TSize];
+        auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
             for (index j = i; j < size(); j++) {
@@ -737,7 +744,7 @@ public:
         const double d = tmp * tmp + 1;
         const double dd = d * 2 * tmp;
 
-        Type result;
+        Type result = Type::empty(size());
 
         result.m_data[0] = tmp;
 
@@ -745,7 +752,7 @@ public:
             result.m_data[i] = d * m_data[i];
         }
 
-        auto* it = &result.m_data[1 + TSize];
+        auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
             for (index j = i; j < size(); j++) {
@@ -766,7 +773,7 @@ public:
         const double d = -1 / sqrt(tmp);
         const double dd = d * m_data[0] / tmp;
 
-        Type result;
+        Type result = Type::empty(size());
 
         result.m_data[0] = acos(m_data[0]);
 
@@ -774,7 +781,7 @@ public:
             result.m_data[i] = d * m_data[i];
         }
 
-        auto* it = &result.m_data[1 + TSize];
+        auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
             for (index j = i; j < size(); j++) {
@@ -795,7 +802,7 @@ public:
         const double d = 1 / sqrt(tmp);
         const double dd = d * m_data[0] / tmp;
 
-        Type result;
+        Type result = Type::empty(size());
 
         result.m_data[0] = asin(m_data[0]);
 
@@ -803,7 +810,7 @@ public:
             result.m_data[i] = d * m_data[i];
         }
 
-        auto* it = &result.m_data[1 + TSize];
+        auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
             for (index j = i; j < size(); j++) {
@@ -821,7 +828,7 @@ public:
         const double d = 1 / (m_data[0] * m_data[0] + 1);
         const double dd = -d * d * 2 * m_data[0];
 
-        Type result;
+        Type result = Type::empty(size());
 
         result.m_data[0] = atan(m_data[0]);
 
@@ -829,7 +836,7 @@ public:
             result.m_data[i] = d * m_data[i];
         }
 
-        auto* it = &result.m_data[1 + TSize];
+        auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
             for (index j = i; j < size(); j++) {
@@ -851,7 +858,7 @@ public:
         const double d_aa = d_b * d_a * 2; // = -d_bb
         const double d_ab = d_b * d_b - d_a * d_a;
 
-        Type result;
+        Type result = Type::empty(size());
 
         result.m_data[0] = atan2(m_data[0], b.m_data[0]);
 
@@ -859,7 +866,7 @@ public:
             result.m_data[i] = d_a * m_data[i] + d_b * b.m_data[i];
         }
 
-        auto* it = &result.m_data[1 + TSize];
+        auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
             for (index j = i; j < size(); j++) {
