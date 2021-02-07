@@ -1,6 +1,6 @@
 from typing import Type
 import pytest
-import bin.hyperjet as hj
+import hyperjet as hj
 import numpy as np
 from numpy.testing import assert_equal, assert_array_almost_equal, assert_allclose
 from math import sqrt, cos, sin, tan, acos, asin, atan, pi
