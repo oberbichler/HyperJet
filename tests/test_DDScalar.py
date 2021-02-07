@@ -212,6 +212,17 @@ def test_variables():
     assert_allclose(u[1].data, [5, 0, 1, 0, 0, 0])
 
 
+# serialization
+
+
+def test_copy(u):
+    v = copy(u)
+    assert_equal(v.data, u.data)
+
+    v = deepcopy(u)
+    assert_equal(v.data, u.data)
+
+
 # get / set
 
 
