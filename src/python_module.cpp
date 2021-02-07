@@ -18,13 +18,14 @@ void register_ddscalar(pybind11::module& m, const std::string& name)
     auto py_class = py::class_<Type>(m, name.c_str())
         // constructor
         .def(py::init(py::overload_cast<TScalar, hj::index>(&Type::constant)), "f"_a=0, "size"_a)
+        .def(py::init(py::overload_cast<const Type::Data&>(&Type::create)), "data"_a)
         // properties
         .def_property("f", py::overload_cast<>(&Type::f, py::const_), &Type::set_f)
         // read-only properties
+        .def_property_readonly("data", py::overload_cast<>(&Type::data, py::const_))
         .def_property_readonly("is_dynamic", &Type::is_dynamic)
         .def_property_readonly("size", &Type::size)
         // static methods
-        .def_static("atan2", &Type::atan2)
         .def_static("constant", py::overload_cast<TScalar, hj::index>(&Type::constant), "f"_a, "size"_a)
         .def_static("constant", py::overload_cast<TScalar>(&Type::constant), "f"_a)
         .def_static("empty", py::overload_cast<>(&Type::empty))
@@ -110,6 +111,8 @@ void register_ddscalar(pybind11::module& m, const std::string& name)
 
     if constexpr(Type::is_dynamic()) {
         py_class
+            // constructor
+            .def(py::init(py::overload_cast<TScalar>(&Type::constant)), "f"_a=0)
             // methods
             .def("resize", &Type::resize, "size"_a);
     } else {

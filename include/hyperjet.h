@@ -26,17 +26,6 @@ HYPERJET_INLINE index length(const T& container)
     return static_cast<index>(container.size());
 }
 
-template <typename T>
-HYPERJET_INLINE index size_from_data_length(const T& container)
-{
-    return (std::sqrt(1 + 8 * length(container)) - 3) / 2;
-}
-
-HYPERJET_INLINE index data_length_from_size(const index size)
-{
-    return (size + 1) * (size + 2) / 2;
-}
-
 HYPERJET_INLINE constexpr bool throw_exceptions()
 {
 #if defined(HYPERJET_NO_EXCEPTIONS)
@@ -44,6 +33,27 @@ HYPERJET_INLINE constexpr bool throw_exceptions()
 #else
     return true;
 #endif
+}
+
+HYPERJET_INLINE index data_length_from_size(const index size)
+{
+    return (size + 1) * (size + 2) / 2;
+}
+
+template <typename T>
+HYPERJET_INLINE index size_from_data_length(const T& container)
+{
+    const index s = static_cast<index>(std::sqrt(1 + 8 * length(container)) - 3) / 2;
+
+    if constexpr (throw_exceptions()) {
+        if (data_length_from_size(s) != length(container)) {
+            throw std::runtime_error("Invalid length");
+        }
+    } else {
+        assert(data_length_from_size(s) == length(container) == 0 && "Invalid length");
+    }
+
+    return s;
 }
 
 template <index TSize>
@@ -64,6 +74,20 @@ HYPERJET_INLINE void check_valid_size(const index size)
             }
         } else {
             assert(size == TSize && "Invalid size");
+        }
+    }
+}
+
+template <index TSize>
+HYPERJET_INLINE void check_equal_size(const index size_a, const index size_b)
+{
+    if constexpr (TSize == Dynamic) {
+        if constexpr (throw_exceptions()) {
+            if (size_a != size_b) {
+                throw std::runtime_error("Incompatible size");
+            }
+        } else {
+            assert(size_a == size_b && "Incompatible size");
         }
     }
 }
@@ -148,6 +172,20 @@ public:
     static constexpr bool is_dynamic()
     {
         return TSize == Dynamic;
+    }
+
+    static Type create(const Data& data)
+    {
+        if constexpr (is_dynamic()) {
+            const auto s = size_from_data_length(data);
+            Type result(data, s);
+            return result;
+        } else {
+            const auto s = size_from_data_length(data);
+            check_valid_size<TSize>(s);
+            Type result(data);
+            return result;
+        }
     }
 
     static Type empty()
@@ -342,6 +380,8 @@ public:
 
     Type operator+(const Type& b) const
     {
+        check_equal_size<TSize>(size(), b.size());
+
         Type result = *this;
 
         for (index i = 0; i < length(result.m_data); i++) {
@@ -367,6 +407,8 @@ public:
 
     Type& operator+=(const Type& b)
     {
+        check_equal_size<TSize>(size(), b.size());
+
         for (index i = 0; i < length(m_data); i++) {
             m_data[i] += b.m_data[i];
         }
@@ -445,8 +487,8 @@ public:
 
         auto* it = &result.m_data[1 + TSize];
 
-        for (index i = 0; i < TSize; i++) {
-            for (index j = i; j < TSize; j++) {
+        for (index i = 0; i < size(); i++) {
+            for (index j = i; j < size(); j++) {
                 *it++ += m_data[1 + i] * b.m_data[1 + j] + m_data[1 + j] * b.m_data[1 + i];
             }
         }
@@ -485,8 +527,8 @@ public:
 
         auto* it = &m_data[1 + TSize];
 
-        for (index i = 0; i < TSize; i++) {
-            for (index j = i; j < TSize; j++) {
+        for (index i = 0; i < size(); i++) {
+            for (index j = i; j < size(); j++) {
                 *it++ += a_m_data[1 + i] * b.m_data[1 + j] + a_m_data[1 + j] * b.m_data[1 + i];
             }
         }
@@ -522,8 +564,8 @@ public:
 
         auto* it = &result.m_data[1 + TSize];
 
-        for (index i = 0; i < TSize; i++) {
-            for (index j = i; j < TSize; j++) {
+        for (index i = 0; i < size(); i++) {
+            for (index j = i; j < size(); j++) {
                 *it++ += dd_bb * b.m_data[1 + i] * b.m_data[1 + j] + dd_ab * (m_data[1 + i] * b.m_data[1 + j] + m_data[1 + j] * b.m_data[1 + i]);
             }
         }
@@ -559,8 +601,8 @@ public:
 
         auto* it = &m_data[1 + TSize];
 
-        for (index i = 0; i < TSize; i++) {
-            for (index j = i; j < TSize; j++) {
+        for (index i = 0; i < size(); i++) {
+            for (index j = i; j < size(); j++) {
                 *it++ += dd_bb * b.m_data[1 + i] * b.m_data[1 + j] + dd_ab * (a_m_data[1 + i] * b.m_data[1 + j] + a_m_data[1 + j] * b.m_data[1 + i]);
             }
         }
@@ -594,8 +636,8 @@ public:
 
         auto* it = &result.m_data[1 + TSize];
 
-        for (index i = 0; i < TSize; i++) {
-            for (index j = i; j < TSize; j++) {
+        for (index i = 0; i < size(); i++) {
+            for (index j = i; j < size(); j++) {
                 *it++ += dd * m_data[1 + i] * m_data[1 + j];
             }
         }
@@ -621,8 +663,8 @@ public:
 
         auto* it = &result.m_data[1 + TSize];
 
-        for (index i = 0; i < TSize; i++) {
-            for (index j = i; j < TSize; j++) {
+        for (index i = 0; i < size(); i++) {
+            for (index j = i; j < size(); j++) {
                 *it++ += dd * m_data[1 + i] * m_data[1 + j];
             }
         }
@@ -650,8 +692,8 @@ public:
 
         auto* it = &result.m_data[1 + TSize];
 
-        for (index i = 0; i < TSize; i++) {
-            for (index j = i; j < TSize; j++) {
+        for (index i = 0; i < size(); i++) {
+            for (index j = i; j < size(); j++) {
                 *it++ += dd * m_data[1 + i] * m_data[1 + j];
             }
         }
@@ -677,8 +719,8 @@ public:
 
         auto* it = &result.m_data[1 + TSize];
 
-        for (index i = 0; i < TSize; i++) {
-            for (index j = i; j < TSize; j++) {
+        for (index i = 0; i < size(); i++) {
+            for (index j = i; j < size(); j++) {
                 *it++ += dd * m_data[1 + i] * m_data[1 + j];
             }
         }
@@ -705,8 +747,8 @@ public:
 
         auto* it = &result.m_data[1 + TSize];
 
-        for (index i = 0; i < TSize; i++) {
-            for (index j = i; j < TSize; j++) {
+        for (index i = 0; i < size(); i++) {
+            for (index j = i; j < size(); j++) {
                 *it++ += dd * m_data[1 + i] * m_data[1 + j];
             }
         }
@@ -734,8 +776,8 @@ public:
 
         auto* it = &result.m_data[1 + TSize];
 
-        for (index i = 0; i < TSize; i++) {
-            for (index j = i; j < TSize; j++) {
+        for (index i = 0; i < size(); i++) {
+            for (index j = i; j < size(); j++) {
                 *it++ += dd * m_data[1 + i] * m_data[1 + j];
             }
         }
@@ -763,8 +805,8 @@ public:
 
         auto* it = &result.m_data[1 + TSize];
 
-        for (index i = 0; i < TSize; i++) {
-            for (index j = i; j < TSize; j++) {
+        for (index i = 0; i < size(); i++) {
+            for (index j = i; j < size(); j++) {
                 *it++ += dd * m_data[1 + i] * m_data[1 + j];
             }
         }
@@ -789,8 +831,8 @@ public:
 
         auto* it = &result.m_data[1 + TSize];
 
-        for (index i = 0; i < TSize; i++) {
-            for (index j = i; j < TSize; j++) {
+        for (index i = 0; i < size(); i++) {
+            for (index j = i; j < size(); j++) {
                 *it++ += dd * m_data[1 + i] * m_data[1 + j];
             }
         }
@@ -798,30 +840,30 @@ public:
         return result;
     }
 
-    static Type atan2(const Type& a, const Type& b)
+    Type atan2(const Type& b) const
     {
         using std::atan2;
 
-        const double tmp = a.m_data[0] * a.m_data[0] + b.m_data[0] * b.m_data[0];
+        const double tmp = m_data[0] * m_data[0] + b.m_data[0] * b.m_data[0];
 
         const double d_a = b.m_data[0] / tmp;
-        const double d_b = -a.m_data[0] / tmp;
+        const double d_b = -m_data[0] / tmp;
         const double d_aa = d_b * d_a * 2; // = -d_bb
         const double d_ab = d_b * d_b - d_a * d_a;
 
         Type result;
 
-        result.m_data[0] = atan2(a.m_data[0], b.m_data[0]);
+        result.m_data[0] = atan2(m_data[0], b.m_data[0]);
 
         for (index i = 1; i < length(result.m_data); i++) {
-            result.m_data[i] = d_a * a.m_data[i] + d_b * b.m_data[i];
+            result.m_data[i] = d_a * m_data[i] + d_b * b.m_data[i];
         }
 
         auto* it = &result.m_data[1 + TSize];
 
-        for (index i = 0; i < TSize; i++) {
-            for (index j = i; j < TSize; j++) {
-                *it++ += d_aa * (a.m_data[1 + i] * a.m_data[1 + j] - b.m_data[1 + i] * b.m_data[1 + j]) + d_ab * (a.m_data[1 + i] * b.m_data[1 + j] + b.m_data[1 + i] * a.m_data[1 + j]);
+        for (index i = 0; i < size(); i++) {
+            for (index j = i; j < size(); j++) {
+                *it++ += d_aa * (m_data[1 + i] * m_data[1 + j] - b.m_data[1 + i] * b.m_data[1 + j]) + d_ab * (m_data[1 + i] * b.m_data[1 + j] + b.m_data[1 + i] * m_data[1 + j]);
             }
         }
 
@@ -1021,7 +1063,7 @@ using std::atan2;
 template <typename TScalar, index TSize>
 DDScalar<TScalar, TSize> atan2(const DDScalar<TScalar, TSize>& a, const DDScalar<TScalar, TSize>& b)
 {
-    return DDScalar<TScalar, TSize>::atan2(a, b);
+    return a.atan2(b);
 }
 
 } // namespace hyperjet
