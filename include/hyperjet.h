@@ -281,6 +281,34 @@ public:
         }
     }
 
+    static std::array<Type, TSize> variables(std::array<Scalar, TSize> values)
+    {
+        static_assert(!is_dynamic());
+
+        std::array<Type, TSize> vars;
+
+        for (index i = 0; i < TSize; i++) {
+            vars[i] = variable(i, values[i]);
+        }
+
+        return vars;
+    }
+
+    static std::vector<Type> variables(std::vector<Scalar> values)
+    {
+        const index s = length(values);
+
+        if constexpr(!is_dynamic()) {
+            assert(s == TSize);
+        }
+
+        std::vector<Type> vars(s);
+        for (index i = 0; i < s; i++) {
+            vars[i] = variable(i, values[i], s);
+        }
+        return vars;
+    }
+
     Scalar& f()
     {
         return m_data[0];

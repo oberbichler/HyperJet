@@ -194,6 +194,24 @@ def test_variable():
     assert(u.size == 2)
 
 
+def test_variables():
+    # static size
+    u = hj.DD2Scalar.variables([3, 5])
+    assert_equal(len(u), 2)
+    assert_allclose(u[0].is_dynamic, False)
+    assert_allclose(u[1].is_dynamic, False)
+    assert_allclose(u[0].data, [3, 1, 0, 0, 0, 0])
+    assert_allclose(u[1].data, [5, 0, 1, 0, 0, 0])
+
+    # dynamic size
+    u = hj.DDScalar.variables([3, 5])
+    assert_equal(len(u), 2)
+    assert_allclose(u[0].is_dynamic, True)
+    assert_allclose(u[1].is_dynamic, True)
+    assert_allclose(u[0].data, [3, 1, 0, 0, 0, 0])
+    assert_allclose(u[1].data, [5, 0, 1, 0, 0, 0])
+
+
 # get / set
 
 
