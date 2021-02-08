@@ -32,7 +32,7 @@ void register_ddscalar(pybind11::module& m, const std::string& name)
         .def_static("empty", py::overload_cast<>(&Type::empty))
         .def_static("empty", py::overload_cast<hj::index>(&Type::empty), "size"_a)
         .def_static("variable", py::overload_cast<hj::index, double, hj::index>(&Type::variable), "i"_a, "f"_a, "size"_a)
-        .def_static("variables", py::overload_cast<std::vector<TScalar>>(&Type::variables), "values"_a)
+        .def_static("variables", &Type::variables, "values"_a)
         .def_static("zero", py::overload_cast<>(&Type::zero))
         .def_static("zero", py::overload_cast<hj::index>(&Type::zero), "size"_a)
         // methods
