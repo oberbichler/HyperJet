@@ -281,20 +281,6 @@ public:
         }
     }
 
-    template <typename T = Type>
-    static typename std::enable_if<!T::is_dynamic(), std::array<Type, TSize>>::type variables(std::array<Scalar, TSize> values)
-    {
-        static_assert(!is_dynamic());
-
-        std::array<Type, TSize> vars;
-
-        for (index i = 0; i < TSize; i++) {
-            vars[i] = variable(i, values[i]);
-        }
-
-        return vars;
-    }
-
     static std::vector<Type> variables(std::vector<Scalar> values)
     {
         const index s = length(values);
