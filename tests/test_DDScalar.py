@@ -249,163 +249,349 @@ def test_resize(u, x):
 
 
 class UnaryOperation:
-    def __init__(self, u, expected):
-        self.u = u
-        self.expected_u = np.array(u.data)
-        self.expected_r = np.array(expected)
+    def __init__(self, name, u, expected):
+        self.name = name
+        self.u = np.array(u, dtype=float)
+        self.expected_u = np.array(u, dtype=float)
+        self.expected_r = np.array(expected, dtype=float)
 
-    def check(self):
-        assert_allclose(self.u.data, self.expected_u, atol=1e-15)
-        assert_allclose(self.r.data, self.expected_r, atol=1e-15)
+    def check(self, d):
+        self.actual_u = d(self.u)
+        self.actual_r = self.compute(self.actual_u)
+
+        assert_allclose(self.actual_u.data, self.expected_u, atol=1e-15)
+        assert_allclose(self.actual_r.data, self.expected_r, atol=1e-15)
 
 
 class Sqrt(UnaryOperation):
-    def __init__(self, u):
-        super().__init__(u, [5 * np.sqrt(3), 5 * np.sqrt(3) / 6, np.sqrt(3), -5 * np.sqrt(3) / 36, np.sqrt(3) / 6, 0])
-        self.r = np.sqrt(u)
+    def __init__(self, name, u, expected):
+        super().__init__(name, u, expected)
+
+    def compute(self, u):
+        return np.sqrt(u)
 
 
 class Cos(UnaryOperation):
-    def __init__(self, u):
-        super().__init__(u, [np.cos(75), -25 * np.sin(75), -30 * np.sin(75), -625 * np.cos(75), -750 * np.cos(75) - 10 * np.sin(75), -900 * np.cos(75) - 6 * np.sin(75)])
-        self.r = np.cos(u)
+    def __init__(self, name, u, expected):
+        super().__init__(name, u, expected)
+
+    def compute(self, u):
+        return np.cos(u)
 
 
 class Sin(UnaryOperation):
-    def __init__(self, u):
-        super().__init__(u, [np.sin(75), 25 * np.cos(75), 30 * np.cos(75), -625 * np.sin(75), 10 * np.cos(75) - 750 * np.sin(75), 6 * np.cos(75) - 900 * np.sin(75)])
-        self.r = np.sin(u)
+    def __init__(self, name, u, expected):
+        super().__init__(name, u, expected)
+
+    def compute(self, u):
+        return np.sin(u)
 
 
 class Tan(UnaryOperation):
-    def __init__(self, u):
-        super().__init__(u, [np.tan(75), 25 * np.tan(75)**2 + 25, 30 * np.tan(75)**2 + 30, 1250 * (np.tan(75) ** 2 + 1) * np.tan(75), 10 * (150 * np.tan(75) + 1) * (np.tan(75)**2 + 1), 6 * (300 * np.tan(75) + 1) * (np.tan(75)**2 + 1)])
-        self.r = np.tan(u)
+    def __init__(self, name, u, expected):
+        super().__init__(name, u, expected)
+
+    def compute(self, u):
+        return np.tan(u)
+
+
+class ACos(UnaryOperation):
+    def __init__(self, name, u, expected):
+        super().__init__(name, u, expected)
+
+    def compute(self, u):
+        return np.arccos(u)
+
+
+class ASin(UnaryOperation):
+    def __init__(self, name, u, expected):
+        super().__init__(name, u, expected)
+
+    def compute(self, u):
+        return np.arcsin(u)
+
+
+class ATan(UnaryOperation):
+    def __init__(self, name, u, expected):
+        super().__init__(name, u, expected)
+
+    def compute(self, u):
+        return np.arctan(u)
+
+
+class Pow(UnaryOperation):
+    def __init__(self, name, u, c, expected):
+        super().__init__(name, u, expected)
+        self.c = c
+
+    def compute(self, u):
+        return np.power(u, 3)
 
 
 class BinaryOperation:
-    def __init__(self, u, v, expected):
+    def __init__(self, name, u, v, expected):
+        self.name = name
         self.u = u
         self.v = v
-        self.expected_u = np.array(u.data)
-        self.expected_v = np.array(v.data)
+        self.expected_u = np.array(u)
+        self.expected_v = np.array(v)
         self.expected_r = np.array(expected)
 
-    def check(self):
-        assert_allclose(self.u.data, self.expected_u, atol=1e-15)
-        assert_allclose(self.v.data, self.expected_v, atol=1e-15)
-        assert_allclose(self.r.data, self.expected_r, atol=1e-15)
+    def check(self, d):
+        self.actual_u = d(self.u)
+        self.actual_v = d(self.v)
+        self.actual_r = self.compute(self.actual_u, self.actual_v)
+
+        assert_allclose(self.actual_u.data, self.expected_u, atol=1e-15)
+        assert_allclose(self.actual_v.data, self.expected_v, atol=1e-15)
+        assert_allclose(self.actual_r.data, self.expected_r, atol=1e-15)
 
 
 class Add(BinaryOperation):
-    def __init__(self, u, v):
-        super().__init__(u, v, [300, 175, 120, 50, 70, 24])
-        self.r = u + v
+    def __init__(self, name, u, v, expected):
+        super().__init__(name, u, v, expected)
+
+    def compute(self, u, v):
+        return u + v
 
 
 class Sub(BinaryOperation):
-    def __init__(self, u, v):
-        super().__init__(u, v, [-150, -125, -60, -50, -50, -12])
-        self.r = u - v
+    def __init__(self, name, u, v, expected):
+        super().__init__(name, u, v, expected)
+
+    def compute(self, u, v):
+        return u - v
 
 
 class Mul(BinaryOperation):
-    def __init__(self, u, v):
-        super().__init__(u, v, [16875, 16875, 13500, 11250, 13500, 8100])
-        self.r = u * v
+    def __init__(self, name, u, v, expected):
+        super().__init__(name, u, v, expected)
+
+    def compute(self, u, v):
+        return u * v
 
 
 class Div(BinaryOperation):
-    def __init__(self, u, v):
-        super().__init__(u, v, [1 / 3, -1 / 9, 0, 2 / 27, 0, 0])
-        self.r = u / v
+    def __init__(self, name, u, v, expected):
+        super().__init__(name, u, v, expected)
+
+    def compute(self, u, v):
+        return u / v
 
 
-class BinaryIOperation:
-    def __init__(self, u, v, expected):
+class IBinaryOperation:
+    def __init__(self, name, u, v, expected):
+        self.name = name
         self.u = u
         self.v = v
         self.expected_u = np.array(expected)
-        self.expected_v = np.array(v.data)
+        self.expected_v = np.array(v)
 
-    def check(self):
-        assert_allclose(self.u.data, self.expected_u, atol=1e-15)
-        assert_allclose(self.v.data, self.expected_v, atol=1e-15)
+    def check(self, d):
+        self.actual_u = d(self.u)
+        self.actual_v = d(self.v)
+        self.actual_r = self.compute(self.actual_u, self.actual_v)
+
+        assert_allclose(self.actual_u.data, self.expected_u, atol=1e-15)
+        assert_allclose(self.actual_v.data, self.expected_v, atol=1e-15)
 
 
-class IAdd(BinaryIOperation):
-    def __init__(self, u, v):
-        super().__init__(u, v, [300, 175, 120, 50, 70, 24])
+class IAdd(IBinaryOperation):
+    def __init__(self, name, u, v, expected):
+        super().__init__(name, u, v, expected)
+
+    def compute(self, u, v):
         u += v
 
 
-class ISub(BinaryIOperation):
-    def __init__(self, u, v):
-        super().__init__(u, v, [-150, -125, -60, -50, -50, -12])
+class ISub(IBinaryOperation):
+    def __init__(self, name, u, v, expected):
+        super().__init__(name, u, v, expected)
+
+    def compute(self, u, v):
         u -= v
 
 
-class IMul(BinaryIOperation):
-    def __init__(self, u, v):
-        super().__init__(u, v, [16875, 16875, 13500, 11250, 13500, 8100])
+class IMul(IBinaryOperation):
+    def __init__(self, name, u, v, expected):
+        super().__init__(name, u, v, expected)
+
+    def compute(self, u, v):
         u *= v
 
 
-class IDiv(BinaryIOperation):
-    def __init__(self, u, v):
-        super().__init__(u, v, [1 / 3, -1 / 9, 0, 2 / 27, 0, 0])
+class IDiv(IBinaryOperation):
+    def __init__(self, name, u, v, expected):
+        super().__init__(name, u, v, expected)
+
+    def compute(self, u, v):
         u /= v
 
 
-u_operations = [Sqrt]
+u_operations = [
+    Sqrt(
+        name='sqrt',
+        u=[75, 25, 30, 0, 10, 6],
+        expected=[5 * np.sqrt(3), 5 * np.sqrt(3) / 6, np.sqrt(3), -5 * np.sqrt(3) / 36, np.sqrt(3) / 6, 0],
+    ),
+    Cos(
+        name='cos',
+        u=[75, 25, 30, 0, 10, 6],
+        expected=[np.cos(75), -25 * np.sin(75), -30 * np.sin(75), -625 * np.cos(75), -750 * np.cos(75) - 10 * np.sin(75), -900 * np.cos(75) - 6 * np.sin(75)],
+    ),
+    Sin(
+        name='sin',
+        u=[75, 25, 30, 0, 10, 6],
+        expected=[np.sin(75), 25 * np.cos(75), 30 * np.cos(75), -625 * np.sin(75), 10 * np.cos(75) - 750 * np.sin(75), 6 * np.cos(75) - 900 * np.sin(75)],
+    ),
+    Tan(
+        name='tan',
+        u=[75, 25, 30, 0, 10, 6],
+        expected=[np.tan(75), 25 * np.tan(75)**2 + 25, 30 * np.tan(75)**2 + 30, 1250 * (np.tan(75)**2 + 1) * np.tan(75), 10 * (150 * np.tan(75) + 1) * (np.tan(75)**2 + 1), 6 * (300 * np.tan(75) + 1) * (np.tan(75)**2 + 1)],
+    ),
+    ACos(
+        name='acos',
+        u=[0.6, 0.2, -0.12, 0., -0.04, 0.048],
+        expected=[0.927295218001612, -0.25, 0.15, -0.046875, 0.078125, -0.076875],
+    ),
+    ASin(
+        name='asin',
+        u=[0.6, 0.2, -0.12, 0., -0.04, 0.048],
+        expected=[0.643501108793284, 0.25, -0.15, 0.046875, -0.078125, 0.076875],
+    ),
+    ATan(
+        name='atan',
+        u=[0.6, 0.2, -0.12, 0., -0.04, 0.048],
+        expected=[0.540419500270584, 0.147058823529412, -0.0882352941176471, -0.0259515570934256, -0.0138408304498270, 0.0259515570934256],
+    ),
+    Pow(
+        name='pow',
+        u=[75, 25, 30, 0, 10, 6],
+        c=3,
+        expected=[421875, 421875, 506250, 281250, 506250, 506250],
+    ),
+]
 
 
-@pytest.mark.parametrize('operation', u_operations, ids=[o.__name__ for o in u_operations])
-def test_unary_operation_static(u, operation):
+@pytest.mark.parametrize('operation', u_operations, ids=[o.name for o in u_operations])
+def test_unary_operation_static(operation):
     # operation with same static size
-    r = operation(u)
-
-    r.check()
+    operation.check(hj.DD2Scalar)
 
 
-@pytest.mark.parametrize('operation', u_operations, ids=[o.__name__ for o in u_operations])
-def test_binary_operation_dynamic(x, operation):
+@pytest.mark.parametrize('operation', u_operations, ids=[o.name for o in u_operations])
+def test_unary_operation_dynamic(operation):
     # operation with same dynamic size
-    r = operation(x)
-
-    r.check()
+    operation.check(hj.DDScalar)
 
 
-b_operations = [Add, IAdd, Sub, ISub, Mul, IMul, Div, IDiv]
+b_operations = [
+    Add(
+        name='add',
+        u=[75, 25, 30, 0, 10, 6],
+        v=[225, 150, 90, 50, 60, 18],
+        expected=[300, 175, 120, 50, 70, 24],
+    ),
+    Sub(
+        name='sub',
+        u=[75, 25, 30, 0, 10, 6],
+        v=[225, 150, 90, 50, 60, 18],
+        expected=[-150, -125, -60, -50, -50, -12],
+    ),
+    Mul(
+        name='mul',
+        u=[75, 25, 30, 0, 10, 6],
+        v=[225, 150, 90, 50, 60, 18],
+        expected=[16875, 16875, 13500, 11250, 13500, 8100],
+    ),
+    Div(
+        name='div',
+        u=[75, 25, 30, 0, 10, 6],
+        v=[225, 150, 90, 50, 60, 18],
+        expected=[1 / 3, -1 / 9, 0, 2 / 27, 0, 0],
+    ),
+]
 
 
-@pytest.mark.parametrize('operation', b_operations, ids=[o.__name__ for o in b_operations])
-def test_binary_operation_static(u, v, operation):
+@pytest.mark.parametrize('operation', b_operations, ids=[o.name for o in b_operations])
+def test_binary_operation_static(operation):
     # operation with same static size
-    r = operation(u, v)
-
-    r.check()
+    operation.check(hj.DD2Scalar)
 
     # operation with different static size throws
     with pytest.raises(TypeError):
-        operation(u, hj.DD3Scalar())
+        operation.compute(operation.actual_u, hj.DD3Scalar())
 
     # operation with dynamic size throws
     with pytest.raises(TypeError):
-        operation(u, hj.DDScalar(size=2))
+        operation.compute(operation.actual_u, hj.DDScalar(size=2))
 
 
-@pytest.mark.parametrize('operation', b_operations, ids=[o.__name__ for o in b_operations])
-def test_binary_operation_dynamic(x, y, operation):
+@pytest.mark.parametrize('operation', b_operations, ids=[o.name for o in b_operations])
+def test_binary_operation_dynamic(operation):
     # operation with same dynamic size
-    r = operation(x, y)
-
-    r.check()
+    operation.check(hj.DDScalar)
 
     # operation with different dynamic size throws
     with pytest.raises(RuntimeError):
-        x + hj.DDScalar(size=3)
+        operation.compute(operation.actual_u, hj.DDScalar(size=3))
 
     # operation with static size throws
     with pytest.raises(TypeError):
-        x + hj.DD2Scalar()
+        operation.compute(operation.actual_u, hj.DD2Scalar())
+
+
+i_operations = [
+    IAdd(
+        name='iadd',
+        u=[75, 25, 30, 0, 10, 6],
+        v=[225, 150, 90, 50, 60, 18],
+        expected=[300, 175, 120, 50, 70, 24],
+    ),
+    ISub(
+        name='isub',
+        u=[75, 25, 30, 0, 10, 6],
+        v=[225, 150, 90, 50, 60, 18],
+        expected=[-150, -125, -60, -50, -50, -12],
+    ),
+    IMul(
+        name='imul',
+        u=[75, 25, 30, 0, 10, 6],
+        v=[225, 150, 90, 50, 60, 18],
+        expected=[16875, 16875, 13500, 11250, 13500, 8100],
+    ),
+    IDiv(
+        name='idiv',
+        u=[75, 25, 30, 0, 10, 6],
+        v=[225, 150, 90, 50, 60, 18],
+        expected=[1 / 3, -1 / 9, 0, 2 / 27, 0, 0],
+    ),
+]
+
+
+@pytest.mark.parametrize('operation', i_operations, ids=[o.name for o in i_operations])
+def test_incemental_operation_static(operation):
+    # operation with same static size
+    operation.check(hj.DD2Scalar)
+
+    # operation with different static size throws
+    with pytest.raises(TypeError):
+        operation.compute(operation.actual_u, hj.DD3Scalar())
+
+    # operation with dynamic size throws
+    with pytest.raises(TypeError):
+        operation.compute(operation.actual_u, hj.DDScalar(size=2))
+
+
+@pytest.mark.parametrize('operation', i_operations, ids=[o.name for o in i_operations])
+def test_incemental_operation_dynamic(operation):
+    # operation with same dynamic size
+    operation.check(hj.DDScalar)
+
+    # operation with different dynamic size throws
+    with pytest.raises(RuntimeError):
+        operation.compute(operation.actual_u, hj.DDScalar(size=3))
+
+    # operation with static size throws
+    with pytest.raises(TypeError):
+        operation.compute(operation.actual_u, hj.DD2Scalar())
