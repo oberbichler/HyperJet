@@ -462,6 +462,8 @@ public:
 
     Type operator-(const Type& b) const
     {
+        check_equal_size<TSize>(size(), b.size());
+
         Type result = *this;
 
         for (index i = 0; i < length(result.m_data); i++) {
@@ -491,6 +493,8 @@ public:
 
     Type& operator-=(const Type& b)
     {
+        check_equal_size<TSize>(size(), b.size());
+
         for (index i = 0; i < length(m_data); i++) {
             m_data[i] -= b.m_data[i];
         }
@@ -509,6 +513,8 @@ public:
 
     Type operator*(const Type& b) const
     {
+        check_equal_size<TSize>(size(), b.size());
+
         const double d_a = b.m_data[0];
         const double d_b = m_data[0];
 
@@ -549,6 +555,8 @@ public:
 
     Type& operator*=(const Type& b)
     {
+        check_equal_size<TSize>(size(), b.size());
+
         const Data a_m_data = m_data;
 
         const double d_a = b.m_data[0];
@@ -584,6 +592,8 @@ public:
 
     Type operator/(const Type& b) const
     {
+        check_equal_size<TSize>(size(), b.size());
+
         const double d_a = 1 / b.m_data[0];
         const double d_b = -m_data[0] / std::pow(b.m_data[0], 2);
         const double dd_ab = -1 / std::pow(b.m_data[0], 2);
@@ -621,6 +631,8 @@ public:
 
     Type& operator/=(const Type& b)
     {
+        check_equal_size<TSize>(size(), b.size());
+
         const Data a_m_data = m_data;
 
         const double d_a = 1 / b.m_data[0];
