@@ -328,6 +328,14 @@ class Pow(UnaryOperation):
         return np.power(u, 3)
 
 
+def isnumber(value):
+    if type(value) == float:
+        return True
+    if type(value) == int:
+        return True
+    return False
+
+
 class BinaryOperation:
     def __init__(self, name, u, v, expected):
         self.name = name
@@ -338,12 +346,12 @@ class BinaryOperation:
         self.expected_r = np.array(expected)
 
     def check(self, d):
-        self.actual_u = d(self.u)
-        self.actual_v = d(self.v)
+        self.actual_u = self.u if isnumber(self.u) else d(self.u)
+        self.actual_v = self.v if isnumber(self.v) else d(self.v)
         self.actual_r = self.compute(self.actual_u, self.actual_v)
 
-        assert_allclose(self.actual_u.data, self.expected_u, atol=1e-15)
-        assert_allclose(self.actual_v.data, self.expected_v, atol=1e-15)
+        assert_allclose(self.actual_u if isnumber(self.u) else self.actual_u.data, self.expected_u, atol=1e-15)
+        assert_allclose(self.actual_v if isnumber(self.v) else self.actual_v.data, self.expected_v, atol=1e-15)
         assert_allclose(self.actual_r.data, self.expected_r, atol=1e-15)
 
 
@@ -487,28 +495,76 @@ def test_unary_operation_dynamic(operation):
 
 b_operations = [
     Add(
-        name='add',
+        name='add dd+dd',
         u=[75, 25, 30, 0, 10, 6],
         v=[225, 150, 90, 50, 60, 18],
         expected=[300, 175, 120, 50, 70, 24],
     ),
+    Add(
+        name='add dd+s',
+        u=[75, 25, 30, 0, 10, 6],
+        v=3,
+        expected=[78, 25, 30, 0, 10, 6],
+    ),
+    Add(
+        name='add s+dd',
+        u=3,
+        v=[75, 25, 30, 0, 10, 6],
+        expected=[78, 25, 30, 0, 10, 6],
+    ),
     Sub(
-        name='sub',
+        name='sub dd-dd',
         u=[75, 25, 30, 0, 10, 6],
         v=[225, 150, 90, 50, 60, 18],
         expected=[-150, -125, -60, -50, -50, -12],
     ),
+    Sub(
+        name='sub s-dd',
+        u=3,
+        v=[75, 25, 30, 0, 10, 6],
+        expected=[-72, -25, -30, 0, -10, -6],
+    ),
+    Sub(
+        name='sub dd-s',
+        u=[75, 25, 30, 0, 10, 6],
+        v=3,
+        expected=[72, 25, 30, 0, 10, 6],
+    ),
     Mul(
-        name='mul',
+        name='mul dd*dd',
         u=[75, 25, 30, 0, 10, 6],
         v=[225, 150, 90, 50, 60, 18],
         expected=[16875, 16875, 13500, 11250, 13500, 8100],
     ),
+    Mul(
+        name='mul s*dd',
+        u=3,
+        v=[75, 25, 30, 0, 10, 6],
+        expected=[225, 75, 90, 0, 30, 18],
+    ),
+    Mul(
+        name='mul dd*s',
+        u=[75, 25, 30, 0, 10, 6],
+        v=3,
+        expected=[225, 75, 90, 0, 30, 18],
+    ),
     Div(
-        name='div',
+        name='div dd/dd',
         u=[75, 25, 30, 0, 10, 6],
         v=[225, 150, 90, 50, 60, 18],
         expected=[1 / 3, -1 / 9, 0, 2 / 27, 0, 0],
+    ),
+    Div(
+        name='div s/dd',
+        u=3,
+        v=[75, 25, 30, 0, 10, 6],
+        expected=[1 / 25, -1 / 75, -2 / 125, 2 / 225, 2 / 375, 6 / 625],
+    ),
+    Div(
+        name='div dd/s',
+        u=[75, 25, 30, 0, 10, 6],
+        v=3,
+        expected=[25, 25 / 3, 10, 0, 10 / 3, 2],
     ),
 ]
 
@@ -517,6 +573,9 @@ b_operations = [
 def test_binary_operation_static(operation):
     # operation with same static size
     operation.check(hj.DD2Scalar)
+
+    if isnumber(operation.actual_u) or isnumber(operation.actual_v):
+        return
 
     # operation with different static size throws
     with pytest.raises(TypeError):
@@ -531,6 +590,9 @@ def test_binary_operation_static(operation):
 def test_binary_operation_dynamic(operation):
     # operation with same dynamic size
     operation.check(hj.DDScalar)
+
+    if isnumber(operation.actual_u) or isnumber(operation.actual_v):
+        return
 
     # operation with different dynamic size throws
     with pytest.raises(RuntimeError):
@@ -574,6 +636,9 @@ def test_incemental_operation_static(operation):
     # operation with same static size
     operation.check(hj.DD2Scalar)
 
+    if isnumber(operation.actual_u) or isnumber(operation.actual_v):
+        return
+
     # operation with different static size throws
     with pytest.raises(TypeError):
         operation.compute(operation.actual_u, hj.DD3Scalar())
@@ -587,6 +652,9 @@ def test_incemental_operation_static(operation):
 def test_incemental_operation_dynamic(operation):
     # operation with same dynamic size
     operation.check(hj.DDScalar)
+
+    if isnumber(operation.actual_u) or isnumber(operation.actual_v):
+        return
 
     # operation with different dynamic size throws
     with pytest.raises(RuntimeError):
