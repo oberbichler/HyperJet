@@ -5,7 +5,7 @@
 #include <ostream> // ostream
 #include <sstream> // stringstream
 #include <string> // string
-#include <type_traits> // conditional
+#include <type_traits> // conditional, enable_if
 #include <vector> // vector
 
 namespace hyperjet {
@@ -281,11 +281,12 @@ public:
         }
     }
 
-    static std::array<Type, TSize < 0 ? 0 : TSize> variables(std::array<Scalar, TSize < 0 ? 0 : TSize> values)
+    template <typename T = Type>
+    static typename std::enable_if<!T::is_dynamic(), std::array<Type, TSize>>::type variables(std::array<Scalar, TSize> values)
     {
         static_assert(!is_dynamic());
 
-        std::array<Type, TSize < 0 ? 0 : TSize> vars;
+        std::array<Type, TSize> vars;
 
         for (index i = 0; i < TSize; i++) {
             vars[i] = variable(i, values[i]);
