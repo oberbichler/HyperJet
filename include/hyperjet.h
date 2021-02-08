@@ -620,13 +620,33 @@ public:
 
     Type operator/(const Scalar b) const
     {
-        return 1 / b * (*this);
+        return Scalar(1) / b * (*this);
     }
 
     friend Type operator/(const Scalar a, const Type& b)
     {
-        return 0;
-        ;
+        const double d_b = -a / std::pow(b.m_data[0], 2);
+        const double dd_bb = 2 * a / std::pow(b.m_data[0], 3);
+
+        const index s = b.size();
+
+        Type result = Type::empty(s);
+
+        result.m_data[0] = a / b.m_data[0];
+
+        for (index i = 1; i < length(result.m_data); i++) {
+            result.m_data[i] = d_b * b.m_data[i];
+        }
+
+        auto* it = &result.m_data[1 + s];
+
+        for (index i = 0; i < s; i++) {
+            for (index j = i; j < s; j++) {
+                *it++ += dd_bb * b.m_data[1 + i] * b.m_data[1 + j];
+            }
+        }
+
+        return result;
     }
 
     Type& operator/=(const Type& b)
