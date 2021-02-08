@@ -1,6 +1,6 @@
 from typing import Type
 import pytest
-import hyperjet as hj
+import bin.hyperjet as hj
 import numpy as np
 from numpy.testing import assert_equal, assert_array_almost_equal, assert_allclose
 from math import sqrt, cos, sin, tan, acos, asin, atan, pi
@@ -396,12 +396,12 @@ class IBinaryOperation:
         self.expected_v = np.array(v)
 
     def check(self, d):
-        self.actual_u = d(self.u)
-        self.actual_v = d(self.v)
-        self.actual_r = self.compute(self.actual_u, self.actual_v)
+        self.actual_u = self.u if isnumber(self.u) else d(self.u)
+        self.actual_v = self.v if isnumber(self.v) else d(self.v)
+        self.actual_u = self.compute(self.actual_u, self.actual_v)
 
         assert_allclose(self.actual_u.data, self.expected_u, atol=1e-15)
-        assert_allclose(self.actual_v.data, self.expected_v, atol=1e-15)
+        assert_allclose(self.actual_v if isnumber(self.v) else self.actual_v.data, self.expected_v, atol=1e-15)
 
 
 class IAdd(IBinaryOperation):
@@ -410,6 +410,7 @@ class IAdd(IBinaryOperation):
 
     def compute(self, u, v):
         u += v
+        return u
 
 
 class ISub(IBinaryOperation):
@@ -418,6 +419,7 @@ class ISub(IBinaryOperation):
 
     def compute(self, u, v):
         u -= v
+        return u
 
 
 class IMul(IBinaryOperation):
@@ -426,6 +428,7 @@ class IMul(IBinaryOperation):
 
     def compute(self, u, v):
         u *= v
+        return u
 
 
 class IDiv(IBinaryOperation):
@@ -434,6 +437,7 @@ class IDiv(IBinaryOperation):
 
     def compute(self, u, v):
         u /= v
+        return u
 
 
 u_operations = [
@@ -605,28 +609,52 @@ def test_binary_operation_dynamic(operation):
 
 i_operations = [
     IAdd(
-        name='iadd',
+        name='iadd dd+=dd',
         u=[75, 25, 30, 0, 10, 6],
         v=[225, 150, 90, 50, 60, 18],
         expected=[300, 175, 120, 50, 70, 24],
     ),
+    IAdd(
+        name='iadd dd+=s',
+        u=[75, 25, 30, 0, 10, 6],
+        v=3,
+        expected=[78, 25, 30, 0, 10, 6],
+    ),
     ISub(
-        name='isub',
+        name='isub dd-=dd',
         u=[75, 25, 30, 0, 10, 6],
         v=[225, 150, 90, 50, 60, 18],
         expected=[-150, -125, -60, -50, -50, -12],
     ),
+    ISub(
+        name='isub dd-=s',
+        u=[75, 25, 30, 0, 10, 6],
+        v=3,
+        expected=[72, 25, 30, 0, 10, 6],
+    ),
     IMul(
-        name='imul',
+        name='imul dd*=dd',
         u=[75, 25, 30, 0, 10, 6],
         v=[225, 150, 90, 50, 60, 18],
         expected=[16875, 16875, 13500, 11250, 13500, 8100],
     ),
+    IMul(
+        name='imul dd*=s',
+        u=[75, 25, 30, 0, 10, 6],
+        v=3,
+        expected=[225, 75, 90, 0, 30, 18],
+    ),
     IDiv(
-        name='idiv',
+        name='idiv dd/=dd',
         u=[75, 25, 30, 0, 10, 6],
         v=[225, 150, 90, 50, 60, 18],
         expected=[1 / 3, -1 / 9, 0, 2 / 27, 0, 0],
+    ),
+    IDiv(
+        name='idiv dd/=s',
+        u=[75, 25, 30, 0, 10, 6],
+        v=3,
+        expected=[25, 25 / 3, 10, 0, 10 / 3, 2],
     ),
 ]
 
