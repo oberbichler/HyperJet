@@ -1,4 +1,3 @@
-from typing import Type
 import pytest
 import hyperjet as hj
 import numpy as np
@@ -248,446 +247,218 @@ def test_resize(u, x):
 # operations
 
 
-class UnaryOperation:
-    def __init__(self, name, u, expected):
-        self.name = name
-        self.u = np.array(u, dtype=float)
-        self.expected_u = np.array(u, dtype=float)
-        self.expected_r = np.array(expected, dtype=float)
+class VariableSet:
+    def __init__(self, dtype):
+        self.dtype = dtype
 
-    def check(self, d):
-        self.actual_u = d(self.u)
-        self.actual_r = self.compute(self.actual_u)
+    @property
+    def u1(self):
+        return self.dtype([1.80000000000000, 1.20000000000000, -0.360000000000000, 0.400000000000000, -0.240000000000000, 0.144000000000000])
 
-        assert_allclose(self.actual_u.data, self.expected_u, atol=1e-15)
-        assert_allclose(self.actual_r.data, self.expected_r, atol=1e-15)
+    @property
+    def u2(self):
+        return self.dtype([1.41421356237310, -0.353553390593274, 0.353553390593274, -0.0883883476483184, 0.0883883476483184, -0.0883883476483184])
 
+    @property
+    def u3(self):
+        return self.dtype([-0.227202094693087, -1.16861715705383, 0.350585147116150, -0.0623680359932327, 0.135572126503353, -0.110788667374236])
 
-class Sqrt(UnaryOperation):
-    def __init__(self, name, u, expected):
-        super().__init__(name, u, expected)
+    @property
+    def u4(self):
+        return self.dtype([0.973847630878195, -0.272642513631704, 0.0817927540895113, -1.49322142634184, 0.475230679265721, -0.158927754597619])
 
-    def compute(self, u):
-        return np.sqrt(u)
+    @property
+    def u5(self):
+        return self.dtype([-4.28626167462806, 23.2464469720624, -6.97393409161873, -231.388035688946, 67.0917660094774, -18.7327429845195])
 
+    @property
+    def u6(self):
+        return self.dtype([2.94217428809568, 3.72896781158072, -1.11869034347422, 5.47972024538469, -2.01681285477348, 0.828781925126886])
 
-class Cos(UnaryOperation):
-    def __init__(self, name, u, expected):
-        super().__init__(name, u, expected)
+    @property
+    def u7(self):
+        return self.dtype([3.10747317631727, 3.53060914571482, -1.05918274371444, 5.65163108913514, -2.04855024131202, 0.826401621136496])
 
-    def compute(self, u):
-        return np.cos(u)
+    @property
+    def u8(self):
+        return self.dtype([0.946806012846268, 0.124270048845782, -0.0372810146537347, -0.240959761098066, 0.0598609234448416, -0.0105020741027055])
 
 
-class Sin(UnaryOperation):
-    def __init__(self, name, u, expected):
-        super().__init__(name, u, expected)
+def check(act, exp):
+    assert_allclose(act.data, exp, atol=1e-16)
 
-    def compute(self, u):
-        return np.sin(u)
 
+# arithmetic operations
 
-class Tan(UnaryOperation):
-    def __init__(self, name, u, expected):
-        super().__init__(name, u, expected)
+static_set = VariableSet(hj.DD2Scalar)
+dynamic_set = VariableSet(hj.DDScalar)
 
-    def compute(self, u):
-        return np.tan(u)
 
+@pytest.mark.parametrize('ctx', [static_set, dynamic_set], ids=['static', 'dynamic'])
+def test_negative(ctx):
+    r = np.negative(ctx.u1)
+    check(r, [-1.8, -1.2, 0.36, -0.4, 0.24, -0.144])
 
-class ACos(UnaryOperation):
-    def __init__(self, name, u, expected):
-        super().__init__(name, u, expected)
 
-    def compute(self, u):
-        return np.arccos(u)
+@pytest.mark.parametrize('ctx', [static_set, dynamic_set], ids=['static', 'dynamic'])
+def test_add(ctx):
+    r = ctx.u1 + ctx.u2
+    check(r, [3.21421356237310, 0.846446609406726, -0.00644660940672624, 0.311611652351682, -0.151611652351682, 0.0556116523516816])
 
+    r = ctx.u1 + 3
+    check(r, [4.80000000000000, 1.20000000000000, -0.360000000000000, 0.400000000000000, -0.240000000000000, 0.144000000000000])
 
-class ASin(UnaryOperation):
-    def __init__(self, name, u, expected):
-        super().__init__(name, u, expected)
+    r = 3 + ctx.u1
+    check(r, [4.80000000000000, 1.20000000000000, -0.360000000000000, 0.400000000000000, -0.240000000000000, 0.144000000000000])
 
-    def compute(self, u):
-        return np.arcsin(u)
+    r = ctx.u1
+    r += ctx.u2
+    check(r, [3.21421356237310, 0.846446609406726, -0.00644660940672624, 0.311611652351682, -0.151611652351682, 0.0556116523516816])
 
+    r = ctx.u1
+    r += 3
+    check(r, [4.80000000000000, 1.20000000000000, -0.360000000000000, 0.400000000000000, -0.240000000000000, 0.144000000000000])
 
-class ATan(UnaryOperation):
-    def __init__(self, name, u, expected):
-        super().__init__(name, u, expected)
 
-    def compute(self, u):
-        return np.arctan(u)
+@pytest.mark.parametrize('ctx', [static_set, dynamic_set], ids=['static', 'dynamic'])
+def test_sub(ctx):
+    r = ctx.u1 - ctx.u2
+    check(r, [0.385786437626905, 1.55355339059327, -0.713553390593274, 0.488388347648318, -0.328388347648318, 0.232388347648318])
 
+    r = ctx.u1 - 3
+    check(r, [-1.20000000000000, 1.20000000000000, -0.360000000000000, 0.400000000000000, -0.240000000000000, 0.144000000000000])
 
-class Pow(UnaryOperation):
-    def __init__(self, name, u, c, expected):
-        super().__init__(name, u, expected)
-        self.c = c
+    r = 3 - ctx.u1
+    check(r, [1.20000000000000, -1.20000000000000, 0.360000000000000, -0.400000000000000, 0.240000000000000, -0.144000000000000])
 
-    def compute(self, u):
-        return np.power(u, 3)
+    r = ctx.u1
+    r -= ctx.u2
+    check(r, [0.385786437626905, 1.55355339059327, -0.713553390593274, 0.488388347648318, -0.328388347648318, 0.232388347648318])
 
+    r = ctx.u1
+    r -= 3
+    check(r, [-1.20000000000000, 1.20000000000000, -0.360000000000000, 0.400000000000000, -0.240000000000000, 0.144000000000000])
 
-def isnumber(value):
-    if type(value) == float:
-        return True
-    if type(value) == int:
-        return True
-    return False
 
+@pytest.mark.parametrize('ctx', [static_set, dynamic_set], ids=['static', 'dynamic'])
+def test_mul(ctx):
+    r = ctx.u1 * ctx.u2
+    check(r, [2.54558441227157, 1.06066017177982, 0.127279220613579, -0.441941738241592, 0.371231060122937, -0.210010714012405])
 
-class BinaryOperation:
-    def __init__(self, name, u, v, expected):
-        self.name = name
-        self.u = u
-        self.v = v
-        self.expected_u = np.array(u)
-        self.expected_v = np.array(v)
-        self.expected_r = np.array(expected)
+    r = ctx.u1 * 3
+    check(r, [5.40000000000000, 3.60000000000000, -1.08000000000000, 1.20000000000000, -0.720000000000000, 0.432000000000000])
 
-    def check(self, d):
-        self.actual_u = self.u if isnumber(self.u) else d(self.u)
-        self.actual_v = self.v if isnumber(self.v) else d(self.v)
-        self.actual_r = self.compute(self.actual_u, self.actual_v)
+    r = 3 * ctx.u1
+    check(r, [5.40000000000000, 3.60000000000000, -1.08000000000000, 1.20000000000000, -0.720000000000000, 0.432000000000000])
 
-        assert_allclose(self.actual_u if isnumber(self.u) else self.actual_u.data, self.expected_u, atol=1e-15)
-        assert_allclose(self.actual_v if isnumber(self.v) else self.actual_v.data, self.expected_v, atol=1e-15)
-        assert_allclose(self.actual_r.data, self.expected_r, atol=1e-15)
+    r = ctx.u1
+    r *= ctx.u2
+    check(r, [2.54558441227157, 1.06066017177982, 0.127279220613579, -0.441941738241592, 0.371231060122937, -0.210010714012405])
 
+    r = ctx.u1
+    r *= 3
+    check(r, [5.40000000000000, 3.60000000000000, -1.08000000000000, 1.20000000000000, -0.720000000000000, 0.432000000000000])
 
-class Add(BinaryOperation):
-    def __init__(self, name, u, v, expected):
-        super().__init__(name, u, v, expected)
 
-    def compute(self, u, v):
-        return u + v
+@pytest.mark.parametrize('ctx', [static_set, dynamic_set], ids=['static', 'dynamic'])
+def test_div(ctx):
+    r = ctx.u1 / ctx.u2
+    check(r, [1.27279220613579, 1.16672618895780, -0.572756492761104, 0.945755319837007, -0.684125810797985, 0.467751135754901])
 
+    r = ctx.u1 / 3
+    check(r, [0.600000000000000, 0.400000000000000, -0.120000000000000, 0.133333333333333, -0.0800000000000000, 0.0480000000000000])
 
-class Sub(BinaryOperation):
-    def __init__(self, name, u, v, expected):
-        super().__init__(name, u, v, expected)
+    r = 3 / ctx.u1
+    check(r, [1.66666666666667, -1.11111111111111, 0.333333333333333, 1.11111111111111, -0.222222222222222, 0])
 
-    def compute(self, u, v):
-        return u - v
+    r = ctx.u1
+    r /= ctx.u2
+    check(r, [1.27279220613579, 1.16672618895780, -0.572756492761104, 0.945755319837007, -0.684125810797985, 0.467751135754901])
 
+    r = ctx.u1
+    r /= 3
+    check(r, [0.600000000000000, 0.400000000000000, -0.120000000000000, 0.133333333333333, -0.0800000000000000, 0.0480000000000000])
 
-class Mul(BinaryOperation):
-    def __init__(self, name, u, v, expected):
-        super().__init__(name, u, v, expected)
-
-    def compute(self, u, v):
-        return u * v
-
-
-class Div(BinaryOperation):
-    def __init__(self, name, u, v, expected):
-        super().__init__(name, u, v, expected)
-
-    def compute(self, u, v):
-        return u / v
-
-
-class IBinaryOperation:
-    def __init__(self, name, u, v, expected):
-        self.name = name
-        self.u = u
-        self.v = v
-        self.expected_u = np.array(expected)
-        self.expected_v = np.array(v)
-
-    def check(self, d):
-        self.actual_u = self.u if isnumber(self.u) else d(self.u)
-        self.actual_v = self.v if isnumber(self.v) else d(self.v)
-        self.actual_u = self.compute(self.actual_u, self.actual_v)
-
-        assert_allclose(self.actual_u.data, self.expected_u, atol=1e-15)
-        assert_allclose(self.actual_v if isnumber(self.v) else self.actual_v.data, self.expected_v, atol=1e-15)
-
-
-class IAdd(IBinaryOperation):
-    def __init__(self, name, u, v, expected):
-        super().__init__(name, u, v, expected)
-
-    def compute(self, u, v):
-        u += v
-        return u
-
-
-class ISub(IBinaryOperation):
-    def __init__(self, name, u, v, expected):
-        super().__init__(name, u, v, expected)
-
-    def compute(self, u, v):
-        u -= v
-        return u
-
-
-class IMul(IBinaryOperation):
-    def __init__(self, name, u, v, expected):
-        super().__init__(name, u, v, expected)
-
-    def compute(self, u, v):
-        u *= v
-        return u
-
-
-class IDiv(IBinaryOperation):
-    def __init__(self, name, u, v, expected):
-        super().__init__(name, u, v, expected)
-
-    def compute(self, u, v):
-        u /= v
-        return u
-
-
-u_operations = [
-    Sqrt(
-        name='sqrt',
-        u=[75, 25, 30, 0, 10, 6],
-        expected=[5 * np.sqrt(3), 5 * np.sqrt(3) / 6, np.sqrt(3), -5 * np.sqrt(3) / 36, np.sqrt(3) / 6, 0],
-    ),
-    Cos(
-        name='cos',
-        u=[75, 25, 30, 0, 10, 6],
-        expected=[np.cos(75), -25 * np.sin(75), -30 * np.sin(75), -625 * np.cos(75), -750 * np.cos(75) - 10 * np.sin(75), -900 * np.cos(75) - 6 * np.sin(75)],
-    ),
-    Sin(
-        name='sin',
-        u=[75, 25, 30, 0, 10, 6],
-        expected=[np.sin(75), 25 * np.cos(75), 30 * np.cos(75), -625 * np.sin(75), 10 * np.cos(75) - 750 * np.sin(75), 6 * np.cos(75) - 900 * np.sin(75)],
-    ),
-    Tan(
-        name='tan',
-        u=[75, 25, 30, 0, 10, 6],
-        expected=[np.tan(75), 25 * np.tan(75)**2 + 25, 30 * np.tan(75)**2 + 30, 1250 * (np.tan(75)**2 + 1) * np.tan(75), 10 * (150 * np.tan(75) + 1) * (np.tan(75)**2 + 1), 6 * (300 * np.tan(75) + 1) * (np.tan(75)**2 + 1)],
-    ),
-    ACos(
-        name='acos',
-        u=[0.6, 0.2, -0.12, 0., -0.04, 0.048],
-        expected=[0.927295218001612, -0.25, 0.15, -0.046875, 0.078125, -0.076875],
-    ),
-    ASin(
-        name='asin',
-        u=[0.6, 0.2, -0.12, 0., -0.04, 0.048],
-        expected=[0.643501108793284, 0.25, -0.15, 0.046875, -0.078125, 0.076875],
-    ),
-    ATan(
-        name='atan',
-        u=[0.6, 0.2, -0.12, 0., -0.04, 0.048],
-        expected=[0.540419500270584, 0.147058823529412, -0.0882352941176471, -0.0259515570934256, -0.0138408304498270, 0.0259515570934256],
-    ),
-    Pow(
-        name='pow',
-        u=[75, 25, 30, 0, 10, 6],
-        c=3,
-        expected=[421875, 421875, 506250, 281250, 506250, 506250],
-    ),
-]
-
-
-@pytest.mark.parametrize('operation', u_operations, ids=[o.name for o in u_operations])
-def test_unary_operation_static(operation):
-    # operation with same static size
-    operation.check(hj.DD2Scalar)
-
-
-@pytest.mark.parametrize('operation', u_operations, ids=[o.name for o in u_operations])
-def test_unary_operation_dynamic(operation):
-    # operation with same dynamic size
-    operation.check(hj.DDScalar)
-
-
-b_operations = [
-    Add(
-        name='add dd+dd',
-        u=[75, 25, 30, 0, 10, 6],
-        v=[225, 150, 90, 50, 60, 18],
-        expected=[300, 175, 120, 50, 70, 24],
-    ),
-    Add(
-        name='add dd+s',
-        u=[75, 25, 30, 0, 10, 6],
-        v=3,
-        expected=[78, 25, 30, 0, 10, 6],
-    ),
-    Add(
-        name='add s+dd',
-        u=3,
-        v=[75, 25, 30, 0, 10, 6],
-        expected=[78, 25, 30, 0, 10, 6],
-    ),
-    Sub(
-        name='sub dd-dd',
-        u=[75, 25, 30, 0, 10, 6],
-        v=[225, 150, 90, 50, 60, 18],
-        expected=[-150, -125, -60, -50, -50, -12],
-    ),
-    Sub(
-        name='sub s-dd',
-        u=3,
-        v=[75, 25, 30, 0, 10, 6],
-        expected=[-72, -25, -30, 0, -10, -6],
-    ),
-    Sub(
-        name='sub dd-s',
-        u=[75, 25, 30, 0, 10, 6],
-        v=3,
-        expected=[72, 25, 30, 0, 10, 6],
-    ),
-    Mul(
-        name='mul dd*dd',
-        u=[75, 25, 30, 0, 10, 6],
-        v=[225, 150, 90, 50, 60, 18],
-        expected=[16875, 16875, 13500, 11250, 13500, 8100],
-    ),
-    Mul(
-        name='mul s*dd',
-        u=3,
-        v=[75, 25, 30, 0, 10, 6],
-        expected=[225, 75, 90, 0, 30, 18],
-    ),
-    Mul(
-        name='mul dd*s',
-        u=[75, 25, 30, 0, 10, 6],
-        v=3,
-        expected=[225, 75, 90, 0, 30, 18],
-    ),
-    Div(
-        name='div dd/dd',
-        u=[75, 25, 30, 0, 10, 6],
-        v=[225, 150, 90, 50, 60, 18],
-        expected=[1 / 3, -1 / 9, 0, 2 / 27, 0, 0],
-    ),
-    Div(
-        name='div s/dd',
-        u=3,
-        v=[75, 25, 30, 0, 10, 6],
-        expected=[1 / 25, -1 / 75, -2 / 125, 2 / 225, 2 / 375, 6 / 625],
-    ),
-    Div(
-        name='div dd/s',
-        u=[75, 25, 30, 0, 10, 6],
-        v=3,
-        expected=[25, 25 / 3, 10, 0, 10 / 3, 2],
-    ),
-]
-
-
-@pytest.mark.parametrize('operation', b_operations, ids=[o.name for o in b_operations])
-def test_binary_operation_static(operation):
-    # operation with same static size
-    operation.check(hj.DD2Scalar)
-
-    if isnumber(operation.actual_u) or isnumber(operation.actual_v):
-        return
-
-    # operation with different static size throws
-    with pytest.raises(TypeError):
-        operation.compute(operation.actual_u, hj.DD3Scalar())
-
-    # operation with dynamic size throws
-    with pytest.raises(TypeError):
-        operation.compute(operation.actual_u, hj.DDScalar(size=2))
-
-
-@pytest.mark.parametrize('operation', b_operations, ids=[o.name for o in b_operations])
-def test_binary_operation_dynamic(operation):
-    # operation with same dynamic size
-    operation.check(hj.DDScalar)
-
-    if isnumber(operation.actual_u) or isnumber(operation.actual_v):
-        return
-
-    # operation with different dynamic size throws
-    with pytest.raises(RuntimeError):
-        operation.compute(operation.actual_u, hj.DDScalar(size=3))
-
-    # operation with static size throws
-    with pytest.raises(TypeError):
-        operation.compute(operation.actual_u, hj.DD2Scalar())
-
-
-i_operations = [
-    IAdd(
-        name='iadd dd+=dd',
-        u=[75, 25, 30, 0, 10, 6],
-        v=[225, 150, 90, 50, 60, 18],
-        expected=[300, 175, 120, 50, 70, 24],
-    ),
-    IAdd(
-        name='iadd dd+=s',
-        u=[75, 25, 30, 0, 10, 6],
-        v=3,
-        expected=[78, 25, 30, 0, 10, 6],
-    ),
-    ISub(
-        name='isub dd-=dd',
-        u=[75, 25, 30, 0, 10, 6],
-        v=[225, 150, 90, 50, 60, 18],
-        expected=[-150, -125, -60, -50, -50, -12],
-    ),
-    ISub(
-        name='isub dd-=s',
-        u=[75, 25, 30, 0, 10, 6],
-        v=3,
-        expected=[72, 25, 30, 0, 10, 6],
-    ),
-    IMul(
-        name='imul dd*=dd',
-        u=[75, 25, 30, 0, 10, 6],
-        v=[225, 150, 90, 50, 60, 18],
-        expected=[16875, 16875, 13500, 11250, 13500, 8100],
-    ),
-    IMul(
-        name='imul dd*=s',
-        u=[75, 25, 30, 0, 10, 6],
-        v=3,
-        expected=[225, 75, 90, 0, 30, 18],
-    ),
-    IDiv(
-        name='idiv dd/=dd',
-        u=[75, 25, 30, 0, 10, 6],
-        v=[225, 150, 90, 50, 60, 18],
-        expected=[1 / 3, -1 / 9, 0, 2 / 27, 0, 0],
-    ),
-    IDiv(
-        name='idiv dd/=s',
-        u=[75, 25, 30, 0, 10, 6],
-        v=3,
-        expected=[25, 25 / 3, 10, 0, 10 / 3, 2],
-    ),
-]
-
-
-@pytest.mark.parametrize('operation', i_operations, ids=[o.name for o in i_operations])
-def test_incemental_operation_static(operation):
-    # operation with same static size
-    operation.check(hj.DD2Scalar)
-
-    if isnumber(operation.actual_u) or isnumber(operation.actual_v):
-        return
-
-    # operation with different static size throws
-    with pytest.raises(TypeError):
-        operation.compute(operation.actual_u, hj.DD3Scalar())
-
-    # operation with dynamic size throws
-    with pytest.raises(TypeError):
-        operation.compute(operation.actual_u, hj.DDScalar(size=2))
-
-
-@pytest.mark.parametrize('operation', i_operations, ids=[o.name for o in i_operations])
-def test_incemental_operation_dynamic(operation):
-    # operation with same dynamic size
-    operation.check(hj.DDScalar)
-
-    if isnumber(operation.actual_u) or isnumber(operation.actual_v):
-        return
-
-    # operation with different dynamic size throws
-    with pytest.raises(RuntimeError):
-        operation.compute(operation.actual_u, hj.DDScalar(size=3))
-
-    # operation with static size throws
-    with pytest.raises(TypeError):
-        operation.compute(operation.actual_u, hj.DD2Scalar())
+
+@pytest.mark.parametrize('ctx', [static_set, dynamic_set], ids=['static', 'dynamic'])
+def test_reciprocal(ctx):
+    r = np.reciprocal(ctx.u1)
+    check(r, [0.555555555555556, -0.370370370370370, 0.111111111111111, 0.370370370370370, -0.0740740740740741, 0])
+
+
+@pytest.mark.parametrize('ctx', [static_set, dynamic_set], ids=['static', 'dynamic'])
+def test_sqrt(ctx):
+    r = np.sqrt(ctx.u1)
+    check(r, [1.34164078649987, 0.447213595499958, -0.134164078649987, 0, -0.0447213595499958, 0.0402492235949962])
+
+
+@pytest.mark.parametrize('ctx', [static_set, dynamic_set], ids=['static', 'dynamic'])
+def test_cbrt(ctx):
+    r = np.cbrt(ctx.u1)
+    check(r, [1.21644039911468, 0.270320088692151, -0.0810960266076453, -0.0300355654102390, -0.0180213392461434, 0.0216256070953721])
+
+
+# trigonometric functions
+
+
+@pytest.mark.parametrize('ctx', [static_set, dynamic_set], ids=['static', 'dynamic'])
+def test_cosh(ctx):
+    r = np.cosh(ctx.u1)
+    check(r, [3.10747317631727, 3.53060914571482, -1.05918274371444, 5.65163108913514, -2.04855024131202, 0.826401621136496])
+
+
+@pytest.mark.parametrize('ctx', [static_set, dynamic_set], ids=['static', 'dynamic'])
+def test_sinh(ctx):
+    r = np.sinh(ctx.u1)
+    check(r, [2.94217428809568, 3.72896781158072, -1.11869034347422, 5.47972024538469, -2.01681285477348, 0.828781925126886])
+
+
+@pytest.mark.parametrize('ctx', [static_set, dynamic_set], ids=['static', 'dynamic'])
+def test_tanh(ctx):
+    r = np.tanh(ctx.u1)
+    check(r, [0.946806012846268, 0.124270048845782, -0.0372810146537347, -0.240959761098066, 0.0598609234448416, -0.0105020741027055])
+
+
+@pytest.mark.parametrize('ctx', [static_set, dynamic_set], ids=['static', 'dynamic'])
+def test_acosh(ctx):
+    r = np.arccosh(ctx.u6)
+    check(r, [1.74207758739717, 1.34764847402516, -0.404294542207549, 0.0492485216214053, -0.149539403888938, 0.125720729608191])
+
+
+@pytest.mark.parametrize('ctx', [static_set, dynamic_set], ids=['static', 'dynamic'])
+def test_asinh(ctx):
+    r = np.arcsinh(ctx.u7)
+    check(r, [1.85189546405173, 1.08154501033879, -0.324463503101638, 0.617782395949683, -0.293489219818784, 0.152939466565963])
+
+
+@pytest.mark.parametrize('ctx', [static_set, dynamic_set], ids=['static', 'dynamic'])
+def test_atanh(ctx):
+    r = np.arctanh(ctx.u8)
+    check(r, [1.8, 1.2, -0.36, 0.4, -0.24, 0.144])
+
+
+@pytest.mark.parametrize('ctx', [static_set, dynamic_set], ids=['static', 'dynamic'])
+def test_exp(ctx):
+    r = np.exp(ctx.u1)
+    check(r, [6.04964746441295, 7.25957695729554, -2.17787308718866, 11.1313513345198, -4.06536309608550, 1.65518354626338])
+
+
+@pytest.mark.parametrize('ctx', [static_set, dynamic_set], ids=['static', 'dynamic'])
+def test_log(ctx):
+    r = np.log(ctx.u1)
+    check(r, [0.587786664902119, 0.666666666666667, -0.200000000000000, -0.222222222222222, 0, 0.0400000000000000])
+
+    r = ctx.u1.log(2)
+    check(r, [0.847996906554950, 0.961796693925976, -0.288539008177793, -0.320598897975325, 0, 0.0577078016355585])
+
+
+@pytest.mark.parametrize('ctx', [static_set, dynamic_set], ids=['static', 'dynamic'])
+def test_log2(ctx):
+    r = np.log2(ctx.u1)
+    check(r, [0.847996906554950, 0.961796693925976, -0.288539008177793, -0.320598897975325, 0, 0.0577078016355585])
+
+
+@pytest.mark.parametrize('ctx', [static_set, dynamic_set], ids=['static', 'dynamic'])
+def test_log10(ctx):
+    r = np.log10(ctx.u1)
+    check(r, [0.255272505103306, 0.289529654602168, -0.0868588963806504, -0.0965098848673893, 0, 0.0173717792761301])
