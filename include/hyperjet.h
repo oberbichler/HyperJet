@@ -285,7 +285,7 @@ public:
     {
         const index s = length(values);
 
-        if constexpr(!is_dynamic()) {
+        if constexpr (!is_dynamic()) {
             assert(s == TSize);
         }
 
@@ -502,10 +502,9 @@ public:
     {
         check_equal_size<TSize>(size(), b.size());
 
+        Type result = Type::empty(size());
         const double d_a = b.m_data[0];
         const double d_b = m_data[0];
-
-        Type result = Type::empty(size());
 
         result.m_data[0] = m_data[0] * b.m_data[0];
 
@@ -671,7 +670,7 @@ public:
         return *this;
     }
 
-    // --- pow
+    // --- arithmetic operations
 
     Type pow(const Scalar b) const
     {
@@ -704,12 +703,13 @@ public:
         using std::pow;
         using std::sqrt;
 
-        const double d = 1 / (2 * sqrt(m_data[0]));
+        const double f = sqrt(m_data[0]);
+        const double d = 1 / (2 * f);
         const double dd = -d / (2 * m_data[0]);
 
         Type result = Type::empty(size());
 
-        result.m_data[0] = sqrt(m_data[0]);
+        result.m_data[0] = f;
 
         for (index i = 1; i < length(result.m_data); i++) {
             result.m_data[i] = d * m_data[i];
@@ -726,7 +726,59 @@ public:
         return result;
     }
 
-    // --- trig
+    Type cbrt() const
+    {
+        using std::cbrt;
+
+        const double f = cbrt(m_data[0]);
+        const double d = 1 / (3 * f * f);
+        const double dd = -d * 2 / (3 * m_data[0]);
+
+        Type result = Type::empty(size());
+
+        result.m_data[0] = f;
+
+        for (index i = 1; i < length(result.m_data); i++) {
+            result.m_data[i] = d * m_data[i];
+        }
+
+        auto* it = &result.m_data[1 + size()];
+
+        for (index i = 0; i < size(); i++) {
+            for (index j = i; j < size(); j++) {
+                *it++ += dd * m_data[1 + i] * m_data[1 + j];
+            }
+        }
+
+        return result;
+    }
+
+    Type reciprocal() const
+    {
+        const double f = 1 / m_data[0];
+        const double d = -f * f;
+        const double dd = -2 * f * d;
+
+        Type result = Type::empty(size());
+
+        result.m_data[0] = f;
+
+        for (index i = 1; i < length(result.m_data); i++) {
+            result.m_data[i] = d * m_data[i];
+        }
+
+        auto* it = &result.m_data[1 + size()];
+
+        for (index i = 0; i < size(); i++) {
+            for (index j = i; j < size(); j++) {
+                *it++ += dd * m_data[1 + i] * m_data[1 + j];
+            }
+        }
+
+        return result;
+    }
+
+    // --- trigonometric functions
 
     Type cos() const
     {
@@ -918,6 +970,327 @@ public:
         for (index i = 0; i < size(); i++) {
             for (index j = i; j < size(); j++) {
                 *it++ += d_aa * (m_data[1 + i] * m_data[1 + j] - b.m_data[1 + i] * b.m_data[1 + j]) + d_ab * (m_data[1 + i] * b.m_data[1 + j] + b.m_data[1 + i] * m_data[1 + j]);
+            }
+        }
+
+        return result;
+    }
+
+    // --- hyperbolic functions
+
+    Type cosh() const
+    {
+        using std::cosh;
+        using std::sinh;
+
+        const double d = sinh(m_data[0]);
+        const double dd = cosh(m_data[0]);
+
+        Type result = Type::empty(size());
+
+        result.m_data[0] = dd;
+
+        for (index i = 1; i < length(result.m_data); i++) {
+            result.m_data[i] = d * m_data[i];
+        }
+
+        auto* it = &result.m_data[1 + size()];
+
+        for (index i = 0; i < size(); i++) {
+            const double c = dd * m_data[1 + i];
+            for (index j = i; j < size(); j++) {
+                *it++ += c * m_data[1 + j];
+            }
+        }
+
+        return result;
+    }
+
+    Type sinh() const
+    {
+        using std::cosh;
+        using std::sinh;
+
+        const double d = cosh(m_data[0]);
+        const double dd = sinh(m_data[0]);
+
+        Type result = Type::empty(size());
+
+        result.m_data[0] = dd;
+
+        for (index i = 1; i < length(result.m_data); i++) {
+            result.m_data[i] = d * m_data[i];
+        }
+
+        auto* it = &result.m_data[1 + size()];
+
+        for (index i = 0; i < size(); i++) {
+            const double c = dd * m_data[1 + i];
+            for (index j = i; j < size(); j++) {
+                *it++ += c * m_data[1 + j];
+            }
+        }
+
+        return result;
+    }
+
+    Type tanh() const
+    {
+        using std::tanh;
+
+        const double f = tanh(m_data[0]);
+
+        const double d = 1 - f * f;
+        const double dd = -2 * f * d;
+
+        Type result = Type::empty(size());
+
+        result.m_data[0] = f;
+
+        for (index i = 1; i < length(result.m_data); i++) {
+            result.m_data[i] = d * m_data[i];
+        }
+
+        auto* it = &result.m_data[1 + size()];
+
+        for (index i = 0; i < size(); i++) {
+            const double c = dd * m_data[1 + i];
+            for (index j = i; j < size(); j++) {
+                *it++ += c * m_data[1 + j];
+            }
+        }
+
+        return result;
+    }
+
+    Type acosh() const
+    {
+        using std::acosh;
+        using std::sqrt;
+
+        const double d = 1 / (sqrt(m_data[0] - 1) * sqrt(m_data[0] + 1));
+        const double dd = -d * m_data[0] / ((m_data[0] - 1) * (m_data[0] + 1));
+
+        Type result = Type::empty(size());
+
+        result.m_data[0] = acosh(m_data[0]);
+
+        for (index i = 1; i < length(result.m_data); i++) {
+            result.m_data[i] = d * m_data[i];
+        }
+
+        auto* it = &result.m_data[1 + size()];
+
+        for (index i = 0; i < size(); i++) {
+            const double c = dd * m_data[1 + i];
+            for (index j = i; j < size(); j++) {
+                *it++ += c * m_data[1 + j];
+            }
+        }
+
+        return result;
+    }
+
+    Type asinh() const
+    {
+        using std::asinh;
+        using std::sqrt;
+
+        const double d = 1 / sqrt(1 + m_data[0] * m_data[0]);
+        const double dd = -d * m_data[0] / (1 + m_data[0] * m_data[0]);
+
+        Type result = Type::empty(size());
+
+        result.m_data[0] = asinh(m_data[0]);
+
+        for (index i = 1; i < length(result.m_data); i++) {
+            result.m_data[i] = d * m_data[i];
+        }
+
+        auto* it = &result.m_data[1 + size()];
+
+        for (index i = 0; i < size(); i++) {
+            const double c = dd * m_data[1 + i];
+            for (index j = i; j < size(); j++) {
+                *it++ += c * m_data[1 + j];
+            }
+        }
+
+        return result;
+    }
+
+    Type atanh() const
+    {
+        using std::atanh;
+        using std::pow;
+
+        const double f = atanh(m_data[0]);
+
+        const double d = 1 / (1 - m_data[0] * m_data[0]);
+        const double dd = 2 * m_data[0] / pow(m_data[0] * m_data[0] - 1, 2);
+
+        Type result = Type::empty(size());
+
+        result.m_data[0] = f;
+
+        for (index i = 1; i < length(result.m_data); i++) {
+            result.m_data[i] = d * m_data[i];
+        }
+
+        auto* it = &result.m_data[1 + size()];
+
+        for (index i = 0; i < size(); i++) {
+            const double c = dd * m_data[1 + i];
+            for (index j = i; j < size(); j++) {
+                *it++ += c * m_data[1 + j];
+            }
+        }
+
+        return result;
+    }
+
+    // exponents and logarithms
+
+    Type exp() const
+    {
+        using std::exp;
+
+        const double f = exp(m_data[0]);
+
+        const double d = f;
+        const double dd = f;
+
+        Type result = Type::empty(size());
+
+        result.m_data[0] = f;
+
+        for (index i = 1; i < length(result.m_data); i++) {
+            result.m_data[i] = d * m_data[i];
+        }
+
+        auto* it = &result.m_data[1 + size()];
+
+        for (index i = 0; i < size(); i++) {
+            const double c = dd * m_data[1 + i];
+            for (index j = i; j < size(); j++) {
+                *it++ += c * m_data[1 + j];
+            }
+        }
+
+        return result;
+    }
+
+    Type log() const
+    {
+        using std::log;
+
+        const double f = log(m_data[0]);
+
+        const double d = 1 / m_data[0];
+        const double dd = -d * d;
+
+        Type result = Type::empty(size());
+
+        result.m_data[0] = f;
+
+        for (index i = 1; i < length(result.m_data); i++) {
+            result.m_data[i] = d * m_data[i];
+        }
+
+        auto* it = &result.m_data[1 + size()];
+
+        for (index i = 0; i < size(); i++) {
+            const double c = dd * m_data[1 + i];
+            for (index j = i; j < size(); j++) {
+                *it++ += c * m_data[1 + j];
+            }
+        }
+
+        return result;
+    }
+
+    Type log(const TScalar base) const
+    {
+        using std::log;
+
+        const double f = log(m_data[0]) / log(base);
+        const double d = 1 / (m_data[0] * log(base));
+        const double dd = -d / m_data[0];
+
+        Type result = Type::empty(size());
+
+        result.m_data[0] = f;
+
+        for (index i = 1; i < length(result.m_data); i++) {
+            result.m_data[i] = d * m_data[i];
+        }
+
+        auto* it = &result.m_data[1 + size()];
+
+        for (index i = 0; i < size(); i++) {
+            const double c = dd * m_data[1 + i];
+            for (index j = i; j < size(); j++) {
+                *it++ += c * m_data[1 + j];
+            }
+        }
+
+        return result;
+    }
+
+    Type log2() const
+    {
+        using std::log;
+        using std::log2;
+
+        const double f = log2(m_data[0]);
+
+        const double d = 1 / (m_data[0] * log(2));
+        const double dd = -d / m_data[0];
+
+        Type result = Type::empty(size());
+
+        result.m_data[0] = f;
+
+        for (index i = 1; i < length(result.m_data); i++) {
+            result.m_data[i] = d * m_data[i];
+        }
+
+        auto* it = &result.m_data[1 + size()];
+
+        for (index i = 0; i < size(); i++) {
+            const double c = dd * m_data[1 + i];
+            for (index j = i; j < size(); j++) {
+                *it++ += c * m_data[1 + j];
+            }
+        }
+
+        return result;
+    }
+
+    Type log10() const
+    {
+        using std::log;
+        using std::log10;
+
+        const double f = log10(m_data[0]);
+
+        const double d = 1 / (m_data[0] * log(10));
+        const double dd = -d / m_data[0];
+
+        Type result = Type::empty(size());
+
+        result.m_data[0] = f;
+
+        for (index i = 1; i < length(result.m_data); i++) {
+            result.m_data[i] = d * m_data[i];
+        }
+
+        auto* it = &result.m_data[1 + size()];
+
+        for (index i = 0; i < size(); i++) {
+            const double c = dd * m_data[1 + i];
+            for (index j = i; j < size(); j++) {
+                *it++ += c * m_data[1 + j];
             }
         }
 
@@ -1118,6 +1491,66 @@ template <typename TScalar, index TSize>
 DDScalar<TScalar, TSize> atan2(const DDScalar<TScalar, TSize>& a, const DDScalar<TScalar, TSize>& b)
 {
     return a.atan2(b);
+}
+
+// std::cosh
+
+using std::cosh;
+
+template <typename TScalar, index TSize>
+DDScalar<TScalar, TSize> cosh(const DDScalar<TScalar, TSize>& a)
+{
+    return a.cosh();
+}
+
+// std::sinh
+
+using std::sinh;
+
+template <typename TScalar, index TSize>
+DDScalar<TScalar, TSize> sinh(const DDScalar<TScalar, TSize>& a)
+{
+    return a.sinh();
+}
+
+// std::tanh
+
+using std::tanh;
+
+template <typename TScalar, index TSize>
+DDScalar<TScalar, TSize> tanh(const DDScalar<TScalar, TSize>& a)
+{
+    return a.tanh();
+}
+
+// std::acosh
+
+using std::acosh;
+
+template <typename TScalar, index TSize>
+DDScalar<TScalar, TSize> acosh(const DDScalar<TScalar, TSize>& a)
+{
+    return a.acosh();
+}
+
+// std::asin
+
+using std::asinh;
+
+template <typename TScalar, index TSize>
+DDScalar<TScalar, TSize> asinh(const DDScalar<TScalar, TSize>& a)
+{
+    return a.asinh();
+}
+
+// std::atan
+
+using std::atanh;
+
+template <typename TScalar, index TSize>
+DDScalar<TScalar, TSize> atanh(const DDScalar<TScalar, TSize>& a)
+{
+    return a.atanh();
 }
 
 } // namespace hyperjet
