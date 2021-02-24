@@ -12,49 +12,7 @@ if __name__ == '__main__':
     pytest.main(sys.argv)
 
 
-@pytest.fixture
-def u():
-    a = 3
-    b = 5
-    return hj.DD2Scalar([75, b**2, 2 * a * b, 0, 2 * b, 2 * a])
-
-
-@pytest.fixture
-def v():
-    a = 3
-    b = 5
-    return hj.DD2Scalar([225, 2 * a * b**2, 2 * a**2 * b, 2 * b**2, 4 * a * b, 2 * a**2])
-
-
-@pytest.fixture
-def x():
-    a = 3
-    b = 5
-    return hj.DDScalar([75, b**2, 2 * a * b, 0, 2 * b, 2 * a])
-
-
-@pytest.fixture
-def y():
-    a = 3
-    b = 5
-    return hj.DDScalar([225, 2 * a * b**2, 2 * a**2 * b, 2 * b**2, 4 * a * b, 2 * a**2])
-
-
-@pytest.fixture
-def sample_trig():
-    u = hj.DD2Scalar([1 / 2, 1 / 6, 1 / 5, 0, 1 / 15, 1 / 25])
-    v = hj.DD2Scalar([-1 / 4, -1 / 6, -1 / 10, -1 / 18, -1 / 15, -1 / 50])
-
-    return u, v
-
-
-def check(jet, f, g, h):
-    assert_allclose(jet.f, f)
-    assert_array_almost_equal(jet.g, g)
-    assert_array_almost_equal(jet.h, h)
-
-
-# init
+# initialization
 
 
 def test_init_by_value():
@@ -211,40 +169,7 @@ def test_variables():
     assert_allclose(u[1].data, [5, 0, 1, 0, 0, 0])
 
 
-# serialization
-
-
-def test_copy(u):
-    v = copy(u)
-    assert_equal(v.data, u.data)
-
-    v = deepcopy(u)
-    assert_equal(v.data, u.data)
-
-
-# get / set
-
-
-def test_is_dynamic(u, x):
-    assert_equal(u.is_dynamic, False)
-    assert_equal(x.is_dynamic, True)
-
-
-def test_size(u, x):
-    assert_equal(u.size, 2)
-    assert_equal(x.size, 2)
-
-
-def test_resize(u, x):
-    # static throws
-    with pytest.raises(AttributeError):
-        u.resize(3)
-
-    x.resize(3)
-    assert_equal(x.size, 3)
-
-
-# operations
+# test data
 
 
 class VariableSet:
@@ -288,14 +213,78 @@ class VariableSet:
         return self.dtype([1, 2, 3, 4, 5, 6])
 
 
+static_set = VariableSet(hj.DD2Scalar)
+dynamic_set = VariableSet(hj.DDScalar)
+
+
 def check(act, exp):
     assert_allclose(act.data, exp, atol=1e-16)
 
 
-# arithmetic operations
+# properties
 
-static_set = VariableSet(hj.DD2Scalar)
-dynamic_set = VariableSet(hj.DDScalar)
+
+def test_is_dynamic():
+    assert_equal(static_set.u1.is_dynamic, False)
+    assert_equal(dynamic_set.u1.is_dynamic, True)
+
+
+@pytest.mark.parametrize('ctx', [static_set, dynamic_set], ids=['static', 'dynamic'])
+def test_size(ctx):
+    u = ctx.u1
+    assert_equal(u.size, 2)
+
+
+# resizing
+
+
+@pytest.mark.parametrize('ctx', [static_set, dynamic_set], ids=['static', 'dynamic'])
+def test_resize(ctx):
+    u = ctx.u9
+
+    if u.is_dynamic:
+        r = u.pad_right(5)
+        assert_equal(r.size, 5)
+    else:
+        with pytest.raises(AttributeError):
+            u.pad_right(5)
+
+
+@pytest.mark.parametrize('ctx', [static_set, dynamic_set], ids=['static', 'dynamic'])
+def test_pad_right(ctx):
+    u = ctx.u9
+
+    if u.is_dynamic:
+        r = u.pad_right(new_size=5)
+        check(r, [1, 2, 3, 0, 0, 0, 4, 5, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+    else:
+        with pytest.raises(AttributeError):
+            u.pad_right(new_size=5)
+
+
+@pytest.mark.parametrize('ctx', [static_set, dynamic_set], ids=['static', 'dynamic'])
+def test_pad_left(ctx):
+    u = ctx.u9
+
+    if u.is_dynamic:
+        r = u.pad_left(new_size=5)
+        check(r, [1, 0, 0, 0, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 5, 6])
+    else:
+        with pytest.raises(AttributeError):
+            u.pad_left(new_size=5)
+
+
+# serialization
+
+
+@pytest.mark.parametrize('ctx', [static_set, dynamic_set], ids=['static', 'dynamic'])
+def test_copy(ctx):
+    u = ctx.u1
+    v = copy(u)
+    assert_equal(v.data, u.data)
+
+
+# arithmetic operations
 
 
 @pytest.mark.parametrize('ctx', [static_set, dynamic_set], ids=['static', 'dynamic'])
@@ -466,15 +455,3 @@ def test_log2(ctx):
 def test_log10(ctx):
     r = np.log10(ctx.u1)
     check(r, [0.255272505103306, 0.289529654602168, -0.0868588963806504, -0.0965098848673893, 0, 0.0173717792761301])
-
-
-def test_pad_right():
-    u = dynamic_set.u9
-    r = u.pad_right(new_size=5)
-    check(r, [1, 2, 3, 0, 0, 0, 4, 5, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0])
-
-
-def test_pad_left():
-    u = dynamic_set.u9
-    r = u.pad_left(new_size=5)
-    check(r, [1, 0, 0, 0, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 5, 6])
