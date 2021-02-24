@@ -230,8 +230,8 @@ def test_values(ctx):
 
     assert_equal(u.f, 1)
 
-    assert_equal(u.g(0), 2)
-    assert_equal(u.g(1), 3)
+    assert_equal(u.g[0], 2)
+    assert_equal(u.g[1], 3)
 
     assert_equal(u.h(0, 0), 4)
     assert_equal(u.h(0, 1), 5)
@@ -239,8 +239,8 @@ def test_values(ctx):
     assert_equal(u.h(1, 1), 6)
 
     u.f = 6
-    u.set_g(0, 5)
-    u.set_g(1, 4)
+    u.g[0] = 5
+    u.g[1] = 4
     u.set_h(0, 0, 3)
     u.set_h(0, 1, 2)
     u.set_h(1, 0, 2)
@@ -248,8 +248,8 @@ def test_values(ctx):
 
     assert_equal(u.f, 6)
 
-    assert_equal(u.g(0), 5)
-    assert_equal(u.g(1), 4)
+    assert_equal(u.g[0], 5)
+    assert_equal(u.g[1], 4)
 
     assert_equal(u.h(0, 0), 3)
     assert_equal(u.h(0, 1), 2)
@@ -262,15 +262,20 @@ def test_ndarray(ctx):
     # static size
     u = ctx.dtype([1, 2, 3, 4, 5, 6])
 
-    assert_allclose(u.ag(), [2, 3])
+    assert_allclose(u.g, [2, 3])
 
-    assert_equal(np.triu(u.ah()), [[4, 5], [0, 6]])
+    assert_equal(np.triu(u.hm()), [[4, 5], [0, 6]])
 
-    u.set_ag([5, 4])
-    assert_allclose(u.ag(), [5, 4])
+    u.g[:] = [5, 4]
+    assert_allclose(u.g, [5, 4])
 
-    u.set_ah([[3, 2], [0, 1]])
-    assert_equal(np.triu(u.ah()), [[3, 2], [0, 1]])
+    u.set_hm([[3, 2], [0, 1]])
+    assert_equal(np.triu(u.hm()), [[3, 2], [0, 1]])
+
+    assert_allclose(u.data, [1, 5, 4, 3, 2, 1])
+
+    u.data[:] = [3, 4, 5, 6, 7, 8]
+    assert_allclose(u.data, [3, 4, 5, 6, 7, 8])
 
 
 def test_is_dynamic():

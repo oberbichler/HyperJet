@@ -469,22 +469,15 @@ public:
 
 #if defined EIGEN_WORLD_VERSION
 
-    Eigen::Matrix<TScalar, 1, TSize> gv() const
+    Eigen::Ref<const Eigen::Matrix<TScalar, 1, TSize>> ag() const
     {
-        Eigen::Matrix<TScalar, 1, TSize> result(size());
-
-        for (index i = 0; i < size(); i++) {
-            result(i) = g(i);
-        }
-
-        return result;
+        return Eigen::Map<Eigen::Matrix<TScalar, 1, TSize>>(ptr() + 1, size());
     }
 
-    void set_gv(Eigen::Ref<const Eigen::Matrix<TScalar, 1, TSize>> value)
+
+    Eigen::Ref<Eigen::Matrix<TScalar, 1, TSize>> ag()
     {
-        for (index i = 0; i < size(); i++) {
-            g(i) = value(i);
-        }
+        return Eigen::Map<Eigen::Matrix<TScalar, 1, TSize>>(ptr() + 1, size());
     }
 
     Eigen::Matrix<TScalar, TSize, TSize> hm() const
@@ -511,6 +504,11 @@ public:
                 h(it++) = value(i, j);
             }
         }
+    }
+
+    Eigen::Ref<Eigen::Matrix<TScalar, 1, TSize < 0 ? Dynamic : (TSize + 1) * (TSize + 2) / 2>> adata()
+    {
+        return Eigen::Map<Eigen::Matrix<TScalar, 1, TSize < 0 ? Dynamic : (TSize + 1) * (TSize + 2) / 2>>(ptr(), length(m_data));
     }
 
 #endif
