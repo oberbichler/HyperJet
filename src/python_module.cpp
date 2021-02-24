@@ -1,7 +1,11 @@
+#include <Eigen/Dense>
+
 #include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-#include <pybind11/stl_bind.h>
+#include <pybind11/eigen.h>
+#include <pybind11/numpy.h>
 #include <pybind11/operators.h>
+#include <pybind11/stl_bind.h>
+#include <pybind11/stl.h>
 
 #include <hyperjet.h>
 
@@ -41,6 +45,14 @@ void register_ddscalar(pybind11::module& m, const std::string& name)
         .def("__pow__", &Type::pow)
         .def("__repr__", &Type::to_string)
         .def("abs", &Type::abs)
+        .def("g", py::overload_cast<hj::index>(&Type::g), "index"_a)
+        .def("h", py::overload_cast<hj::index, hj::index>(&Type::h), "row"_a, "col"_a)
+        .def("set_g", py::overload_cast<hj::index, TScalar>(&Type::set_g), "index"_a, "value"_a)
+        .def("set_h", py::overload_cast<hj::index, hj::index, TScalar>(&Type::set_h), "row"_a, "col"_a, "value"_a)
+        .def("ag", &Type::gv)
+        .def("ah", &Type::hm)
+        .def("set_ag", &Type::set_gv, "value"_a)
+        .def("set_ah", &Type::set_hm, "value"_a)
         // methods: arithmetic operations
         .def("reciprocal", &Type::reciprocal)
         .def("sqrt", &Type::sqrt)

@@ -147,6 +147,16 @@ public:
         return m_data;
     }
 
+    Scalar const* ptr() const
+    {
+        return m_data.data();
+    }
+
+    Scalar* ptr()
+    {
+        return m_data.data();
+    }
+
     const Data& data() const
     {
         return m_data;
@@ -413,14 +423,14 @@ public:
     {
         assert(0 <= i && i < size() * (size() + 1) / 2);
 
-        return m_data[1 + TSize + i];
+        return m_data[1 + size() + i];
     }
 
     Scalar h(const index i) const
     {
         assert(0 <= i && i < size() * (size() + 1) / 2);
 
-        return m_data[1 + TSize + i];
+        return m_data[1 + size() + i];
     }
 
     void set_h(const index i, const Scalar value)
@@ -431,23 +441,79 @@ public:
     Scalar& h(const index i, const index j)
     {
         assert(0 <= i && i < size());
-        assert(i <= j && j < size());
+        assert(0 <= j && j < size());
 
-        return m_data[1 + TSize + (2 * TSize - 1 - i) * i / 2 + j];
+        if (i < j) {
+            return m_data[1 + size() + (2 * size() - 1 - i) * i / 2 + j];
+        } else {
+            return m_data[1 + size() + (2 * size() - 1 - j) * j / 2 + i];
+        }
     }
 
     Scalar h(const index i, const index j) const
     {
         assert(0 <= i && i < size());
-        assert(i <= j && j < size());
+        assert(0 <= j && j < size());
 
-        return m_data[1 + TSize + (2 * TSize - 1 - i) * i / 2 + j];
+        if (i < j) {
+            return m_data[1 + size() + (2 * size() - 1 - i) * i / 2 + j];
+        } else {
+            return m_data[1 + size() + (2 * size() - 1 - j) * j / 2 + i];
+        }
     }
 
     void set_h(const index i, const index j, const Scalar value)
     {
         h(i, j) = value;
     }
+
+#if defined EIGEN_WORLD_VERSION
+
+    Eigen::Matrix<TScalar, 1, TSize> gv() const
+    {
+        Eigen::Matrix<TScalar, 1, TSize> result(size());
+
+        for (index i = 0; i < size(); i++) {
+            result(i) = g(i);
+        }
+
+        return result;
+    }
+
+    void set_gv(Eigen::Ref<const Eigen::Matrix<TScalar, 1, TSize>> value)
+    {
+        for (index i = 0; i < size(); i++) {
+            g(i) = value(i);
+        }
+    }
+
+    Eigen::Matrix<TScalar, TSize, TSize> hm() const
+    {
+        Eigen::Matrix<TScalar, TSize, TSize> result(size(), size());
+
+        index it = 0;
+
+        for (index i = 0; i < size(); i++) {
+            for (index j = i; j < size(); j++) {
+                result(i, j) = h(it++);
+            }
+        }
+
+        return result;
+    }
+
+    void set_hm(Eigen::Ref<const Eigen::Matrix<TScalar, TSize, TSize>> value)
+    {
+        index it = 0;
+
+        for (index i = 0; i < size(); i++) {
+            for (index j = i; j < size(); j++) {
+                h(it++) = value(i, j);
+            }
+        }
+    }
+
+#endif
 
     friend std::ostream& operator<<(std::ostream& out, const Type& value)
     {
@@ -1700,7 +1766,7 @@ DDScalar<TScalar, TSize> log10(const DDScalar<TScalar, TSize>& a)
 
 } // namespace hyperjet
 
-#ifdef EIGEN_WORLD_VERSION
+#if defined EIGEN_WORLD_VERSION
 
 namespace Eigen {
 
