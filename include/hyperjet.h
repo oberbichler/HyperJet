@@ -511,6 +511,19 @@ public:
         return Eigen::Map<Eigen::Matrix<TScalar, 1, TSize < 0 ? Dynamic : (TSize + 1) * (TSize + 2) / 2>>(ptr(), length(m_data));
     }
 
+    static Type from_arrays(const TScalar f, Eigen::Ref<const Eigen::Matrix<TScalar, 1, TSize>> g, Eigen::Ref<const Eigen::Matrix<TScalar, TSize, TSize>> hm)
+    {
+        assert(g.size() == hm.rows() && g.size() == hm.cols());
+
+        Type result = empty(length(g));
+
+        result.f() = f;
+        result.ag() = g;
+        result.set_hm(hm);
+
+        return result;
+    }
+
 #endif
 
     friend std::ostream& operator<<(std::ostream& out, const Type& value)

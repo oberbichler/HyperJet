@@ -224,6 +224,13 @@ def check(act, exp):
 
 
 @pytest.mark.parametrize('ctx', [static_set, dynamic_set], ids=['static', 'dynamic'])
+def test_init_by_array(ctx):
+    u = ctx.dtype(f=1, g=[2, 3], hm=[[4, 5], [5, 6]])
+    assert_equal(u.size, 2)
+    assert_allclose(u.data, [1, 2, 3, 4, 5, 6])
+
+
+@pytest.mark.parametrize('ctx', [static_set, dynamic_set], ids=['static', 'dynamic'])
 def test_values(ctx):
     # static size
     u = ctx.dtype([1, 2, 3, 4, 5, 6])

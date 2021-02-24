@@ -23,6 +23,7 @@ void register_ddscalar(pybind11::module& m, const std::string& name)
         // constructor
         .def(py::init(py::overload_cast<TScalar, hj::index>(&Type::constant)), "f"_a=0, "size"_a)
         .def(py::init(py::overload_cast<const typename Type::Data&>(&Type::create)), "data"_a)
+        .def(py::init(&Type::from_arrays), "f"_a, "g"_a, "hm"_a)
         // properties
         .def_property("f", py::overload_cast<>(&Type::f, py::const_), &Type::set_f)
         // static read-only properties
