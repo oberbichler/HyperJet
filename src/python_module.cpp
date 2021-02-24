@@ -136,7 +136,9 @@ void register_ddscalar(pybind11::module& m, const std::string& name)
             // constructor
             .def(py::init(py::overload_cast<TScalar>(&Type::constant)), "f"_a=0)
             // methods
-            .def("resize", &Type::resize, "size"_a);
+            .def("resize", &Type::resize, "size"_a)
+            .def("pad_right", &Type::pad_right, "new_size"_a)
+            .def("pad_left", &Type::pad_left, "new_size"_a);
     } else {
         py_class
             // constructor

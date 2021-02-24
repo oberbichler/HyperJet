@@ -169,6 +169,80 @@ public:
         m_data.resize(n);
     }
 
+    Type pad_left(const index new_size) const
+    {
+        static_assert(is_dynamic());
+
+        Type result = empty(new_size);
+
+        const index head = new_size - size();
+
+        auto source = m_data.cbegin();
+        auto target = result.m_data.begin();
+
+        *target++ = *source++;
+
+        for (index i = 0; i < head; i++) {
+            *target++ = Scalar(0);
+        }
+
+        for (index i = 0; i < size(); i++) {
+            *target++ = *source++;
+        }
+
+        for (index i = 0; i < head; i++) {
+            for (index j = i; j < new_size; j++) {
+                *target++ = Scalar(0);
+            }
+        }
+
+        for (index i = 0; i < size(); i++) {
+            for (index j = i; j < size(); j++) {
+                *target++ = *source++;
+            }
+        }
+
+        return result;
+    }
+
+    Type pad_right(const index new_size) const
+    {
+        static_assert(is_dynamic());
+
+        Type result = empty(new_size);
+
+        const index tail = new_size - size();
+
+        auto source = m_data.cbegin();
+        auto target = result.m_data.begin();
+
+        for (index i = 0; i < size() + 1; i++) {
+            *target++ = *source++;
+        }
+
+        for (index i = 0; i < tail; i++) {
+            *target++ = Scalar(0);
+        }
+
+        for (index i = 0; i < size(); i++) {
+            for (index j = i; j < size(); j++) {
+                *target++ = *source++;
+            }
+
+            for (index j = 0; j < tail; j++) {
+                *target++ = Scalar(0);
+            }
+        }
+
+        for (index i = 0; i < tail; i++) {
+            for (index j = i; j < tail; j++) {
+                *target++ = Scalar(0);
+            }
+        }
+
+        return result;
+    }
+
     static constexpr bool is_dynamic()
     {
         return TSize == Dynamic;

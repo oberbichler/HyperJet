@@ -283,6 +283,10 @@ class VariableSet:
     def u8(self):
         return self.dtype([0.946806012846268, 0.124270048845782, -0.0372810146537347, -0.240959761098066, 0.0598609234448416, -0.0105020741027055])
 
+    @property
+    def u9(self):
+        return self.dtype([1, 2, 3, 4, 5, 6])
+
 
 def check(act, exp):
     assert_allclose(act.data, exp, atol=1e-16)
@@ -462,3 +466,15 @@ def test_log2(ctx):
 def test_log10(ctx):
     r = np.log10(ctx.u1)
     check(r, [0.255272505103306, 0.289529654602168, -0.0868588963806504, -0.0965098848673893, 0, 0.0173717792761301])
+
+
+def test_pad_right():
+    u = dynamic_set.u9
+    r = u.pad_right(new_size=5)
+    check(r, [1, 2, 3, 0, 0, 0, 4, 5, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+
+def test_pad_left():
+    u = dynamic_set.u9
+    r = u.pad_left(new_size=5)
+    check(r, [1, 0, 0, 0, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 5, 6])
