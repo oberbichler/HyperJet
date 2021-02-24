@@ -152,6 +152,11 @@ public:
         return m_data;
     }
 
+    static constexpr index static_size()
+    {
+        return TSize;
+    }
+
     constexpr index size() const
     {
         if (is_dynamic()) {
@@ -1513,6 +1518,16 @@ DDScalar<TScalar, TSize> sqrt(const DDScalar<TScalar, TSize>& a)
     return a.sqrt();
 }
 
+// std::cbrt
+
+using std::cbrt;
+
+template <typename TScalar, index TSize>
+DDScalar<TScalar, TSize> cbrt(const DDScalar<TScalar, TSize>& a)
+{
+    return a.cbrt();
+}
+
 // std::cos
 
 using std::cos;
@@ -1641,6 +1656,46 @@ template <typename TScalar, index TSize>
 DDScalar<TScalar, TSize> atanh(const DDScalar<TScalar, TSize>& a)
 {
     return a.atanh();
+}
+
+// std::exp
+
+using std::exp;
+
+template <typename TScalar, index TSize>
+DDScalar<TScalar, TSize> exp(const DDScalar<TScalar, TSize>& a)
+{
+    return a.exp();
+}
+
+// std::log
+
+using std::log;
+
+template <typename TScalar, index TSize>
+DDScalar<TScalar, TSize> log(const DDScalar<TScalar, TSize>& a)
+{
+    return a.log();
+}
+
+// std::log2
+
+using std::log2;
+
+template <typename TScalar, index TSize>
+DDScalar<TScalar, TSize> log2(const DDScalar<TScalar, TSize>& a)
+{
+    return a.log2();
+}
+
+// std::cbrt
+
+using std::log10;
+
+template <typename TScalar, index TSize>
+DDScalar<TScalar, TSize> log10(const DDScalar<TScalar, TSize>& a)
+{
+    return a.log10();
 }
 
 } // namespace hyperjet
