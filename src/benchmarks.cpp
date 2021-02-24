@@ -18,34 +18,38 @@ const DDScalar<double, 3> dd3 {0.3, 0.1, 0.8, 0.2, 0.5, 0.7, 0.9, 0.4, 0.6, 0.0}
 const Eigen::Matrix<DDScalar<double, 3>, 1, 3> ddv1 {dd1, dd2, dd3};
 const Eigen::Matrix<DDScalar<double, 3>, 1, 3> ddv2 {dd3, dd1, dd2};
 
-TEST_CASE("Benchmarks") {
+TEMPLATE_TEST_CASE("Benchmarks", "", (DDScalar<double, 3>), (DDScalar<double, 15>), (DDScalar<double, Dynamic>)) {
+    const TestType dd1(TestType::is_dynamic() ? 15 : TestType::static_size());
+    const TestType dd2(TestType::is_dynamic() ? 15 : TestType::static_size());
+    const TestType dd3(TestType::is_dynamic() ? 15 : TestType::static_size());
+
     // --- neg
 
-    BENCHMARK("-DD") {
+    BENCHMARK("-DDScalar") {
         return -dd1;
     };
 
     // --- add
 
-    BENCHMARK("DD + DD") {
+    BENCHMARK("DDScalar + DDScalar") {
         return dd1 + dd2;
     };
 
-    BENCHMARK("DD + S") {
+    BENCHMARK("DDScalar + Scalar") {
         return dd1 + 3.5;
     };
 
-    BENCHMARK("S + DD") {
+    BENCHMARK("Scalar + DDScalar") {
         return 3.5 + dd1;
     };
 
-    BENCHMARK("DD += DD") {
+    BENCHMARK("DDScalar += DDScalar") {
         auto r = dd1;
         r += dd2;
         return r;
     };
 
-    BENCHMARK("DD += S") {
+    BENCHMARK("DDScalar += Scalar") {
         auto r = dd1;
         r += 3.5;
         return r;
@@ -53,25 +57,25 @@ TEST_CASE("Benchmarks") {
 
     // --- sub
 
-    BENCHMARK("DD - DD") {
+    BENCHMARK("DDScalar - DDScalar") {
         return dd1 - dd2;
     };
 
-    BENCHMARK("DD - S") {
+    BENCHMARK("DDScalar - Scalar") {
         return dd1 - 3.5;
     };
 
-    BENCHMARK("S - DD") {
+    BENCHMARK("Scalar - DDScalar") {
         return 3.5 - dd1;
     };
 
-    BENCHMARK("DD -= DD") {
+    BENCHMARK("DDScalar -= DDScalar") {
         auto r = dd1;
         r -= dd2;
         return r;
     };
 
-    BENCHMARK("DD -= S") {
+    BENCHMARK("DDScalar -= Scalar") {
         auto r = dd1;
         r -= 3.5;
         return r;
@@ -79,25 +83,25 @@ TEST_CASE("Benchmarks") {
 
     // --- mul
 
-    BENCHMARK("DD * DD") {
+    BENCHMARK("DDScalar * DDScalar") {
         return dd1 * dd2;
     };
 
-    BENCHMARK("S * DD") {
+    BENCHMARK("Scalar * DDScalar") {
         return 3.5 * dd1;
     };
 
-    BENCHMARK("DD * S") {
+    BENCHMARK("DDScalar * Scalar") {
         return dd1 * 3.5;
     };
 
-    BENCHMARK("DD *= DD") {
+    BENCHMARK("DDScalar *= DDScalar") {
         auto r = dd1;
         r *= dd2;
         return r;
     };
 
-    BENCHMARK("DD *= S") {
+    BENCHMARK("DDScalar *= Scalar") {
         auto r = dd1;
         r *= 3.5;
         return r;
@@ -105,25 +109,25 @@ TEST_CASE("Benchmarks") {
 
     // --- div
 
-    BENCHMARK("DD / DD") {
+    BENCHMARK("DDScalar / DDScalar") {
         return dd1 / dd2;
     };
 
-    BENCHMARK("DD / S") {
+    BENCHMARK("DDScalar / Scalar") {
         return dd1 / 3.5;
     };
 
-    BENCHMARK("S / DD") {
+    BENCHMARK("Scalar / DDScalar") {
         return 3.5 / dd1;
     };
 
-    BENCHMARK("DD /= DD") {
+    BENCHMARK("DDScalar /= DDScalar") {
         auto r = dd1;
         r /= dd2;
         return r;
     };
 
-    BENCHMARK("DD /= S") {
+    BENCHMARK("DDScalar /= Scalar") {
         auto r = dd1;
         r /= 3.5;
         return r;
@@ -131,76 +135,135 @@ TEST_CASE("Benchmarks") {
 
     // --- pow
 
-    BENCHMARK("DD^S") {
+    BENCHMARK("DDScalar^Scalar") {
         using std::pow;
         return pow(dd1, 3.5);
     };
 
     // --- sqrt
 
-    BENCHMARK("Sqrt(DD)") {
+    BENCHMARK("Sqrt(DDScalar)") {
         using std::sqrt;
         return sqrt(dd1);
     };
 
+    // --- cbrt
+
+    BENCHMARK("Cbrt(DDScalar)") {
+        using std::cbrt;
+        return cbrt(dd1);
+    };
+
     // --- trig
 
-    BENCHMARK("Cos(DD)") {
+    BENCHMARK("Cos(DDScalar)") {
         using std::cos;
         return cos(dd1);
     };
 
-    BENCHMARK("Sin(DD)") {
+    BENCHMARK("Sin(DDScalar)") {
         using std::sin;
         return sin(dd1);
     };
 
-    BENCHMARK("Tan(DD)") {
+    BENCHMARK("Tan(DDScalar)") {
         using std::tan;
         return tan(dd1);
     };
 
-    BENCHMARK("Acos(DD)") {
+    BENCHMARK("Acos(DDScalar)") {
         using std::acos;
         return acos(dd1);
     };
 
-    BENCHMARK("Asin(DD)") {
+    BENCHMARK("Asin(DDScalar)") {
         using std::asin;
         return asin(dd1);
     };
 
-    BENCHMARK("Atan(DD)") {
+    BENCHMARK("Atan(DDScalar)") {
         using std::atan;
         return atan(dd1);
     };
 
-    BENCHMARK("Atan2(DD, DD)") {
+    BENCHMARK("Atan2(DDScalar, DDScalar)") {
         using std::atan2;
         return atan2(dd1, dd2);
     };
 
-    // --- dot
-
-    BENCHMARK("DD3 . DD3") {
-        return ddv1.dot(ddv2);
+    BENCHMARK("Cosh(DDScalar)") {
+        using std::cosh;
+        return cosh(dd1);
     };
 
-    // --- cross
-
-    BENCHMARK("DD3 x DD3") {
-        return ddv1.cross(ddv2);
+    BENCHMARK("Sinh(DDScalar)") {
+        using std::sinh;
+        return sinh(dd1);
     };
 
-    // --- norm
-
-    BENCHMARK("| DD3 |") {
-        return ddv1.norm();
+    BENCHMARK("Tanh(DDScalar)") {
+        using std::tanh;
+        return tanh(dd1);
     };
 
-    // --- scale
-
-    BENCHMARK("S * DD3") {
-        return 3.5 * ddv1;
+    BENCHMARK("Acosh(DDScalar)") {
+        using std::acosh;
+        return acosh(dd1);
     };
+
+    BENCHMARK("Asinh(DDScalar)") {
+        using std::asinh;
+        return asinh(dd1);
+    };
+
+    BENCHMARK("Atanh(DDScalar)") {
+        using std::atanh;
+        return atanh(dd1);
+    };
+
+    // ---
+
+    BENCHMARK("Exp(DDScalar)") {
+        using std::exp;
+        return exp(dd1);
+    };
+
+    BENCHMARK("Log(DDScalar)") {
+        using std::log;
+        return log(dd1);
+    };
+
+    BENCHMARK("Log2(DDScalar)") {
+        using std::log2;
+        return log2(dd1);
+    };
+
+    BENCHMARK("Log10(DDScalar)") {
+        using std::log10;
+        return log10(dd1);
+    };
+
+    // // --- dot
+
+    // BENCHMARK("DD3 . DD3") {
+    //     return ddv1.dot(ddv2);
+    // };
+
+    // // --- cross
+
+    // BENCHMARK("DD3 x DD3") {
+    //     return ddv1.cross(ddv2);
+    // };
+
+    // // --- norm
+
+    // BENCHMARK("| DD3 |") {
+    //     return ddv1.norm();
+    // };
+
+    // // --- scale
+
+    // BENCHMARK("Scalar * DD3") {
+    //     return 3.5 * ddv1;
+    // };
 }
