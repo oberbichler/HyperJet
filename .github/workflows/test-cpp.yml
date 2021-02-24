@@ -1,0 +1,46 @@
+name: Test C++
+
+on: [push]
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    name: build (${{ matrix.os }})
+    
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Create Build Environment
+      run: cmake -E make_directory ${{runner.workspace}}/build
+
+    - name: Configure CMake
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+
+    - name: Build
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      run: cmake --build . --config $BUILD_TYPE
+
+    - name: Test
+      if: ${{ !startsWith(runner.os, 'Windows') }}
+      working-directory: ${{runner.workspace}}/build
+      run: ./tests
+
+    - name: Test
+      if: startsWith(runner.os, 'Windows')
+      working-directory: ${{runner.workspace}}/build
+      run: ${{runner.workspace}}\build\Release\tests.exe
+      shell: cmd
