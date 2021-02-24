@@ -380,7 +380,7 @@ public:
         return m_data[0];
     }
 
-    void set_f(const double value)
+    void set_f(const Scalar value)
     {
         f() = value;
     }
@@ -399,7 +399,7 @@ public:
         return m_data[1 + i];
     }
 
-    void set_g(const index i, const double value)
+    void set_g(const index i, const Scalar value)
     {
         g(i) = value;
     }
@@ -418,7 +418,7 @@ public:
         return m_data[1 + TSize + i];
     }
 
-    void set_h(const index i, const double value)
+    void set_h(const index i, const Scalar value)
     {
         h(i) = value;
     }
@@ -439,7 +439,7 @@ public:
         return m_data[1 + TSize + (2 * TSize - 1 - i) * i / 2 + j];
     }
 
-    void set_h(const index i, const index j, const double value)
+    void set_h(const index i, const index j, const Scalar value)
     {
         h(i, j) = value;
     }
@@ -577,8 +577,8 @@ public:
         check_equal_size<TSize>(size(), b.size());
 
         Type result = Type::empty(size());
-        const double d_a = b.m_data[0];
-        const double d_b = m_data[0];
+        const Scalar d_a = b.m_data[0];
+        const Scalar d_b = m_data[0];
 
         result.m_data[0] = m_data[0] * b.m_data[0];
 
@@ -619,8 +619,8 @@ public:
 
         const Data a_m_data = m_data;
 
-        const double d_a = b.m_data[0];
-        const double d_b = m_data[0];
+        const Scalar d_a = b.m_data[0];
+        const Scalar d_b = m_data[0];
 
         m_data[0] *= b.m_data[0];
 
@@ -647,17 +647,16 @@ public:
 
         return *this;
     }
-
     // --- div
 
     Type operator/(const Type& b) const
     {
         check_equal_size<TSize>(size(), b.size());
 
-        const double d_a = 1 / b.m_data[0];
-        const double d_b = -m_data[0] / std::pow(b.m_data[0], 2);
-        const double dd_ab = -1 / std::pow(b.m_data[0], 2);
-        const double dd_bb = 2 * m_data[0] / std::pow(b.m_data[0], 3);
+        const Scalar d_a = 1 / b.m_data[0];
+        const Scalar d_b = -m_data[0] / std::pow(b.m_data[0], 2);
+        const Scalar dd_ab = -1 / std::pow(b.m_data[0], 2);
+        const Scalar dd_bb = 2 * m_data[0] / std::pow(b.m_data[0], 3);
 
         Type result = Type::empty(size());
 
@@ -670,8 +669,11 @@ public:
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
+            const Scalar ca = dd_ab * b.m_data[1 + i];
+            const Scalar cb = dd_ab * m_data[1 + i] + dd_bb * b.m_data[1 + i];
+
             for (index j = i; j < size(); j++) {
-                *it++ += dd_bb * b.m_data[1 + i] * b.m_data[1 + j] + dd_ab * (m_data[1 + i] * b.m_data[1 + j] + m_data[1 + j] * b.m_data[1 + i]);
+                *it++ += ca * m_data[1 + j] + cb * b.m_data[1 + j];
             }
         }
 
@@ -685,8 +687,8 @@ public:
 
     friend Type operator/(const Scalar a, const Type& b)
     {
-        const double d_b = -a / std::pow(b.m_data[0], 2);
-        const double dd_bb = 2 * a / std::pow(b.m_data[0], 3);
+        const Scalar d_b = -a / std::pow(b.m_data[0], 2);
+        const Scalar dd_bb = 2 * a / std::pow(b.m_data[0], 3);
 
         const index s = b.size();
 
@@ -701,8 +703,10 @@ public:
         auto* it = &result.m_data[1 + s];
 
         for (index i = 0; i < s; i++) {
+            const Scalar cb = dd_bb * b.m_data[1 + i];
+
             for (index j = i; j < s; j++) {
-                *it++ += dd_bb * b.m_data[1 + i] * b.m_data[1 + j];
+                *it++ += cb * b.m_data[1 + j];
             }
         }
 
@@ -715,10 +719,10 @@ public:
 
         const Data a_m_data = m_data;
 
-        const double d_a = 1 / b.m_data[0];
-        const double d_b = -m_data[0] / std::pow(b.m_data[0], 2);
-        const double dd_ab = -1 / std::pow(b.m_data[0], 2);
-        const double dd_bb = 2 * m_data[0] / std::pow(b.m_data[0], 3);
+        const Scalar d_a = 1 / b.m_data[0];
+        const Scalar d_b = -m_data[0] / std::pow(b.m_data[0], 2);
+        const Scalar dd_ab = -1 / std::pow(b.m_data[0], 2);
+        const Scalar dd_bb = 2 * m_data[0] / std::pow(b.m_data[0], 3);
 
         m_data[0] = m_data[0] * d_a;
 
@@ -729,8 +733,10 @@ public:
         auto* it = &m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
+            const Scalar ca = dd_ab * b.m_data[1 + i];
+            const Scalar cb = dd_ab * a_m_data[1 + i] + dd_bb * b.m_data[1 + i];
             for (index j = i; j < size(); j++) {
-                *it++ += dd_bb * b.m_data[1 + i] * b.m_data[1 + j] + dd_ab * (a_m_data[1 + i] * b.m_data[1 + j] + a_m_data[1 + j] * b.m_data[1 + i]);
+                *it++ += ca * a_m_data[1 + j] + cb * b.m_data[1 + j];
             }
         }
 
@@ -750,8 +756,8 @@ public:
     {
         using std::pow;
 
-        const double d = b * pow(m_data[0], b - 1);
-        const double dd = (b - 1) * b * pow(m_data[0], b - 2);
+        const Scalar d = b * pow(m_data[0], b - 1);
+        const Scalar dd = (b - 1) * b * pow(m_data[0], b - 2);
 
         Type result = Type::empty(size());
 
@@ -764,8 +770,9 @@ public:
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
+            const Scalar c = dd * m_data[1 + i];
             for (index j = i; j < size(); j++) {
-                *it++ += dd * m_data[1 + i] * m_data[1 + j];
+                *it++ += c * m_data[1 + j];
             }
         }
 
@@ -777,9 +784,9 @@ public:
         using std::pow;
         using std::sqrt;
 
-        const double f = sqrt(m_data[0]);
-        const double d = 1 / (2 * f);
-        const double dd = -d / (2 * m_data[0]);
+        const Scalar f = sqrt(m_data[0]);
+        const Scalar d = 1 / (2 * f);
+        const Scalar dd = -d / (2 * m_data[0]);
 
         Type result = Type::empty(size());
 
@@ -792,8 +799,9 @@ public:
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
+            const Scalar c = dd * m_data[1 + i];
             for (index j = i; j < size(); j++) {
-                *it++ += dd * m_data[1 + i] * m_data[1 + j];
+                *it++ += c * m_data[1 + j];
             }
         }
 
@@ -804,9 +812,9 @@ public:
     {
         using std::cbrt;
 
-        const double f = cbrt(m_data[0]);
-        const double d = 1 / (3 * f * f);
-        const double dd = -d * 2 / (3 * m_data[0]);
+        const Scalar f = cbrt(m_data[0]);
+        const Scalar d = 1 / (3 * f * f);
+        const Scalar dd = -d * 2 / (3 * m_data[0]);
 
         Type result = Type::empty(size());
 
@@ -819,8 +827,9 @@ public:
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
+            const Scalar c = dd * m_data[1 + i];
             for (index j = i; j < size(); j++) {
-                *it++ += dd * m_data[1 + i] * m_data[1 + j];
+                *it++ += c * m_data[1 + j];
             }
         }
 
@@ -829,9 +838,9 @@ public:
 
     Type reciprocal() const
     {
-        const double f = 1 / m_data[0];
-        const double d = -f * f;
-        const double dd = -2 * f * d;
+        const Scalar f = 1 / m_data[0];
+        const Scalar d = -f * f;
+        const Scalar dd = -2 * f * d;
 
         Type result = Type::empty(size());
 
@@ -844,8 +853,9 @@ public:
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
+            const Scalar c = dd * m_data[1 + i];
             for (index j = i; j < size(); j++) {
-                *it++ += dd * m_data[1 + i] * m_data[1 + j];
+                *it++ += c * m_data[1 + j];
             }
         }
 
@@ -859,8 +869,8 @@ public:
         using std::cos;
         using std::sin;
 
-        const double d = -sin(m_data[0]);
-        const double dd = -cos(m_data[0]);
+        const Scalar d = -sin(m_data[0]);
+        const Scalar dd = -cos(m_data[0]);
 
         Type result = Type::empty(size());
 
@@ -873,8 +883,9 @@ public:
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
+            const Scalar c = dd * m_data[1 + i];
             for (index j = i; j < size(); j++) {
-                *it++ += dd * m_data[1 + i] * m_data[1 + j];
+                *it++ += c * m_data[1 + j];
             }
         }
 
@@ -886,8 +897,8 @@ public:
         using std::cos;
         using std::sin;
 
-        const double d = cos(m_data[0]);
-        const double dd = -sin(m_data[0]);
+        const Scalar d = cos(m_data[0]);
+        const Scalar dd = -sin(m_data[0]);
 
         Type result = Type::empty(size());
 
@@ -900,8 +911,9 @@ public:
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
+            const Scalar c = dd * m_data[1 + i];
             for (index j = i; j < size(); j++) {
-                *it++ += dd * m_data[1 + i] * m_data[1 + j];
+                *it++ += c * m_data[1 + j];
             }
         }
 
@@ -912,10 +924,10 @@ public:
     {
         using std::tan;
 
-        const double tmp = tan(m_data[0]);
+        const Scalar tmp = tan(m_data[0]);
 
-        const double d = tmp * tmp + 1;
-        const double dd = d * 2 * tmp;
+        const Scalar d = tmp * tmp + 1;
+        const Scalar dd = d * 2 * tmp;
 
         Type result = Type::empty(size());
 
@@ -928,8 +940,9 @@ public:
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
+            const Scalar c = dd * m_data[1 + i];
             for (index j = i; j < size(); j++) {
-                *it++ += dd * m_data[1 + i] * m_data[1 + j];
+                *it++ += c * m_data[1 + j];
             }
         }
 
@@ -941,10 +954,10 @@ public:
         using std::acos;
         using std::sqrt;
 
-        const double tmp = 1 - m_data[0] * m_data[0];
+        const Scalar tmp = 1 - m_data[0] * m_data[0];
 
-        const double d = -1 / sqrt(tmp);
-        const double dd = d * m_data[0] / tmp;
+        const Scalar d = -1 / sqrt(tmp);
+        const Scalar dd = d * m_data[0] / tmp;
 
         Type result = Type::empty(size());
 
@@ -957,8 +970,9 @@ public:
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
+            const Scalar c = dd * m_data[1 + i];
             for (index j = i; j < size(); j++) {
-                *it++ += dd * m_data[1 + i] * m_data[1 + j];
+                *it++ += c * m_data[1 + j];
             }
         }
 
@@ -970,10 +984,10 @@ public:
         using std::asin;
         using std::sqrt;
 
-        const double tmp = 1 - m_data[0] * m_data[0];
+        const Scalar tmp = 1 - m_data[0] * m_data[0];
 
-        const double d = 1 / sqrt(tmp);
-        const double dd = d * m_data[0] / tmp;
+        const Scalar d = 1 / sqrt(tmp);
+        const Scalar dd = d * m_data[0] / tmp;
 
         Type result = Type::empty(size());
 
@@ -986,8 +1000,9 @@ public:
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
+            const Scalar c = dd * m_data[1 + i];
             for (index j = i; j < size(); j++) {
-                *it++ += dd * m_data[1 + i] * m_data[1 + j];
+                *it++ += c * m_data[1 + j];
             }
         }
 
@@ -998,8 +1013,8 @@ public:
     {
         using std::atan;
 
-        const double d = 1 / (m_data[0] * m_data[0] + 1);
-        const double dd = -d * d * 2 * m_data[0];
+        const Scalar d = 1 / (m_data[0] * m_data[0] + 1);
+        const Scalar dd = -d * d * 2 * m_data[0];
 
         Type result = Type::empty(size());
 
@@ -1012,8 +1027,9 @@ public:
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
+            const Scalar c = dd * m_data[1 + i];
             for (index j = i; j < size(); j++) {
-                *it++ += dd * m_data[1 + i] * m_data[1 + j];
+                *it++ += c * m_data[1 + j];
             }
         }
 
@@ -1024,12 +1040,12 @@ public:
     {
         using std::atan2;
 
-        const double tmp = m_data[0] * m_data[0] + b.m_data[0] * b.m_data[0];
+        const Scalar tmp = m_data[0] * m_data[0] + b.m_data[0] * b.m_data[0];
 
-        const double d_a = b.m_data[0] / tmp;
-        const double d_b = -m_data[0] / tmp;
-        const double d_aa = d_b * d_a * 2; // = -d_bb
-        const double d_ab = d_b * d_b - d_a * d_a;
+        const Scalar d_a = b.m_data[0] / tmp;
+        const Scalar d_b = -m_data[0] / tmp;
+        const Scalar d_aa = d_b * d_a * 2; // = -d_bb
+        const Scalar d_ab = d_b * d_b - d_a * d_a;
 
         Type result = Type::empty(size());
 
@@ -1057,8 +1073,8 @@ public:
         using std::cosh;
         using std::sinh;
 
-        const double d = sinh(m_data[0]);
-        const double dd = cosh(m_data[0]);
+        const Scalar d = sinh(m_data[0]);
+        const Scalar dd = cosh(m_data[0]);
 
         Type result = Type::empty(size());
 
@@ -1071,7 +1087,7 @@ public:
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
-            const double c = dd * m_data[1 + i];
+            const Scalar c = dd * m_data[1 + i];
             for (index j = i; j < size(); j++) {
                 *it++ += c * m_data[1 + j];
             }
@@ -1085,8 +1101,8 @@ public:
         using std::cosh;
         using std::sinh;
 
-        const double d = cosh(m_data[0]);
-        const double dd = sinh(m_data[0]);
+        const Scalar d = cosh(m_data[0]);
+        const Scalar dd = sinh(m_data[0]);
 
         Type result = Type::empty(size());
 
@@ -1099,7 +1115,7 @@ public:
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
-            const double c = dd * m_data[1 + i];
+            const Scalar c = dd * m_data[1 + i];
             for (index j = i; j < size(); j++) {
                 *it++ += c * m_data[1 + j];
             }
@@ -1112,10 +1128,10 @@ public:
     {
         using std::tanh;
 
-        const double f = tanh(m_data[0]);
+        const Scalar f = tanh(m_data[0]);
 
-        const double d = 1 - f * f;
-        const double dd = -2 * f * d;
+        const Scalar d = 1 - f * f;
+        const Scalar dd = -2 * f * d;
 
         Type result = Type::empty(size());
 
@@ -1128,7 +1144,7 @@ public:
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
-            const double c = dd * m_data[1 + i];
+            const Scalar c = dd * m_data[1 + i];
             for (index j = i; j < size(); j++) {
                 *it++ += c * m_data[1 + j];
             }
@@ -1142,8 +1158,8 @@ public:
         using std::acosh;
         using std::sqrt;
 
-        const double d = 1 / (sqrt(m_data[0] - 1) * sqrt(m_data[0] + 1));
-        const double dd = -d * m_data[0] / ((m_data[0] - 1) * (m_data[0] + 1));
+        const Scalar d = 1 / (sqrt(m_data[0] - 1) * sqrt(m_data[0] + 1));
+        const Scalar dd = -d * m_data[0] / ((m_data[0] - 1) * (m_data[0] + 1));
 
         Type result = Type::empty(size());
 
@@ -1156,7 +1172,7 @@ public:
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
-            const double c = dd * m_data[1 + i];
+            const Scalar c = dd * m_data[1 + i];
             for (index j = i; j < size(); j++) {
                 *it++ += c * m_data[1 + j];
             }
@@ -1170,8 +1186,8 @@ public:
         using std::asinh;
         using std::sqrt;
 
-        const double d = 1 / sqrt(1 + m_data[0] * m_data[0]);
-        const double dd = -d * m_data[0] / (1 + m_data[0] * m_data[0]);
+        const Scalar d = 1 / sqrt(1 + m_data[0] * m_data[0]);
+        const Scalar dd = -d * m_data[0] / (1 + m_data[0] * m_data[0]);
 
         Type result = Type::empty(size());
 
@@ -1184,7 +1200,7 @@ public:
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
-            const double c = dd * m_data[1 + i];
+            const Scalar c = dd * m_data[1 + i];
             for (index j = i; j < size(); j++) {
                 *it++ += c * m_data[1 + j];
             }
@@ -1198,10 +1214,10 @@ public:
         using std::atanh;
         using std::pow;
 
-        const double f = atanh(m_data[0]);
+        const Scalar f = atanh(m_data[0]);
 
-        const double d = 1 / (1 - m_data[0] * m_data[0]);
-        const double dd = 2 * m_data[0] / pow(m_data[0] * m_data[0] - 1, 2);
+        const Scalar d = 1 / (1 - m_data[0] * m_data[0]);
+        const Scalar dd = 2 * m_data[0] / pow(m_data[0] * m_data[0] - 1, 2);
 
         Type result = Type::empty(size());
 
@@ -1214,7 +1230,7 @@ public:
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
-            const double c = dd * m_data[1 + i];
+            const Scalar c = dd * m_data[1 + i];
             for (index j = i; j < size(); j++) {
                 *it++ += c * m_data[1 + j];
             }
@@ -1229,10 +1245,10 @@ public:
     {
         using std::exp;
 
-        const double f = exp(m_data[0]);
+        const Scalar f = exp(m_data[0]);
 
-        const double d = f;
-        const double dd = f;
+        const Scalar d = f;
+        const Scalar dd = f;
 
         Type result = Type::empty(size());
 
@@ -1245,7 +1261,7 @@ public:
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
-            const double c = dd * m_data[1 + i];
+            const Scalar c = dd * m_data[1 + i];
             for (index j = i; j < size(); j++) {
                 *it++ += c * m_data[1 + j];
             }
@@ -1258,10 +1274,10 @@ public:
     {
         using std::log;
 
-        const double f = log(m_data[0]);
+        const Scalar f = log(m_data[0]);
 
-        const double d = 1 / m_data[0];
-        const double dd = -d * d;
+        const Scalar d = 1 / m_data[0];
+        const Scalar dd = -d * d;
 
         Type result = Type::empty(size());
 
@@ -1274,7 +1290,7 @@ public:
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
-            const double c = dd * m_data[1 + i];
+            const Scalar c = dd * m_data[1 + i];
             for (index j = i; j < size(); j++) {
                 *it++ += c * m_data[1 + j];
             }
@@ -1287,9 +1303,9 @@ public:
     {
         using std::log;
 
-        const double f = log(m_data[0]) / log(base);
-        const double d = 1 / (m_data[0] * log(base));
-        const double dd = -d / m_data[0];
+        const Scalar f = log(m_data[0]) / log(base);
+        const Scalar d = 1 / (m_data[0] * log(base));
+        const Scalar dd = -d / m_data[0];
 
         Type result = Type::empty(size());
 
@@ -1302,7 +1318,7 @@ public:
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
-            const double c = dd * m_data[1 + i];
+            const Scalar c = dd * m_data[1 + i];
             for (index j = i; j < size(); j++) {
                 *it++ += c * m_data[1 + j];
             }
@@ -1316,10 +1332,10 @@ public:
         using std::log;
         using std::log2;
 
-        const double f = log2(m_data[0]);
+        const Scalar f = log2(m_data[0]);
 
-        const double d = 1 / (m_data[0] * log(2));
-        const double dd = -d / m_data[0];
+        const Scalar d = 1 / (m_data[0] * log(2));
+        const Scalar dd = -d / m_data[0];
 
         Type result = Type::empty(size());
 
@@ -1332,7 +1348,7 @@ public:
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
-            const double c = dd * m_data[1 + i];
+            const Scalar c = dd * m_data[1 + i];
             for (index j = i; j < size(); j++) {
                 *it++ += c * m_data[1 + j];
             }
@@ -1346,10 +1362,10 @@ public:
         using std::log;
         using std::log10;
 
-        const double f = log10(m_data[0]);
+        const Scalar f = log10(m_data[0]);
 
-        const double d = 1 / (m_data[0] * log(10));
-        const double dd = -d / m_data[0];
+        const Scalar d = 1 / (m_data[0] * log(10));
+        const Scalar dd = -d / m_data[0];
 
         Type result = Type::empty(size());
 
@@ -1362,7 +1378,7 @@ public:
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
-            const double c = dd * m_data[1 + i];
+            const Scalar c = dd * m_data[1 + i];
             for (index j = i; j < size(); j++) {
                 *it++ += c * m_data[1 + j];
             }
@@ -1482,7 +1498,7 @@ DDScalar<TScalar, TSize> pow(const DDScalar<TScalar, TSize>& a, const index b)
 }
 
 template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> pow(const DDScalar<TScalar, TSize>& a, const double b)
+DDScalar<TScalar, TSize> pow(const DDScalar<TScalar, TSize>& a, const TScalar b)
 {
     return a.pow(b);
 }
