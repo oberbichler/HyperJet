@@ -1,7 +1,7 @@
 # HyperJet
 Automatic differentiation with dual numbers
 
-[![Build Status](https://github.com/oberbichler/HyperJet/workflows/Python%20package/badge.svg?branch=master)](https://github.com/oberbichler/HyperJet/actions) [![PyPI](https://img.shields.io/pypi/v/hyperjet)](https://pypi.org/project/hyperjet)
+[![Build Status](https://github.com/oberbichler/HyperJet/workflows/Python%20package/badge.svg?branch=master)](https://github.com/oberbichler/HyperJet/actions) [![PyPI](https://img.shields.io/pypi/v/hyperjet)](https://pypi.org/project/hyperjet) ![PyPI - License](https://img.shields.io/pypi/l/hyperjet) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/hyperjet) ![PyPI - Format](https://img.shields.io/pypi/format/hyperjet)
 
 ## Installation
 
