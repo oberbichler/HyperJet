@@ -15,6 +15,8 @@ class CMakeExtension(Extension):
         Extension.__init__(self, name, sources=[])
         self.sourcedir = os.path.abspath(sourcedir)
 
+with open('README.md', 'r') as f:
+    long_description = f.read()
 
 class CMakeBuild(build_ext):
     def run(self):
@@ -61,10 +63,17 @@ class CMakeBuild(build_ext):
 setup(
     name='hyperjet',
     description='Automatic differentiation with dual numbers',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     version=HYPERJET_VERSION,
     url='https://github.com/oberbichler/HyperJet',
     author='Thomas Oberbichler',
     author_email='thomas.oberbichler@gmail.com',
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+    ],
+    python_requires='>=3.6'
     ext_modules=[CMakeExtension('hyperjet')],
     cmdclass=dict(build_ext=CMakeBuild),
     install_requires=['msvc-runtime ; platform_system=="Windows"', 'numpy'],
