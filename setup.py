@@ -73,7 +73,7 @@ setup(
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
     ],
-    python_requires='>=3.6'
+    python_requires='>=3.6',
     ext_modules=[CMakeExtension('hyperjet')],
     cmdclass=dict(build_ext=CMakeBuild),
     install_requires=['msvc-runtime ; platform_system=="Windows"', 'numpy'],
