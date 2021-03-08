@@ -1,4 +1,4 @@
-![HyperJet](/docs/HyperJet.png?raw=true)
+![HyperJet](https://github.com/oberbichler/HyperJet/raw/main/docs/HyperJet.png?raw=true)
 
 <p align="center"><b>HyperJet — Algorithmic Differentiation with Hyper-Dual numbers for Python and C++</b></p>
 
