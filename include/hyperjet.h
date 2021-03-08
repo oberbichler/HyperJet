@@ -480,19 +480,40 @@ public:
         return Eigen::Map<Eigen::Matrix<TScalar, 1, TSize>>(ptr() + 1, size());
     }
 
-    Eigen::Matrix<TScalar, TSize, TSize> hm() const
+    Eigen::Matrix<TScalar, TSize, TSize> hm(const std::string mode) const
     {
         Eigen::Matrix<TScalar, TSize, TSize> result(size(), size());
 
+        hm(mode, result);
+
+        return result;
+    }
+
+    void hm(const std::string mode, Eigen::Ref<Eigen::Matrix<TScalar, TSize, TSize>> out) const
+    {
         index it = 0;
 
         for (index i = 0; i < size(); i++) {
             for (index j = i; j < size(); j++) {
-                result(i, j) = h(it++);
+                out(i, j) = h(it++);
             }
         }
 
-        return result;
+        if (mode == "zeros") {
+            for (index i = 0; i < size(); i++) {
+                for (index j = 0; j < i; j++) {
+                    out(i, j) = 0;
+                }
+            }
+        } else if (mode == "full") {
+            for (index i = 0; i < size(); i++) {
+                for (index j = 0; j < i; j++) {
+                    out(i, j) = out(j, i);
+                }
+            }
+        } else {
+            throw std::runtime_error("Invalid value for 'mode'");
+        }
     }
 
     void set_hm(Eigen::Ref<const Eigen::Matrix<TScalar, TSize, TSize>> value)

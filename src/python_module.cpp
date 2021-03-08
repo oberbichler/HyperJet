@@ -49,7 +49,7 @@ void register_ddscalar(pybind11::module& m, const std::string& name)
         .def("abs", &Type::abs)
         .def("h", py::overload_cast<hj::index, hj::index>(&Type::h), "row"_a, "col"_a)
         .def("set_h", py::overload_cast<hj::index, hj::index, TScalar>(&Type::set_h), "row"_a, "col"_a, "value"_a)
-        .def("hm", &Type::hm)
+        .def("hm", py::overload_cast<std::string>(&Type::hm, py::const_), "mode"_a="full")
         .def("set_hm", &Type::set_hm, "value"_a)
         // methods: arithmetic operations
         .def("reciprocal", &Type::reciprocal)

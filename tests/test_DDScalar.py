@@ -271,13 +271,17 @@ def test_ndarray(ctx):
 
     assert_allclose(u.g, [2, 3])
 
-    assert_equal(np.triu(u.hm()), [[4, 5], [0, 6]])
+    assert_equal(u.hm(), [[4, 5], [5, 6]])
+    assert_equal(u.hm(mode='full'), [[4, 5], [5, 6]])
+    assert_equal(u.hm(mode='zeros'), [[4, 5], [0, 6]])
 
     u.g[:] = [5, 4]
     assert_allclose(u.g, [5, 4])
 
     u.set_hm([[3, 2], [0, 1]])
-    assert_equal(np.triu(u.hm()), [[3, 2], [0, 1]])
+    assert_equal(u.hm(), [[3, 2], [2, 1]])
+    assert_equal(u.hm(mode='full'), [[3, 2], [2, 1]])
+    assert_equal(u.hm(mode='zeros'), [[3, 2], [0, 1]])
 
     assert_allclose(u.data, [1, 5, 4, 3, 2, 1])
 
