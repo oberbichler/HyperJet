@@ -1,2 +1,0 @@
-- [Quick start](quickstart.md)
-- [How does it work?](how-does-it-work.md)
