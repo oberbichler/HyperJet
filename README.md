@@ -98,8 +98,8 @@ import numpy as np
 variables = hj.DDScalar.variables([1, 2,  2,
                                    4, 1, -1])
 
-u = np.array(variables[:3])  # = [1, 2, 2]
-v = np.array(variables[3:])  # = [4, 1, -1]
+u = np.array(variables[:3])  # = [1hj, 2hj,  2hj]
+v = np.array(variables[3:])  # = [4hj, 1hj, -1hj]
 
 normal = np.cross(u, v)
 normal /= np.linalg.norm(normal)
