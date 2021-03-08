@@ -92,7 +92,7 @@ You can use numpy to perform vector and matrix operations.
 
 Compute the nomalized cross product of two vectors `u = [1, 2, 2]` and `v = [4, 1, -1]` with hyper-dual numbers:
 
-```
+```python
 import numpy as np
 
 variables = hj.DDScalar.variables([1, 2,  2,
@@ -111,7 +111,7 @@ The result is a three-dimensional numpy array containing hyper-dual numbers.
 
 Get the value and derivatives of the x-component:
 
-```
+```python
 normal[0].f
 >>> -0.3310423554409472
 
