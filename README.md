@@ -131,7 +131,7 @@ normal[0].hm()
 
 If you use HyperJet, please refer to the official GitHub repository:
 
-```
+```bibtex
 @misc{HyperJet,
   author = "Thomas Oberbichler",
   title = "HyperJet",
