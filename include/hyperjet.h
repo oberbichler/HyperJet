@@ -224,6 +224,10 @@ public:
             *target++ = *source++;
         }
 
+        if constexpr (order() == 1) {
+            return result;
+        }
+
         for (index i = 0; i < head; i++) {
             for (index j = i; j < new_size; j++) {
                 *target++ = Scalar(0);
@@ -256,6 +260,10 @@ public:
 
         for (index i = 0; i < tail; i++) {
             *target++ = Scalar(0);
+        }
+
+        if (order() == 1) {
+            return result;
         }
 
         for (index i = 0; i < size(); i++) {
@@ -554,6 +562,8 @@ public:
 
     static Type from_arrays(const TScalar f, Eigen::Ref<const Vector> g, Eigen::Ref<const Matrix> hm)
     {
+        static_assert(order() == 2);
+
         assert(g.size() == hm.rows() && g.size() == hm.cols());
 
         Type result = empty(length(g));
