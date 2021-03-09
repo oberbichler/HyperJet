@@ -709,6 +709,10 @@ public:
             result.m_data[i] = d_a * m_data[i] + d_b * b.m_data[i];
         }
 
+        if constexpr (order() == 1) {
+            return result;
+        }
+
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
@@ -751,6 +755,9 @@ public:
             m_data[i] = d_a * m_data[i] + d_b * b.m_data[i];
         }
 
+        if constexpr (order() == 1)
+            return *this;
+
         auto* it = &m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
@@ -789,6 +796,10 @@ public:
             result.m_data[i] = d_a * m_data[i] + d_b * b.m_data[i];
         }
 
+        if constexpr (order() == 1) {
+            return result;
+        }
+
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
@@ -823,6 +834,10 @@ public:
             result.m_data[i] = d_b * b.m_data[i];
         }
 
+        if constexpr (order() == 1) {
+            return result;
+        }
+
         auto* it = &result.m_data[1 + s];
 
         for (index i = 0; i < s; i++) {
@@ -852,6 +867,9 @@ public:
         for (index i = 1; i < length(m_data); i++) {
             m_data[i] = d_a * m_data[i] + d_b * b.m_data[i];
         }
+
+        if constexpr (order() == 1)
+            return *this;
 
         auto* it = &m_data[1 + size()];
 
@@ -890,6 +908,10 @@ public:
             result.m_data[i] = d * m_data[i];
         }
 
+        if constexpr (order() == 1) {
+            return result;
+        }
+
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
@@ -917,6 +939,10 @@ public:
 
         for (index i = 1; i < length(result.m_data); i++) {
             result.m_data[i] = d * m_data[i];
+        }
+
+        if constexpr (order() == 1) {
+            return result;
         }
 
         auto* it = &result.m_data[1 + size()];
@@ -947,6 +973,10 @@ public:
             result.m_data[i] = d * m_data[i];
         }
 
+        if constexpr (order() == 1) {
+            return result;
+        }
+
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
@@ -971,6 +1001,10 @@ public:
 
         for (index i = 1; i < length(result.m_data); i++) {
             result.m_data[i] = d * m_data[i];
+        }
+
+        if constexpr (order() == 1) {
+            return result;
         }
 
         auto* it = &result.m_data[1 + size()];
@@ -1003,6 +1037,10 @@ public:
             result.m_data[i] = d * m_data[i];
         }
 
+        if constexpr (order() == 1) {
+            return result;
+        }
+
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
@@ -1029,6 +1067,10 @@ public:
 
         for (index i = 1; i < length(result.m_data); i++) {
             result.m_data[i] = d * m_data[i];
+        }
+
+        if constexpr (order() == 1) {
+            return result;
         }
 
         auto* it = &result.m_data[1 + size()];
@@ -1058,6 +1100,10 @@ public:
 
         for (index i = 1; i < length(result.m_data); i++) {
             result.m_data[i] = d * m_data[i];
+        }
+
+        if constexpr (order() == 1) {
+            return result;
         }
 
         auto* it = &result.m_data[1 + size()];
@@ -1090,6 +1136,10 @@ public:
             result.m_data[i] = d * m_data[i];
         }
 
+        if constexpr (order() == 1) {
+            return result;
+        }
+
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
@@ -1120,6 +1170,10 @@ public:
             result.m_data[i] = d * m_data[i];
         }
 
+        if constexpr (order() == 1) {
+            return result;
+        }
+
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
@@ -1145,6 +1199,10 @@ public:
 
         for (index i = 1; i < length(result.m_data); i++) {
             result.m_data[i] = d * m_data[i];
+        }
+
+        if constexpr (order() == 1) {
+            return result;
         }
 
         auto* it = &result.m_data[1 + size()];
@@ -1178,6 +1236,10 @@ public:
             result.m_data[i] = d_a * m_data[i] + d_b * b.m_data[i];
         }
 
+        if constexpr (order() == 1) {
+            return result;
+        }
+
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
@@ -1207,6 +1269,10 @@ public:
             result.m_data[i] = d * m_data[i];
         }
 
+        if constexpr (order() == 1) {
+            return result;
+        }
+
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
@@ -1233,6 +1299,10 @@ public:
 
         for (index i = 1; i < length(result.m_data); i++) {
             result.m_data[i] = d * m_data[i];
+        }
+
+        if constexpr (order() == 1) {
+            return result;
         }
 
         auto* it = &result.m_data[1 + size()];
@@ -1264,6 +1334,10 @@ public:
             result.m_data[i] = d * m_data[i];
         }
 
+        if constexpr (order() == 1) {
+            return result;
+        }
+
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
@@ -1290,6 +1364,10 @@ public:
 
         for (index i = 1; i < length(result.m_data); i++) {
             result.m_data[i] = d * m_data[i];
+        }
+
+        if constexpr (order() == 1) {
+            return result;
         }
 
         auto* it = &result.m_data[1 + size()];
@@ -1320,6 +1398,10 @@ public:
             result.m_data[i] = d * m_data[i];
         }
 
+        if constexpr (order() == 1) {
+            return result;
+        }
+
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
@@ -1348,6 +1430,10 @@ public:
 
         for (index i = 1; i < length(result.m_data); i++) {
             result.m_data[i] = d * m_data[i];
+        }
+
+        if constexpr (order() == 1) {
+            return result;
         }
 
         auto* it = &result.m_data[1 + size()];
@@ -1381,6 +1467,10 @@ public:
             result.m_data[i] = d * m_data[i];
         }
 
+        if constexpr (order() == 1) {
+            return result;
+        }
+
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
@@ -1410,6 +1500,10 @@ public:
             result.m_data[i] = d * m_data[i];
         }
 
+        if constexpr (order() == 1) {
+            return result;
+        }
+
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
@@ -1436,6 +1530,10 @@ public:
 
         for (index i = 1; i < length(result.m_data); i++) {
             result.m_data[i] = d * m_data[i];
+        }
+
+        if constexpr (order() == 1) {
+            return result;
         }
 
         auto* it = &result.m_data[1 + size()];
@@ -1468,6 +1566,10 @@ public:
             result.m_data[i] = d * m_data[i];
         }
 
+        if constexpr (order() == 1) {
+            return result;
+        }
+
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
@@ -1496,6 +1598,10 @@ public:
 
         for (index i = 1; i < length(result.m_data); i++) {
             result.m_data[i] = d * m_data[i];
+        }
+
+        if constexpr (order() == 1) {
+            return result;
         }
 
         auto* it = &result.m_data[1 + size()];
