@@ -495,7 +495,6 @@ public:
         return Eigen::Map<Vector>(ptr() + 1, size());
     }
 
-
     Eigen::Ref<Vector> ag()
     {
         return Eigen::Map<Vector>(ptr() + 1, size());
