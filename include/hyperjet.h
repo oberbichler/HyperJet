@@ -487,28 +487,30 @@ public:
     }
 
 #if defined EIGEN_WORLD_VERSION
+    using Vector = Eigen::Matrix<TScalar, 1, TSize>;
+    using Matrix = Eigen::Matrix<TScalar, TSize, TSize>;
 
-    Eigen::Ref<const Eigen::Matrix<TScalar, 1, TSize>> ag() const
+    Eigen::Ref<const Vector> ag() const
     {
-        return Eigen::Map<Eigen::Matrix<TScalar, 1, TSize>>(ptr() + 1, size());
+        return Eigen::Map<Vector>(ptr() + 1, size());
     }
 
 
-    Eigen::Ref<Eigen::Matrix<TScalar, 1, TSize>> ag()
+    Eigen::Ref<Vector> ag()
     {
-        return Eigen::Map<Eigen::Matrix<TScalar, 1, TSize>>(ptr() + 1, size());
+        return Eigen::Map<Vector>(ptr() + 1, size());
     }
 
-    Eigen::Matrix<TScalar, TSize, TSize> hm(const std::string mode) const
+    Matrix hm(const std::string mode) const
     {
-        Eigen::Matrix<TScalar, TSize, TSize> result(size(), size());
+        Matrix result(size(), size());
 
         hm(mode, result);
 
         return result;
     }
 
-    void hm(const std::string mode, Eigen::Ref<Eigen::Matrix<TScalar, TSize, TSize>> out) const
+    void hm(const std::string mode, Eigen::Ref<Matrix> out) const
     {
         index it = 0;
 
@@ -535,7 +537,7 @@ public:
         }
     }
 
-    void set_hm(Eigen::Ref<const Eigen::Matrix<TScalar, TSize, TSize>> value)
+    void set_hm(Eigen::Ref<const Matrix> value)
     {
         index it = 0;
 
@@ -551,7 +553,7 @@ public:
         return Eigen::Map<Eigen::Matrix<TScalar, 1, TSize < 0 ? Dynamic : TOrder == 1 ? 1 + TSize : (TSize + 1) * (TSize + 2) / 2>>(ptr(), length(m_data));
     }
 
-    static Type from_arrays(const TScalar f, Eigen::Ref<const Eigen::Matrix<TScalar, 1, TSize>> g, Eigen::Ref<const Eigen::Matrix<TScalar, TSize, TSize>> hm)
+    static Type from_arrays(const TScalar f, Eigen::Ref<const Vector> g, Eigen::Ref<const Matrix> hm)
     {
         assert(g.size() == hm.rows() && g.size() == hm.cols());
 
