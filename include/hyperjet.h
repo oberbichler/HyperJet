@@ -35,22 +35,23 @@ HYPERJET_INLINE constexpr bool throw_exceptions()
 #endif
 }
 
+template <index TOrder>
 HYPERJET_INLINE index data_length_from_size(const index size)
 {
-    return (size + 1) * (size + 2) / 2;
+    return TOrder == 1 ? 1 + size : (size + 1) * (size + 2) / 2;
 }
 
-template <typename T>
+template <index TOrder, typename T>
 HYPERJET_INLINE index size_from_data_length(const T& container)
 {
-    const index s = static_cast<index>(std::sqrt(1 + 8 * length(container)) - 3) / 2;
+    const index s = TOrder == 1 ? length(container) - 1 : static_cast<index>(std::sqrt(1 + 8 * length(container)) - 3) / 2;
 
     if constexpr (throw_exceptions()) {
-        if (data_length_from_size(s) != length(container)) {
+        if (data_length_from_size<TOrder>(s) != length(container)) {
             throw std::runtime_error("Invalid length");
         }
     } else {
-        assert(data_length_from_size(s) == length(container) == 0 && "Invalid length");
+        assert(data_length_from_size<TOrder>(s) == length(container) == 0 && "Invalid length");
     }
 
     return s;
@@ -94,10 +95,13 @@ HYPERJET_INLINE void check_equal_size(const index size_a, const index size_b)
 
 template <index TOrder, typename TScalar, index TSize>
 class DDScalar {
+    using DynamicStorage = std::vector<TScalar>;
+    using StaticStorage = std::array<TScalar, TOrder == 1 ? 1 + TSize : (TSize + 1) * (TSize + 2) / 2>;
+
 public:
     using Type = DDScalar<TOrder, TScalar, TSize>;
     using Scalar = TScalar;
-    using Data = typename std::conditional<TSize == Dynamic, std::vector<Scalar>, std::array<Scalar, (TSize + 1) * (TSize + 2) / 2>>::type;
+    using Data = typename std::conditional<TSize == Dynamic, DynamicStorage, StaticStorage>::type;
 
     index m_size;
     Data m_data;
@@ -145,7 +149,7 @@ public:
     }
 
     DDScalar(std::initializer_list<TScalar> data)
-        : m_size(size_from_data_length(data))
+        : m_size(size_from_data_length<TOrder>(data))
     {
         static_assert(0 < order() && order() <= 2);
 
@@ -195,7 +199,7 @@ public:
     {
         static_assert(is_dynamic());
         m_size = size;
-        const index n = data_length_from_size(size);
+        const index n = data_length_from_size<TOrder>(size);
         m_data.resize(n);
     }
 
@@ -281,11 +285,11 @@ public:
     static Type create(const Data& data)
     {
         if constexpr (is_dynamic()) {
-            const auto s = size_from_data_length(data);
+            const auto s = size_from_data_length<TOrder>(data);
             Type result(data, s);
             return result;
         } else {
-            const auto s = size_from_data_length(data);
+            const auto s = size_from_data_length<TOrder>(data);
             check_valid_size<TSize>(s);
             Type result(data);
             return result;
@@ -308,7 +312,7 @@ public:
     static Type empty(const index size)
     {
         if constexpr (is_dynamic()) {
-            const index n = data_length_from_size(size);
+            const index n = data_length_from_size<TOrder>(size);
             const Data data(n);
             Type result(data, size);
             return result;
@@ -335,7 +339,7 @@ public:
     static Type zero(const index size)
     {
         if constexpr (is_dynamic()) {
-            const Data data(data_length_from_size(size), 0);
+            const Data data(data_length_from_size<TOrder>(size), 0);
             Type result(data, size);
             return result;
         } else {
@@ -542,9 +546,9 @@ public:
         }
     }
 
-    Eigen::Ref<Eigen::Matrix<TScalar, 1, TSize < 0 ? Dynamic : (TSize + 1) * (TSize + 2) / 2>> adata()
+    Eigen::Ref<Eigen::Matrix<TScalar, 1, TSize < 0 ? Dynamic : TOrder == 1 ? 1 + TSize : (TSize + 1) * (TSize + 2) / 2>> adata()
     {
-        return Eigen::Map<Eigen::Matrix<TScalar, 1, TSize < 0 ? Dynamic : (TSize + 1) * (TSize + 2) / 2>>(ptr(), length(m_data));
+        return Eigen::Map<Eigen::Matrix<TScalar, 1, TSize < 0 ? Dynamic : TOrder == 1 ? 1 + TSize : (TSize + 1) * (TSize + 2) / 2>>(ptr(), length(m_data));
     }
 
     static Type from_arrays(const TScalar f, Eigen::Ref<const Eigen::Matrix<TScalar, 1, TSize>> g, Eigen::Ref<const Eigen::Matrix<TScalar, TSize, TSize>> hm)

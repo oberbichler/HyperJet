@@ -133,7 +133,7 @@ void register_ddscalar(pybind11::module& m, const std::string& name)
                 const auto data = tuple[0].cast<typename Type::Data>();
 
                 if constexpr(Type::is_dynamic()) {
-                    return Type(data, hj::size_from_data_length(data));
+                    return Type(data, hj::size_from_data_length<TOrder>(data));
                 } else {
                     return Type(data);
                 }
