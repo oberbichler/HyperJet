@@ -28,6 +28,7 @@ void register_ddscalar(pybind11::module& m, const std::string& name)
         .def_property("f", py::overload_cast<>(&Type::f, py::const_), &Type::set_f)
         // static read-only properties
         .def_property_readonly_static("is_dynamic", [](py::object) { return Type::is_dynamic(); })
+        .def_property_readonly_static("order", [](py::object) { return Type::order(); })
         // read-only properties
         .def_property_readonly("data", py::overload_cast<>(&Type::adata))
         .def_property_readonly("g", py::overload_cast<>(&Type::ag))
