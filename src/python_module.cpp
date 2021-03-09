@@ -9,7 +9,7 @@
 
 #include <hyperjet.h>
 
-template <typename TScalar, hyperjet::index TSize>
+template <hyperjet::index TOrder, typename TScalar, hyperjet::index TSize>
 void register_ddscalar(pybind11::module& m, const std::string& name)
 {
     using namespace pybind11::literals;
@@ -17,7 +17,7 @@ void register_ddscalar(pybind11::module& m, const std::string& name)
     namespace py = pybind11;
     namespace hj = hyperjet;
 
-    using Type = hyperjet::DDScalar<TScalar, TSize>;
+    using Type = hyperjet::DDScalar<TOrder, TScalar, TSize>;
 
     auto py_class = py::class_<Type>(m, name.c_str())
         // constructor
@@ -167,21 +167,39 @@ PYBIND11_MODULE(hyperjet, m)
     m.attr("__email__") = "thomas.oberbichler@gmail.com";
     m.attr("__status__") = "Development";
 
-    register_ddscalar<double, -1>(m, "DDScalar");
-    register_ddscalar<double, 1>(m, "DD1Scalar");
-    register_ddscalar<double, 2>(m, "DD2Scalar");
-    register_ddscalar<double, 3>(m, "DD3Scalar");
-    register_ddscalar<double, 4>(m, "DD4Scalar");
-    register_ddscalar<double, 5>(m, "DD5Scalar");
-    register_ddscalar<double, 6>(m, "DD6Scalar");
-    register_ddscalar<double, 7>(m, "DD7Scalar");
-    register_ddscalar<double, 8>(m, "DD8Scalar");
-    register_ddscalar<double, 9>(m, "DD9Scalar");
-    register_ddscalar<double, 10>(m, "DD10Scalar");
-    register_ddscalar<double, 11>(m, "DD11Scalar");
-    register_ddscalar<double, 12>(m, "DD12Scalar");
-    register_ddscalar<double, 13>(m, "DD13Scalar");
-    register_ddscalar<double, 14>(m, "DD14Scalar");
-    register_ddscalar<double, 15>(m, "DD15Scalar");
-    register_ddscalar<double, 16>(m, "DD16Scalar");
+    register_ddscalar<1, double, -1>(m, "DScalar");
+    register_ddscalar<1, double, 1>(m, "D1Scalar");
+    register_ddscalar<1, double, 2>(m, "D2Scalar");
+    register_ddscalar<1, double, 3>(m, "D3Scalar");
+    register_ddscalar<1, double, 4>(m, "D4Scalar");
+    register_ddscalar<1, double, 5>(m, "D5Scalar");
+    register_ddscalar<1, double, 6>(m, "D6Scalar");
+    register_ddscalar<1, double, 7>(m, "D7Scalar");
+    register_ddscalar<1, double, 8>(m, "D8Scalar");
+    register_ddscalar<1, double, 9>(m, "D9Scalar");
+    register_ddscalar<1, double, 10>(m, "D10Scalar");
+    register_ddscalar<1, double, 11>(m, "D11Scalar");
+    register_ddscalar<1, double, 12>(m, "D12Scalar");
+    register_ddscalar<1, double, 13>(m, "D13Scalar");
+    register_ddscalar<1, double, 14>(m, "D14Scalar");
+    register_ddscalar<1, double, 15>(m, "D15Scalar");
+    register_ddscalar<1, double, 16>(m, "D16Scalar");
+
+    register_ddscalar<2, double, -1>(m, "DDScalar");
+    register_ddscalar<2, double, 1>(m, "DD1Scalar");
+    register_ddscalar<2, double, 2>(m, "DD2Scalar");
+    register_ddscalar<2, double, 3>(m, "DD3Scalar");
+    register_ddscalar<2, double, 4>(m, "DD4Scalar");
+    register_ddscalar<2, double, 5>(m, "DD5Scalar");
+    register_ddscalar<2, double, 6>(m, "DD6Scalar");
+    register_ddscalar<2, double, 7>(m, "DD7Scalar");
+    register_ddscalar<2, double, 8>(m, "DD8Scalar");
+    register_ddscalar<2, double, 9>(m, "DD9Scalar");
+    register_ddscalar<2, double, 10>(m, "DD10Scalar");
+    register_ddscalar<2, double, 11>(m, "DD11Scalar");
+    register_ddscalar<2, double, 12>(m, "DD12Scalar");
+    register_ddscalar<2, double, 13>(m, "DD13Scalar");
+    register_ddscalar<2, double, 14>(m, "DD14Scalar");
+    register_ddscalar<2, double, 15>(m, "DD15Scalar");
+    register_ddscalar<2, double, 16>(m, "DD16Scalar");
 }

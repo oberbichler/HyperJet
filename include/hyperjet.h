@@ -92,10 +92,10 @@ HYPERJET_INLINE void check_equal_size(const index size_a, const index size_b)
     }
 }
 
-template <typename TScalar, index TSize>
+template <index TOrder, typename TScalar, index TSize>
 class DDScalar {
 public:
-    using Type = DDScalar<TScalar, TSize>;
+    using Type = DDScalar<TOrder, TScalar, TSize>;
     using Scalar = TScalar;
     using Data = typename std::conditional<TSize == Dynamic, std::vector<Scalar>, std::array<Scalar, (TSize + 1) * (TSize + 2) / 2>>::type;
 
@@ -104,6 +104,8 @@ public:
 
     DDScalar()
     {
+        static_assert(0 < order() && order() <= 2);
+
         if constexpr (is_dynamic()) {
             m_size = 1;
             m_data = Data(1);
@@ -114,6 +116,8 @@ public:
 
     DDScalar(const TScalar f)
     {
+        static_assert(0 < order() && order() <= 2);
+
         if constexpr (is_dynamic()) {
             m_size = 1;
             m_data = Data(1);
@@ -126,6 +130,8 @@ public:
     DDScalar(const Data& data)
         : m_data(data)
     {
+        static_assert(0 < order() && order() <= 2);
+
         static_assert(!is_dynamic());
     }
 
@@ -133,13 +139,22 @@ public:
         : m_data(data)
         , m_size(size)
     {
+        static_assert(0 < order() && order() <= 2);
+
         static_assert(is_dynamic());
     }
 
     DDScalar(std::initializer_list<TScalar> data)
         : m_size(size_from_data_length(data))
     {
+        static_assert(0 < order() && order() <= 2);
+
         std::copy(data.begin(), data.end(), m_data.begin());
+    }
+
+    static constexpr index order()
+    {
+        return TOrder;
     }
 
     Data& data()
@@ -1594,14 +1609,14 @@ public:
 
 using std::pow;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> pow(const DDScalar<TScalar, TSize>& a, const index b)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> pow(const DDScalar<TOrder, TScalar, TSize>& a, const index b)
 {
     return a.pow(b);
 }
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> pow(const DDScalar<TScalar, TSize>& a, const TScalar b)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> pow(const DDScalar<TOrder, TScalar, TSize>& a, const TScalar b)
 {
     return a.pow(b);
 }
@@ -1610,8 +1625,8 @@ DDScalar<TScalar, TSize> pow(const DDScalar<TScalar, TSize>& a, const TScalar b)
 
 using std::sqrt;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> sqrt(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> sqrt(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.sqrt();
 }
@@ -1620,8 +1635,8 @@ DDScalar<TScalar, TSize> sqrt(const DDScalar<TScalar, TSize>& a)
 
 using std::cbrt;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> cbrt(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> cbrt(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.cbrt();
 }
@@ -1630,8 +1645,8 @@ DDScalar<TScalar, TSize> cbrt(const DDScalar<TScalar, TSize>& a)
 
 using std::cos;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> cos(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> cos(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.cos();
 }
@@ -1640,8 +1655,8 @@ DDScalar<TScalar, TSize> cos(const DDScalar<TScalar, TSize>& a)
 
 using std::sin;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> sin(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> sin(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.sin();
 }
@@ -1650,8 +1665,8 @@ DDScalar<TScalar, TSize> sin(const DDScalar<TScalar, TSize>& a)
 
 using std::tan;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> tan(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> tan(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.tan();
 }
@@ -1660,8 +1675,8 @@ DDScalar<TScalar, TSize> tan(const DDScalar<TScalar, TSize>& a)
 
 using std::acos;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> acos(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> acos(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.acos();
 }
@@ -1670,8 +1685,8 @@ DDScalar<TScalar, TSize> acos(const DDScalar<TScalar, TSize>& a)
 
 using std::asin;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> asin(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> asin(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.asin();
 }
@@ -1680,8 +1695,8 @@ DDScalar<TScalar, TSize> asin(const DDScalar<TScalar, TSize>& a)
 
 using std::atan;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> atan(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> atan(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.atan();
 }
@@ -1690,8 +1705,8 @@ DDScalar<TScalar, TSize> atan(const DDScalar<TScalar, TSize>& a)
 
 using std::atan2;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> atan2(const DDScalar<TScalar, TSize>& a, const DDScalar<TScalar, TSize>& b)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> atan2(const DDScalar<TOrder, TScalar, TSize>& a, const DDScalar<TOrder, TScalar, TSize>& b)
 {
     return a.atan2(b);
 }
@@ -1700,8 +1715,8 @@ DDScalar<TScalar, TSize> atan2(const DDScalar<TScalar, TSize>& a, const DDScalar
 
 using std::cosh;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> cosh(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> cosh(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.cosh();
 }
@@ -1710,8 +1725,8 @@ DDScalar<TScalar, TSize> cosh(const DDScalar<TScalar, TSize>& a)
 
 using std::sinh;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> sinh(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> sinh(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.sinh();
 }
@@ -1720,8 +1735,8 @@ DDScalar<TScalar, TSize> sinh(const DDScalar<TScalar, TSize>& a)
 
 using std::tanh;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> tanh(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> tanh(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.tanh();
 }
@@ -1730,8 +1745,8 @@ DDScalar<TScalar, TSize> tanh(const DDScalar<TScalar, TSize>& a)
 
 using std::acosh;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> acosh(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> acosh(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.acosh();
 }
@@ -1740,8 +1755,8 @@ DDScalar<TScalar, TSize> acosh(const DDScalar<TScalar, TSize>& a)
 
 using std::asinh;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> asinh(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> asinh(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.asinh();
 }
@@ -1750,8 +1765,8 @@ DDScalar<TScalar, TSize> asinh(const DDScalar<TScalar, TSize>& a)
 
 using std::atanh;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> atanh(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> atanh(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.atanh();
 }
@@ -1760,8 +1775,8 @@ DDScalar<TScalar, TSize> atanh(const DDScalar<TScalar, TSize>& a)
 
 using std::exp;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> exp(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> exp(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.exp();
 }
@@ -1770,8 +1785,8 @@ DDScalar<TScalar, TSize> exp(const DDScalar<TScalar, TSize>& a)
 
 using std::log;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> log(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> log(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.log();
 }
@@ -1780,8 +1795,8 @@ DDScalar<TScalar, TSize> log(const DDScalar<TScalar, TSize>& a)
 
 using std::log2;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> log2(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> log2(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.log2();
 }
@@ -1790,8 +1805,8 @@ DDScalar<TScalar, TSize> log2(const DDScalar<TScalar, TSize>& a)
 
 using std::log10;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> log10(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> log10(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.log10();
 }
@@ -1805,11 +1820,11 @@ namespace Eigen {
 template <typename T>
 struct NumTraits;
 
-template <typename TScalar, std::ptrdiff_t TSize>
-struct NumTraits<hyperjet::DDScalar<TScalar, TSize>> : NumTraits<TScalar> {
-    using Real = hyperjet::DDScalar<TScalar, TSize>;
-    using NonInteger = hyperjet::DDScalar<TScalar, TSize>;
-    using Nested = hyperjet::DDScalar<TScalar, TSize>;
+template <hyperjet::index TOrder, typename TScalar, std::ptrdiff_t TSize>
+struct NumTraits<hyperjet::DDScalar<TOrder, TScalar, TSize>> : NumTraits<TScalar> {
+    using Real = hyperjet::DDScalar<TOrder, TScalar, TSize>;
+    using NonInteger = hyperjet::DDScalar<TOrder, TScalar, TSize>;
+    using Nested = hyperjet::DDScalar<TOrder, TScalar, TSize>;
 
     enum {
         IsComplex = 0,
@@ -1822,14 +1837,14 @@ struct NumTraits<hyperjet::DDScalar<TScalar, TSize>> : NumTraits<TScalar> {
     };
 };
 
-template <typename BinOp, typename TScalar, std::ptrdiff_t TSize>
-struct ScalarBinaryOpTraits<hyperjet::DDScalar<TScalar, TSize>, TScalar, BinOp> {
-    using ReturnType = hyperjet::DDScalar<TScalar, TSize>;
+template <typename BinOp, hyperjet::index TOrder, typename TScalar, hyperjet::index TSize>
+struct ScalarBinaryOpTraits<hyperjet::DDScalar<TOrder, TScalar, TSize>, TScalar, BinOp> {
+    using ReturnType = hyperjet::DDScalar<TOrder, TScalar, TSize>;
 };
 
-template <typename BinOp, typename TScalar, std::ptrdiff_t TSize>
-struct ScalarBinaryOpTraits<TScalar, hyperjet::DDScalar<TScalar, TSize>, BinOp> {
-    using ReturnType = hyperjet::DDScalar<TScalar, TSize>;
+template <typename BinOp, hyperjet::index TOrder, typename TScalar, hyperjet::index TSize>
+struct ScalarBinaryOpTraits<TScalar, hyperjet::DDScalar<TOrder, TScalar, TSize>, BinOp> {
+    using ReturnType = hyperjet::DDScalar<TOrder, TScalar, TSize>;
 };
 
 } // namespace Eigen
