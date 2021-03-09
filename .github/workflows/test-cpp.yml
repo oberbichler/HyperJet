@@ -11,7 +11,7 @@ env:
 
 jobs:
   test_cpp:
-    name: build (${{ matrix.os }})
+    name: build (${{ matrix.os }}, C++)
     
     runs-on: ${{ matrix.os }}
 
