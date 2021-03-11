@@ -315,6 +315,11 @@ def test_resize(ctx):
             u.pad_right(5)
 
 
+def test_eval():
+    u = hj.DDScalar([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    assert_equal(u.eval([11, 12, 13]), 9952)
+
+
 @pytest.mark.parametrize('ctx', [static_set, dynamic_set], ids=['static', 'dynamic'])
 def test_pad_right(ctx):
     u = ctx.u9
