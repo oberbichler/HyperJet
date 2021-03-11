@@ -575,6 +575,28 @@ public:
         return result;
     }
 
+    Scalar eval(typename std::conditional<TSize == Dynamic, std::vector<Scalar>, std::array<Scalar, TSize>>::type d) const
+    {
+        Scalar result = f();
+
+        for (index i = 0; i < size(); i++) {
+            result += d[i] * g(i);
+        }
+
+        // FIXME:
+        // if constexpr (TOrder == 1) {
+        //     return result;
+        // }
+
+        for (index i = 0; i < size(); i++) {
+            for (index j = 0; j < size(); j++) {
+                result += 0.5 * d[i] * d[j] * h(i, j);
+            }
+        }
+
+        return result;
+    }
+
 #endif
 
     friend std::ostream& operator<<(std::ostream& out, const Type& value)
