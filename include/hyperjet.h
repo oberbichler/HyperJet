@@ -545,7 +545,7 @@ public:
         return result;
     }
 
-    Scalar eval(typename std::conditional<TSize == Dynamic, std::vector<Scalar>, std::array<Scalar, TSize>>::type d) const
+    Scalar eval(typename std::conditional<TSize == Dynamic, std::vector<Scalar>, std::array<Scalar, TSize < 0 ? 0 : TSize>>::type d) const
     {
         Scalar result = f();
 
