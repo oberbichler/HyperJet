@@ -560,7 +560,7 @@ public:
 
         for (index i = 0; i < size(); i++) {
             for (index j = 0; j < size(); j++) {
-                result += d[i] * d[j] * h(i, j);
+                result += 0.5 * d[i] * d[j] * h(i, j);
             }
         }
 
