@@ -35,22 +35,23 @@ HYPERJET_INLINE constexpr bool throw_exceptions()
 #endif
 }
 
+template <index TOrder>
 HYPERJET_INLINE index data_length_from_size(const index size)
 {
-    return (size + 1) * (size + 2) / 2;
+    return TOrder == 1 ? 1 + size : (size + 1) * (size + 2) / 2;
 }
 
-template <typename T>
+template <index TOrder, typename T>
 HYPERJET_INLINE index size_from_data_length(const T& container)
 {
-    const index s = static_cast<index>(std::sqrt(1 + 8 * length(container)) - 3) / 2;
+    const index s = TOrder == 1 ? length(container) - 1 : static_cast<index>(std::sqrt(1 + 8 * length(container)) - 3) / 2;
 
     if constexpr (throw_exceptions()) {
-        if (data_length_from_size(s) != length(container)) {
+        if (data_length_from_size<TOrder>(s) != length(container)) {
             throw std::runtime_error("Invalid length");
         }
     } else {
-        assert(data_length_from_size(s) == length(container) == 0 && "Invalid length");
+        assert(data_length_from_size<TOrder>(s) == length(container) == 0 && "Invalid length");
     }
 
     return s;
@@ -92,18 +93,23 @@ HYPERJET_INLINE void check_equal_size(const index size_a, const index size_b)
     }
 }
 
-template <typename TScalar, index TSize>
+template <index TOrder, typename TScalar, index TSize>
 class DDScalar {
+    using DynamicStorage = std::vector<TScalar>;
+    using StaticStorage = std::array<TScalar, TOrder == 1 ? 1 + TSize : (TSize + 1) * (TSize + 2) / 2>;
+
 public:
-    using Type = DDScalar<TScalar, TSize>;
+    using Type = DDScalar<TOrder, TScalar, TSize>;
     using Scalar = TScalar;
-    using Data = typename std::conditional<TSize == Dynamic, std::vector<Scalar>, std::array<Scalar, (TSize + 1) * (TSize + 2) / 2>>::type;
+    using Data = typename std::conditional<TSize == Dynamic, DynamicStorage, StaticStorage>::type;
 
     index m_size;
     Data m_data;
 
     DDScalar()
     {
+        static_assert(0 < order() && order() <= 2);
+
         if constexpr (is_dynamic()) {
             m_size = 1;
             m_data = Data(1);
@@ -114,6 +120,8 @@ public:
 
     DDScalar(const TScalar f)
     {
+        static_assert(0 < order() && order() <= 2);
+
         if constexpr (is_dynamic()) {
             m_size = 1;
             m_data = Data(1);
@@ -126,6 +134,8 @@ public:
     DDScalar(const Data& data)
         : m_data(data)
     {
+        static_assert(0 < order() && order() <= 2);
+
         static_assert(!is_dynamic());
     }
 
@@ -133,13 +143,22 @@ public:
         : m_data(data)
         , m_size(size)
     {
+        static_assert(0 < order() && order() <= 2);
+
         static_assert(is_dynamic());
     }
 
     DDScalar(std::initializer_list<TScalar> data)
-        : m_size(size_from_data_length(data))
+        : m_size(size_from_data_length<TOrder>(data))
     {
+        static_assert(0 < order() && order() <= 2);
+
         std::copy(data.begin(), data.end(), m_data.begin());
+    }
+
+    static constexpr index order()
+    {
+        return TOrder;
     }
 
     Data& data()
@@ -180,7 +199,7 @@ public:
     {
         static_assert(is_dynamic());
         m_size = size;
-        const index n = data_length_from_size(size);
+        const index n = data_length_from_size<TOrder>(size);
         m_data.resize(n);
     }
 
@@ -203,6 +222,10 @@ public:
 
         for (index i = 0; i < size(); i++) {
             *target++ = *source++;
+        }
+
+        if constexpr (order() == 1) {
+            return result;
         }
 
         for (index i = 0; i < head; i++) {
@@ -239,6 +262,10 @@ public:
             *target++ = Scalar(0);
         }
 
+        if (order() == 1) {
+            return result;
+        }
+
         for (index i = 0; i < size(); i++) {
             for (index j = i; j < size(); j++) {
                 *target++ = *source++;
@@ -266,11 +293,11 @@ public:
     static Type create(const Data& data)
     {
         if constexpr (is_dynamic()) {
-            const auto s = size_from_data_length(data);
+            const auto s = size_from_data_length<TOrder>(data);
             Type result(data, s);
             return result;
         } else {
-            const auto s = size_from_data_length(data);
+            const auto s = size_from_data_length<TOrder>(data);
             check_valid_size<TSize>(s);
             Type result(data);
             return result;
@@ -293,7 +320,7 @@ public:
     static Type empty(const index size)
     {
         if constexpr (is_dynamic()) {
-            const index n = data_length_from_size(size);
+            const index n = data_length_from_size<TOrder>(size);
             const Data data(n);
             Type result(data, size);
             return result;
@@ -320,7 +347,7 @@ public:
     static Type zero(const index size)
     {
         if constexpr (is_dynamic()) {
-            const Data data(data_length_from_size(size), 0);
+            const Data data(data_length_from_size<TOrder>(size), 0);
             Type result(data, size);
             return result;
         } else {
@@ -468,28 +495,29 @@ public:
     }
 
 #if defined EIGEN_WORLD_VERSION
+    using Vector = Eigen::Matrix<TScalar, 1, TSize>;
+    using Matrix = Eigen::Matrix<TScalar, TSize, TSize>;
 
-    Eigen::Ref<const Eigen::Matrix<TScalar, 1, TSize>> ag() const
+    Eigen::Ref<const Vector> ag() const
     {
-        return Eigen::Map<Eigen::Matrix<TScalar, 1, TSize>>(ptr() + 1, size());
+        return Eigen::Map<Vector>(ptr() + 1, size());
     }
 
-
-    Eigen::Ref<Eigen::Matrix<TScalar, 1, TSize>> ag()
+    Eigen::Ref<Vector> ag()
     {
-        return Eigen::Map<Eigen::Matrix<TScalar, 1, TSize>>(ptr() + 1, size());
+        return Eigen::Map<Vector>(ptr() + 1, size());
     }
 
-    Eigen::Matrix<TScalar, TSize, TSize> hm(const std::string mode) const
+    Matrix hm(const std::string mode) const
     {
-        Eigen::Matrix<TScalar, TSize, TSize> result(size(), size());
+        Matrix result(size(), size());
 
         hm(mode, result);
 
         return result;
     }
 
-    void hm(const std::string mode, Eigen::Ref<Eigen::Matrix<TScalar, TSize, TSize>> out) const
+    void hm(const std::string mode, Eigen::Ref<Matrix> out) const
     {
         index it = 0;
 
@@ -516,7 +544,7 @@ public:
         }
     }
 
-    void set_hm(Eigen::Ref<const Eigen::Matrix<TScalar, TSize, TSize>> value)
+    void set_hm(Eigen::Ref<const Matrix> value)
     {
         index it = 0;
 
@@ -527,13 +555,15 @@ public:
         }
     }
 
-    Eigen::Ref<Eigen::Matrix<TScalar, 1, TSize < 0 ? Dynamic : (TSize + 1) * (TSize + 2) / 2>> adata()
+    Eigen::Ref<Eigen::Matrix<TScalar, 1, TSize < 0 ? Dynamic : TOrder == 1 ? 1 + TSize : (TSize + 1) * (TSize + 2) / 2>> adata()
     {
-        return Eigen::Map<Eigen::Matrix<TScalar, 1, TSize < 0 ? Dynamic : (TSize + 1) * (TSize + 2) / 2>>(ptr(), length(m_data));
+        return Eigen::Map<Eigen::Matrix<TScalar, 1, TSize < 0 ? Dynamic : TOrder == 1 ? 1 + TSize : (TSize + 1) * (TSize + 2) / 2>>(ptr(), length(m_data));
     }
 
-    static Type from_arrays(const TScalar f, Eigen::Ref<const Eigen::Matrix<TScalar, 1, TSize>> g, Eigen::Ref<const Eigen::Matrix<TScalar, TSize, TSize>> hm)
+    static Type from_arrays(const TScalar f, Eigen::Ref<const Vector> g, Eigen::Ref<const Matrix> hm)
     {
+        static_assert(order() == 2);
+
         assert(g.size() == hm.rows() && g.size() == hm.cols());
 
         Type result = empty(length(g));
@@ -711,6 +741,10 @@ public:
             result.m_data[i] = d_a * m_data[i] + d_b * b.m_data[i];
         }
 
+        if constexpr (order() == 1) {
+            return result;
+        }
+
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
@@ -753,6 +787,9 @@ public:
             m_data[i] = d_a * m_data[i] + d_b * b.m_data[i];
         }
 
+        if constexpr (order() == 1)
+            return *this;
+
         auto* it = &m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
@@ -791,6 +828,10 @@ public:
             result.m_data[i] = d_a * m_data[i] + d_b * b.m_data[i];
         }
 
+        if constexpr (order() == 1) {
+            return result;
+        }
+
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
@@ -825,6 +866,10 @@ public:
             result.m_data[i] = d_b * b.m_data[i];
         }
 
+        if constexpr (order() == 1) {
+            return result;
+        }
+
         auto* it = &result.m_data[1 + s];
 
         for (index i = 0; i < s; i++) {
@@ -854,6 +899,9 @@ public:
         for (index i = 1; i < length(m_data); i++) {
             m_data[i] = d_a * m_data[i] + d_b * b.m_data[i];
         }
+
+        if constexpr (order() == 1)
+            return *this;
 
         auto* it = &m_data[1 + size()];
 
@@ -892,6 +940,10 @@ public:
             result.m_data[i] = d * m_data[i];
         }
 
+        if constexpr (order() == 1) {
+            return result;
+        }
+
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
@@ -919,6 +971,10 @@ public:
 
         for (index i = 1; i < length(result.m_data); i++) {
             result.m_data[i] = d * m_data[i];
+        }
+
+        if constexpr (order() == 1) {
+            return result;
         }
 
         auto* it = &result.m_data[1 + size()];
@@ -949,6 +1005,10 @@ public:
             result.m_data[i] = d * m_data[i];
         }
 
+        if constexpr (order() == 1) {
+            return result;
+        }
+
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
@@ -973,6 +1033,10 @@ public:
 
         for (index i = 1; i < length(result.m_data); i++) {
             result.m_data[i] = d * m_data[i];
+        }
+
+        if constexpr (order() == 1) {
+            return result;
         }
 
         auto* it = &result.m_data[1 + size()];
@@ -1005,6 +1069,10 @@ public:
             result.m_data[i] = d * m_data[i];
         }
 
+        if constexpr (order() == 1) {
+            return result;
+        }
+
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
@@ -1031,6 +1099,10 @@ public:
 
         for (index i = 1; i < length(result.m_data); i++) {
             result.m_data[i] = d * m_data[i];
+        }
+
+        if constexpr (order() == 1) {
+            return result;
         }
 
         auto* it = &result.m_data[1 + size()];
@@ -1060,6 +1132,10 @@ public:
 
         for (index i = 1; i < length(result.m_data); i++) {
             result.m_data[i] = d * m_data[i];
+        }
+
+        if constexpr (order() == 1) {
+            return result;
         }
 
         auto* it = &result.m_data[1 + size()];
@@ -1092,6 +1168,10 @@ public:
             result.m_data[i] = d * m_data[i];
         }
 
+        if constexpr (order() == 1) {
+            return result;
+        }
+
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
@@ -1122,6 +1202,10 @@ public:
             result.m_data[i] = d * m_data[i];
         }
 
+        if constexpr (order() == 1) {
+            return result;
+        }
+
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
@@ -1147,6 +1231,10 @@ public:
 
         for (index i = 1; i < length(result.m_data); i++) {
             result.m_data[i] = d * m_data[i];
+        }
+
+        if constexpr (order() == 1) {
+            return result;
         }
 
         auto* it = &result.m_data[1 + size()];
@@ -1180,6 +1268,10 @@ public:
             result.m_data[i] = d_a * m_data[i] + d_b * b.m_data[i];
         }
 
+        if constexpr (order() == 1) {
+            return result;
+        }
+
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
@@ -1209,6 +1301,10 @@ public:
             result.m_data[i] = d * m_data[i];
         }
 
+        if constexpr (order() == 1) {
+            return result;
+        }
+
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
@@ -1235,6 +1331,10 @@ public:
 
         for (index i = 1; i < length(result.m_data); i++) {
             result.m_data[i] = d * m_data[i];
+        }
+
+        if constexpr (order() == 1) {
+            return result;
         }
 
         auto* it = &result.m_data[1 + size()];
@@ -1266,6 +1366,10 @@ public:
             result.m_data[i] = d * m_data[i];
         }
 
+        if constexpr (order() == 1) {
+            return result;
+        }
+
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
@@ -1292,6 +1396,10 @@ public:
 
         for (index i = 1; i < length(result.m_data); i++) {
             result.m_data[i] = d * m_data[i];
+        }
+
+        if constexpr (order() == 1) {
+            return result;
         }
 
         auto* it = &result.m_data[1 + size()];
@@ -1322,6 +1430,10 @@ public:
             result.m_data[i] = d * m_data[i];
         }
 
+        if constexpr (order() == 1) {
+            return result;
+        }
+
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
@@ -1350,6 +1462,10 @@ public:
 
         for (index i = 1; i < length(result.m_data); i++) {
             result.m_data[i] = d * m_data[i];
+        }
+
+        if constexpr (order() == 1) {
+            return result;
         }
 
         auto* it = &result.m_data[1 + size()];
@@ -1383,6 +1499,10 @@ public:
             result.m_data[i] = d * m_data[i];
         }
 
+        if constexpr (order() == 1) {
+            return result;
+        }
+
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
@@ -1412,6 +1532,10 @@ public:
             result.m_data[i] = d * m_data[i];
         }
 
+        if constexpr (order() == 1) {
+            return result;
+        }
+
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
@@ -1438,6 +1562,10 @@ public:
 
         for (index i = 1; i < length(result.m_data); i++) {
             result.m_data[i] = d * m_data[i];
+        }
+
+        if constexpr (order() == 1) {
+            return result;
         }
 
         auto* it = &result.m_data[1 + size()];
@@ -1470,6 +1598,10 @@ public:
             result.m_data[i] = d * m_data[i];
         }
 
+        if constexpr (order() == 1) {
+            return result;
+        }
+
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
@@ -1498,6 +1630,10 @@ public:
 
         for (index i = 1; i < length(result.m_data); i++) {
             result.m_data[i] = d * m_data[i];
+        }
+
+        if constexpr (order() == 1) {
+            return result;
         }
 
         auto* it = &result.m_data[1 + size()];
@@ -1616,14 +1752,14 @@ public:
 
 using std::pow;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> pow(const DDScalar<TScalar, TSize>& a, const index b)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> pow(const DDScalar<TOrder, TScalar, TSize>& a, const index b)
 {
     return a.pow(b);
 }
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> pow(const DDScalar<TScalar, TSize>& a, const TScalar b)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> pow(const DDScalar<TOrder, TScalar, TSize>& a, const TScalar b)
 {
     return a.pow(b);
 }
@@ -1632,8 +1768,8 @@ DDScalar<TScalar, TSize> pow(const DDScalar<TScalar, TSize>& a, const TScalar b)
 
 using std::sqrt;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> sqrt(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> sqrt(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.sqrt();
 }
@@ -1642,8 +1778,8 @@ DDScalar<TScalar, TSize> sqrt(const DDScalar<TScalar, TSize>& a)
 
 using std::cbrt;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> cbrt(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> cbrt(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.cbrt();
 }
@@ -1652,8 +1788,8 @@ DDScalar<TScalar, TSize> cbrt(const DDScalar<TScalar, TSize>& a)
 
 using std::cos;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> cos(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> cos(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.cos();
 }
@@ -1662,8 +1798,8 @@ DDScalar<TScalar, TSize> cos(const DDScalar<TScalar, TSize>& a)
 
 using std::sin;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> sin(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> sin(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.sin();
 }
@@ -1672,8 +1808,8 @@ DDScalar<TScalar, TSize> sin(const DDScalar<TScalar, TSize>& a)
 
 using std::tan;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> tan(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> tan(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.tan();
 }
@@ -1682,8 +1818,8 @@ DDScalar<TScalar, TSize> tan(const DDScalar<TScalar, TSize>& a)
 
 using std::acos;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> acos(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> acos(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.acos();
 }
@@ -1692,8 +1828,8 @@ DDScalar<TScalar, TSize> acos(const DDScalar<TScalar, TSize>& a)
 
 using std::asin;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> asin(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> asin(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.asin();
 }
@@ -1702,8 +1838,8 @@ DDScalar<TScalar, TSize> asin(const DDScalar<TScalar, TSize>& a)
 
 using std::atan;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> atan(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> atan(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.atan();
 }
@@ -1712,8 +1848,8 @@ DDScalar<TScalar, TSize> atan(const DDScalar<TScalar, TSize>& a)
 
 using std::atan2;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> atan2(const DDScalar<TScalar, TSize>& a, const DDScalar<TScalar, TSize>& b)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> atan2(const DDScalar<TOrder, TScalar, TSize>& a, const DDScalar<TOrder, TScalar, TSize>& b)
 {
     return a.atan2(b);
 }
@@ -1722,8 +1858,8 @@ DDScalar<TScalar, TSize> atan2(const DDScalar<TScalar, TSize>& a, const DDScalar
 
 using std::cosh;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> cosh(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> cosh(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.cosh();
 }
@@ -1732,8 +1868,8 @@ DDScalar<TScalar, TSize> cosh(const DDScalar<TScalar, TSize>& a)
 
 using std::sinh;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> sinh(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> sinh(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.sinh();
 }
@@ -1742,8 +1878,8 @@ DDScalar<TScalar, TSize> sinh(const DDScalar<TScalar, TSize>& a)
 
 using std::tanh;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> tanh(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> tanh(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.tanh();
 }
@@ -1752,8 +1888,8 @@ DDScalar<TScalar, TSize> tanh(const DDScalar<TScalar, TSize>& a)
 
 using std::acosh;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> acosh(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> acosh(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.acosh();
 }
@@ -1762,8 +1898,8 @@ DDScalar<TScalar, TSize> acosh(const DDScalar<TScalar, TSize>& a)
 
 using std::asinh;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> asinh(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> asinh(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.asinh();
 }
@@ -1772,8 +1908,8 @@ DDScalar<TScalar, TSize> asinh(const DDScalar<TScalar, TSize>& a)
 
 using std::atanh;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> atanh(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> atanh(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.atanh();
 }
@@ -1782,8 +1918,8 @@ DDScalar<TScalar, TSize> atanh(const DDScalar<TScalar, TSize>& a)
 
 using std::exp;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> exp(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> exp(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.exp();
 }
@@ -1792,8 +1928,8 @@ DDScalar<TScalar, TSize> exp(const DDScalar<TScalar, TSize>& a)
 
 using std::log;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> log(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> log(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.log();
 }
@@ -1802,8 +1938,8 @@ DDScalar<TScalar, TSize> log(const DDScalar<TScalar, TSize>& a)
 
 using std::log2;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> log2(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> log2(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.log2();
 }
@@ -1812,8 +1948,8 @@ DDScalar<TScalar, TSize> log2(const DDScalar<TScalar, TSize>& a)
 
 using std::log10;
 
-template <typename TScalar, index TSize>
-DDScalar<TScalar, TSize> log10(const DDScalar<TScalar, TSize>& a)
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> log10(const DDScalar<TOrder, TScalar, TSize>& a)
 {
     return a.log10();
 }
@@ -1827,11 +1963,11 @@ namespace Eigen {
 template <typename T>
 struct NumTraits;
 
-template <typename TScalar, std::ptrdiff_t TSize>
-struct NumTraits<hyperjet::DDScalar<TScalar, TSize>> : NumTraits<TScalar> {
-    using Real = hyperjet::DDScalar<TScalar, TSize>;
-    using NonInteger = hyperjet::DDScalar<TScalar, TSize>;
-    using Nested = hyperjet::DDScalar<TScalar, TSize>;
+template <hyperjet::index TOrder, typename TScalar, std::ptrdiff_t TSize>
+struct NumTraits<hyperjet::DDScalar<TOrder, TScalar, TSize>> : NumTraits<TScalar> {
+    using Real = hyperjet::DDScalar<TOrder, TScalar, TSize>;
+    using NonInteger = hyperjet::DDScalar<TOrder, TScalar, TSize>;
+    using Nested = hyperjet::DDScalar<TOrder, TScalar, TSize>;
 
     enum {
         IsComplex = 0,
@@ -1844,14 +1980,14 @@ struct NumTraits<hyperjet::DDScalar<TScalar, TSize>> : NumTraits<TScalar> {
     };
 };
 
-template <typename BinOp, typename TScalar, std::ptrdiff_t TSize>
-struct ScalarBinaryOpTraits<hyperjet::DDScalar<TScalar, TSize>, TScalar, BinOp> {
-    using ReturnType = hyperjet::DDScalar<TScalar, TSize>;
+template <typename BinOp, hyperjet::index TOrder, typename TScalar, hyperjet::index TSize>
+struct ScalarBinaryOpTraits<hyperjet::DDScalar<TOrder, TScalar, TSize>, TScalar, BinOp> {
+    using ReturnType = hyperjet::DDScalar<TOrder, TScalar, TSize>;
 };
 
-template <typename BinOp, typename TScalar, std::ptrdiff_t TSize>
-struct ScalarBinaryOpTraits<TScalar, hyperjet::DDScalar<TScalar, TSize>, BinOp> {
-    using ReturnType = hyperjet::DDScalar<TScalar, TSize>;
+template <typename BinOp, hyperjet::index TOrder, typename TScalar, hyperjet::index TSize>
+struct ScalarBinaryOpTraits<TScalar, hyperjet::DDScalar<TOrder, TScalar, TSize>, BinOp> {
+    using ReturnType = hyperjet::DDScalar<TOrder, TScalar, TSize>;
 };
 
 } // namespace Eigen

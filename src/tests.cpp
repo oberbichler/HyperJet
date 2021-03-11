@@ -13,13 +13,13 @@
 using namespace Catch::literals;
 using namespace hyperjet;
 
-//                             f    g0   g1   g2   h00  h01  h02  h11  h12  h22
-const DDScalar<double, 3> dd1 {3.0, 1.0, 6.0, 4.0, 0.0, 5.0, 9.0, 2.0, 7.0, 8.0};
-const DDScalar<double, 3> dd2 {4.0, 7.0, 1.0, 0.0, 6.0, 8.0, 2.0, 9.0, 5.0, 3.0};
-const DDScalar<double, 3> dd3 {0.3, 0.1, 0.8, 0.2, 0.5, 0.7, 0.9, 0.4, 0.6, 0.0};
+//                                f    g0   g1   g2   h00  h01  h02  h11  h12  h22
+const DDScalar<2, double, 3> dd1 {3.0, 1.0, 6.0, 4.0, 0.0, 5.0, 9.0, 2.0, 7.0, 8.0};
+const DDScalar<2, double, 3> dd2 {4.0, 7.0, 1.0, 0.0, 6.0, 8.0, 2.0, 9.0, 5.0, 3.0};
+const DDScalar<2, double, 3> dd3 {0.3, 0.1, 0.8, 0.2, 0.5, 0.7, 0.9, 0.4, 0.6, 0.0};
 
-const Eigen::Matrix<DDScalar<double, 3>, 1, 3> ddv1 {dd1, dd2, dd3};
-const Eigen::Matrix<DDScalar<double, 3>, 1, 3> ddv2 {dd3, dd1, dd2};
+const Eigen::Matrix<DDScalar<2, double, 3>, 1, 3> ddv1 {dd1, dd2, dd3};
+const Eigen::Matrix<DDScalar<2, double, 3>, 1, 3> ddv2 {dd3, dd1, dd2};
 
 TEST_CASE("<< DD") {
     std::stringstream output;
