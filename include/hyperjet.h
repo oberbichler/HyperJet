@@ -583,10 +583,9 @@ public:
             result += d[i] * g(i);
         }
 
-        // FIXME:
-        // if constexpr (TOrder == 1) {
-        //     return result;
-        // }
+        if constexpr (order() == 1) {
+            return result;
+        }
 
         for (index i = 0; i < size(); i++) {
             for (index j = 0; j < size(); j++) {
