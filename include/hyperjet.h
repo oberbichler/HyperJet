@@ -5,7 +5,7 @@
 #include <ostream> // ostream
 #include <sstream> // stringstream
 #include <string> // string
-#include <type_traits> // conditional, enable_if
+#include <type_traits> // conditional
 #include <vector> // vector
 
 namespace hyperjet {
@@ -588,9 +588,11 @@ public:
         }
 
         for (index i = 0; i < size(); i++) {
+            auto s = Scalar(0);
             for (index j = 0; j < size(); j++) {
-                result += 0.5 * d[i] * d[j] * h(i, j);
+                s += d[j] * h(i, j);
             }
+            result += 0.5 * d[i] * s;
         }
 
         return result;
