@@ -1749,6 +1749,16 @@ public:
     }
 };
 
+// std::abs
+
+using std::abs;
+
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> abs(const DDScalar<TOrder, TScalar, TSize>& a)
+{
+    return a.abs();
+}
+
 // std::pow
 
 using std::pow;
