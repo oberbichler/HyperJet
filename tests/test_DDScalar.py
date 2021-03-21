@@ -92,20 +92,39 @@ test_data = dict(
 
 def test_init_by_value():
     # static size
+
+    u = hj.D2Scalar(f=1, size=2)
+    assert_equal(u.size, 2)
+    assert_allclose(u.data, [1, 0, 0])
+
     u = hj.DD2Scalar(f=1, size=2)
     assert_equal(u.size, 2)
     assert_allclose(u.data, [1, 0, 0, 0, 0, 0])
 
     # dynamic size
+
+    u = hj.DScalar(f=1, size=2)
+    assert_equal(u.size, 2)
+    assert_allclose(u.data, [1, 0, 0])
+
     u = hj.DDScalar(f=1, size=2)
     assert_equal(u.size, 2)
     assert_allclose(u.data, [1, 0, 0, 0, 0, 0])
 
     # static size with invalid size argument throws
+
+    with pytest.raises(RuntimeError):
+        hj.D2Scalar(f=1, size=3)
+
     with pytest.raises(RuntimeError):
         hj.DD2Scalar(f=1, size=3)
 
     # dynamic size without argument has size=0
+
+    u = hj.DScalar(f=1)
+    assert_equal(u.size, 0)
+    assert_allclose(u.data, [1])
+
     u = hj.DDScalar(f=1)
     assert_equal(u.size, 0)
     assert_allclose(u.data, [1])
@@ -113,16 +132,30 @@ def test_init_by_value():
 
 def test_init_by_data():
     # static size
+
+    u = hj.D2Scalar([1, 2, 3])
+    assert_equal(u.size, 2)
+    assert_allclose(u.data, [1, 2, 3])
+
     u = hj.DD2Scalar([1, 2, 3, 4, 5, 6])
     assert_equal(u.size, 2)
     assert_allclose(u.data, [1, 2, 3, 4, 5, 6])
 
     # dynamic size
+
+    u = hj.DScalar([1, 2, 3])
+    assert_equal(u.size, 2)
+    assert_allclose(u.data, [1, 2, 3])
+
     u = hj.DDScalar([1, 2, 3, 4, 5, 6])
     assert_equal(u.size, 2)
     assert_allclose(u.data, [1, 2, 3, 4, 5, 6])
 
     # static size with invalid data length throws
+
+    with pytest.raises(TypeError):
+        hj.D2Scalar([1, 2, 3, 4, 5])
+
     with pytest.raises(TypeError):
         hj.DD2Scalar([1, 2, 3, 4, 5])
 
@@ -133,101 +166,203 @@ def test_init_by_data():
 
 def test_empty():
     # static size
+    u = hj.D2Scalar.empty()
+    assert_equal(u.size, 2)
+
     u = hj.DD2Scalar.empty()
-    assert(u.size == 2)
+    assert_equal(u.size, 2)
 
     # static size with same size argument
+
+    u = hj.D2Scalar.empty(size=2)
+    assert_equal(u.size, 2)
+
     u = hj.DD2Scalar.empty(size=2)
-    assert(u.size == 2)
+    assert_equal(u.size, 2)
 
     # static size with different size argument throws
+
+    with pytest.raises(RuntimeError):
+        hj.D2Scalar.empty(size=3)
+
     with pytest.raises(RuntimeError):
         hj.DD2Scalar.empty(size=3)
 
     # dynamic size without size argument -> scalar
+
+    u = hj.DScalar.empty()
+    assert_equal(u.size, 0)
+
     u = hj.DDScalar.empty()
-    assert(u.size == 0)
+    assert_equal(u.size, 0)
 
     # dynamic size with size argument
+
+    u = hj.DScalar.empty(size=2)
+    assert_equal(u.size, 2)
+
     u = hj.DDScalar.empty(size=2)
-    assert(u.size == 2)
+    assert_equal(u.size, 2)
 
 
 def test_zero():
     # static size
+
+    u = hj.D2Scalar.zero()
+    assert_equal(u.size, 2)
+    assert_equal(u.data, [0, 0, 0])
+
     u = hj.DD2Scalar.zero()
-    assert(u.size == 2)
+    assert_equal(u.size, 2)
+    assert_equal(u.data, [0, 0, 0, 0, 0, 0])
 
     # static size with same size argument
+
+    u = hj.D2Scalar.zero(size=2)
+    assert_equal(u.size, 2)
+
     u = hj.DD2Scalar.zero(size=2)
-    assert(u.size == 2)
+    assert_equal(u.size, 2)
 
     # static size with different size argument throws
+
+    with pytest.raises(RuntimeError):
+        hj.D2Scalar.zero(size=3)
+
     with pytest.raises(RuntimeError):
         hj.DD2Scalar.zero(size=3)
 
     # dynamic size without size argument -> scalar
+
+    u = hj.DScalar.zero()
+    assert_equal(u.size, 0)
+
     u = hj.DDScalar.zero()
-    assert(u.size == 0)
+    assert_equal(u.size, 0)
 
     # dynamic size with size argument
+
+    u = hj.DScalar.zero(size=2)
+    assert_equal(u.size, 2)
+
     u = hj.DDScalar.zero(size=2)
-    assert(u.size == 2)
+    assert_equal(u.size, 2)
 
 
 def test_constant():
     # static size
+
+    u = hj.D2Scalar.constant(f=3.5)
+    assert_equal(u.f, 3.5)
+    assert_equal(u.size, 2)
+
     u = hj.DD2Scalar.constant(f=3.5)
-    assert(u.f == 3.5)
-    assert(u.size == 2)
+    assert_equal(u.f, 3.5)
+    assert_equal(u.size, 2)
 
     # static size with same size argument
+
+    u = hj.D2Scalar.constant(f=3.5, size=2)
+    assert_equal(u.f, 3.5)
+    assert_equal(u.size, 2)
+
     u = hj.DD2Scalar.constant(f=3.5, size=2)
-    assert(u.f == 3.5)
-    assert(u.size == 2)
+    assert_equal(u.f, 3.5)
+    assert_equal(u.size, 2)
 
     # static size with different size argument throws
+
+    with pytest.raises(RuntimeError):
+        hj.D2Scalar.constant(f=3.5, size=3)
+
     with pytest.raises(RuntimeError):
         hj.DD2Scalar.constant(f=3.5, size=3)
 
     # dynamic size without size argument -> scalar
+
+    u = hj.DScalar.constant(f=3.5)
+    assert_equal(u.f, 3.5)
+    assert_equal(u.size, 0)
+
     u = hj.DDScalar.constant(f=3.5)
-    assert(u.f == 3.5)
-    assert(u.size == 0)
+    assert_equal(u.f, 3.5)
+    assert_equal(u.size, 0)
 
     # dynamic size with size argument
+
+    u = hj.DScalar.constant(f=3.5, size=2)
+    assert_equal(u.f, 3.5)
+    assert_equal(u.size, 2)
+
     u = hj.DDScalar.constant(f=3.5, size=2)
-    assert(u.f == 3.5)
-    assert(u.size == 2)
+    assert_equal(u.f, 3.5)
+    assert_equal(u.size, 2)
 
 
 def test_variable():
     # static size
+
+    u = hj.D2Scalar.variable(i=1, f=3.5)
+    assert_equal(u.f, 3.5)
+    assert_equal(u.size, 2)
+    assert_equal(u.data, [3.5, 0, 1])
+
     u = hj.DD2Scalar.variable(i=1, f=3.5)
-    assert(u.f == 3.5)
-    assert(u.size == 2)
+    assert_equal(u.f, 3.5)
+    assert_equal(u.size, 2)
+    assert_equal(u.data, [3.5, 0, 1, 0, 0, 0])
 
     # static size with same size argument
+
+    u = hj.D2Scalar.variable(i=1, f=3.5, size=2)
+    assert_equal(u.f, 3.5)
+    assert_equal(u.size, 2)
+    assert_equal(u.data, [3.5, 0, 1])
+
     u = hj.DD2Scalar.variable(i=1, f=3.5, size=2)
-    assert(u.f == 3.5)
-    assert(u.size == 2)
+    assert_equal(u.f, 3.5)
+    assert_equal(u.size, 2)
+    assert_equal(u.data, [3.5, 0, 1, 0, 0, 0])
 
     # static size with different size argument throws
+
+    with pytest.raises(RuntimeError):
+        hj.D2Scalar.variable(i=1, f=3.5, size=3)
+
     with pytest.raises(RuntimeError):
         hj.DD2Scalar.variable(i=1, f=3.5, size=3)
 
     # dynamic size without size argument throws
+
+    with pytest.raises(TypeError):
+        hj.DScalar.variable(i=1, f=3.5)
+
     with pytest.raises(TypeError):
         hj.DDScalar.variable(i=1, f=3.5)
 
     # dynamic size with size argument
+
+    u = hj.DScalar.variable(i=1, f=3.5, size=2)
+    assert_equal(u.f, 3.5)
+    assert_equal(u.size, 2)
+    assert_equal(u.data, [3.5, 0, 1])
+
     u = hj.DDScalar.variable(i=1, f=3.5, size=2)
-    assert(u.f == 3.5)
-    assert(u.size == 2)
+    assert_equal(u.f, 3.5)
+    assert_equal(u.size, 2)
+    assert_equal(u.data, [3.5, 0, 1, 0, 0, 0])
 
 
 def test_variables():
     # static size
+
+    u = hj.D2Scalar.variables([3, 5])
+    assert_equal(len(u), 2)
+    assert_allclose(u[0].is_dynamic, False)
+    assert_allclose(u[1].is_dynamic, False)
+    assert_allclose(u[0].data, [3, 1, 0])
+    assert_allclose(u[1].data, [5, 0, 1])
+
     u = hj.DD2Scalar.variables([3, 5])
     assert_equal(len(u), 2)
     assert_allclose(u[0].is_dynamic, False)
@@ -236,6 +371,14 @@ def test_variables():
     assert_allclose(u[1].data, [5, 0, 1, 0, 0, 0])
 
     # dynamic size
+
+    u = hj.DScalar.variables([3, 5])
+    assert_equal(len(u), 2)
+    assert_allclose(u[0].is_dynamic, True)
+    assert_allclose(u[1].is_dynamic, True)
+    assert_allclose(u[0].data, [3, 1, 0])
+    assert_allclose(u[1].data, [5, 0, 1])
+
     u = hj.DDScalar.variables([3, 5])
     assert_equal(len(u), 2)
     assert_allclose(u[0].is_dynamic, True)
