@@ -4,6 +4,8 @@ set(CMAKE_CXX_STANDARD 17)
 
 project(hyperjet)
 
+find_package (benchmark REQUIRED)
+
 include_directories(
     "include"
     "external_libraries"
@@ -18,6 +20,8 @@ install(TARGETS tests DESTINATION bin)
 # --- benchmarks
 
 add_executable(benchmarks src/benchmarks.cpp)
+
+target_link_libraries (benchmarks PUBLIC benchmark::benchmark)
 
 install(TARGETS benchmarks DESTINATION bin)
 
