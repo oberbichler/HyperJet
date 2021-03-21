@@ -1,7 +1,7 @@
 #define CATCH_CONFIG_MAIN
 #define CATCH_CONFIG_ENABLE_BENCHMARKING
 
-#include <catch.hpp>
+#include <Catch2/catch.hpp>
 
 #include <Eigen/Core>
 #include <Eigen/Geometry> // cross
