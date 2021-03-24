@@ -587,14 +587,27 @@ public:
             return result;
         }
 
+        Scalar t(0);
+        
         for (index i = 0; i < size(); i++) {
-            auto s = Scalar(0);
-            for (index j = 0; j < size(); j++) {
-                s += d[j] * h(i, j);
+            Scalar s(0);
+
+            index k = 1 + size() + i;
+
+            for (index j = 0; j < i; j++) {
+                s += d[j] * m_data[k];
+                k += size() - j - 1;
             }
-            result += 0.5 * d[i] * s;
+
+            for (index j = i; j < size(); j++) {
+                s += d[j] * m_data[k++];
+            }
+
+            t += d[i] * s;
         }
 
+        result += 0.5 * t;
+        
         return result;
     }
 
