@@ -701,3 +701,96 @@ def test_log2(ctx):
 def test_log10(ctx):
     r = np.log10(ctx.u1)
     ctx.check(r, [0.255272505103306, 0.289529654602168, -0.0868588963806504, -0.0965098848673893, 0, 0.0173717792761301])
+
+
+@pytest.mark.parametrize('ctx', **test_data)
+def test_f(ctx):
+    u = [ctx.u1, ctx.u2]
+
+    f = hj.f(u)
+
+    assert_equal(f[0], u[0].f)
+    assert_equal(f[1], u[1].f)
+
+    v = np.dot(u, u)
+
+    f = hj.f(v)
+
+    assert_equal(f, v.f)
+
+
+@pytest.mark.parametrize('ctx', **test_data)
+def test_d(ctx):
+    u = [ctx.u1, ctx.u2]
+
+    d = hj.d(u)
+
+    assert_equal(d[0], u[0].g)
+    assert_equal(d[1], u[1].g)
+
+    v = np.dot(u, u)
+
+    d = hj.d(v)
+
+    assert_equal(d, v.g)
+
+
+@pytest.mark.parametrize('ctx', **test_data)
+def test_dd(ctx):
+    if ctx.dtype.order < 2:
+        return
+
+    u = [ctx.u1, ctx.u2]
+
+    dd = hj.dd(u)
+
+    assert_equal(dd[0], u[0].hm())
+    assert_equal(dd[1], u[1].hm())
+
+    v = np.dot(u, u)
+
+    dd = hj.dd(v)
+
+    assert_equal(dd, v.hm())
+
+
+def test_f_of_scalar():
+    assert_equal(hj.f(1), 1)
+
+    assert_equal(hj.f([1, 2, 3, 4]), [1, 2, 3, 4])
+
+    assert_equal(hj.f([[1, 2, 3, 4]]), [[1, 2, 3, 4]])
+
+    assert_equal(hj.f([[1, 2], [3, 4]]), [[1, 2], [3, 4]])
+
+    assert_equal(hj.f(np.array([1, 2, 3, 4])), [1, 2, 3, 4])
+
+    assert_equal(hj.f(np.array([[1, 2], [3, 4]])), [[1, 2], [3, 4]])
+
+
+def test_d_of_scalar():
+    assert_equal(hj.d(1), np.empty(0))
+
+    assert_equal(hj.d([1, 2, 3, 4]), np.empty((4, 0)))
+
+    assert_equal(hj.d([[1, 2, 3, 4]]), np.empty((1, 4, 0)))
+
+    assert_equal(hj.d([[1, 2], [3, 4]]), np.empty((2, 2, 0)))
+
+    assert_equal(hj.d(np.array([1, 2, 3, 4])), np.empty((4, 0)))
+
+    assert_equal(hj.d(np.array([[1, 2], [3, 4]])), np.empty((2, 2, 0)))
+
+
+def test_dd_of_scalar():
+    assert_equal(hj.dd(1), 0)
+
+    assert_equal(hj.dd([1, 2, 3, 4]), np.empty((4, 0, 0)))
+
+    assert_equal(hj.dd([[1, 2, 3, 4]]), np.empty((1, 4, 0, 0)))
+
+    assert_equal(hj.dd([[1, 2], [3, 4]]), np.empty((2, 2, 0, 0)))
+
+    assert_equal(hj.dd(np.array([1, 2, 3, 4])), np.empty((4, 0, 0)))
+
+    assert_equal(hj.dd(np.array([[1, 2], [3, 4]])), np.empty((2, 2, 0, 0)))
