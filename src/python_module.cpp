@@ -48,10 +48,6 @@ void register_ddscalar(pybind11::module& m, const std::string& name)
         .def("__repr__", &Type::to_string)
         .def("abs", &Type::abs)
         .def("eval", &Type::eval, "d"_a)
-        .def("h", py::overload_cast<hj::index, hj::index>(&Type::h), "row"_a, "col"_a)
-        .def("set_h", py::overload_cast<hj::index, hj::index, TScalar>(&Type::set_h), "row"_a, "col"_a, "value"_a)
-        .def("hm", py::overload_cast<std::string>(&Type::hm, py::const_), "mode"_a="full")
-        .def("set_hm", &Type::set_hm, "value"_a)
         // methods: arithmetic operations
         .def("reciprocal", &Type::reciprocal)
         .def("sqrt", &Type::sqrt)
@@ -146,7 +142,13 @@ void register_ddscalar(pybind11::module& m, const std::string& name)
         // FIXME: add from_gradient
     } else {
         py_class
-            .def(py::init(&Type::from_arrays), "f"_a, "g"_a, "hm"_a);
+            // constructors
+            .def(py::init(&Type::from_arrays), "f"_a, "g"_a, "hm"_a)
+            // methods
+            .def("h", py::overload_cast<hj::index, hj::index>(&Type::h), "row"_a, "col"_a)
+            .def("set_h", py::overload_cast<hj::index, hj::index, TScalar>(&Type::set_h), "row"_a, "col"_a, "value"_a)
+            .def("hm", py::overload_cast<std::string>(&Type::hm, py::const_), "mode"_a="full")
+            .def("set_hm", &Type::set_hm, "value"_a);
     }
 
     if constexpr(Type::is_dynamic()) {
