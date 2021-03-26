@@ -794,3 +794,33 @@ def test_dd_of_scalar():
     assert_equal(hj.dd(np.array([1, 2, 3, 4])), np.empty((4, 0, 0)))
 
     assert_equal(hj.dd(np.array([[1, 2], [3, 4]])), np.empty((2, 2, 0, 0)))
+
+
+def test_generate_variables():
+    small = [1, 2, 3]
+    large = [i + 1 for i in range(20)]
+
+    variables = hj.variables(small, order=0)
+
+    assert_equal(variables, small)
+    assert_equal(type(variables[0]), float)
+
+    variables = hj.variables(small, order=1)
+
+    assert_equal(hj.f(variables), small)
+    assert_equal(type(variables[0]), hj.D3Scalar)
+
+    variables = hj.variables(large, order=1)
+
+    assert_equal(hj.f(variables), large)
+    assert_equal(type(variables[0]), hj.DScalar)
+
+    variables = hj.variables(small, order=2)
+
+    assert_equal(hj.f(variables), small)
+    assert_equal(type(variables[0]), hj.DD3Scalar)
+
+    variables = hj.variables(large, order=2)
+
+    assert_equal(hj.f(variables), large)
+    assert_equal(type(variables[0]), hj.DDScalar)
