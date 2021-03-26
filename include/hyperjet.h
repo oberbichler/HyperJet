@@ -397,7 +397,7 @@ public:
         }
     }
 
-    static std::vector<Type> variables(std::vector<Scalar> values)
+    static std::vector<Type> variables(const std::vector<Scalar>& values)
     {
         const index s = length(values);
 
