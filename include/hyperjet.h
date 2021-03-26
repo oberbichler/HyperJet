@@ -412,6 +412,30 @@ public:
         return vars;
     }
 
+    template <index T>
+    static std::conditional_t<TSize == Dynamic, std::vector<Type>, std::array<Type, T>> variables(const std::array<Scalar, T>& values)
+    {
+        if constexpr (!is_dynamic()) {
+            static_assert(T == TSize);
+        }
+
+        const index s = length(values);
+
+        if constexpr (is_dynamic()) {
+            std::vector<Type> vars(s);
+            for (index i = 0; i < s; i++) {
+                vars[i] = variable(i, values[i], s);
+            }
+            return vars;
+        } else {
+            std::array<Type, TSize> vars;
+            for (index i = 0; i < s; i++) {
+                vars[i] = variable(i, values[i], s);
+            }
+            return vars;
+        }
+    }
+
     Scalar& f()
     {
         return m_data[0];
