@@ -39,7 +39,6 @@ void register_ddscalar(pybind11::module& m, const std::string& name)
         .def_static("empty", py::overload_cast<>(&Type::empty))
         .def_static("empty", py::overload_cast<hj::index>(&Type::empty), "size"_a)
         .def_static("variable", py::overload_cast<hj::index, double, hj::index>(&Type::variable), "i"_a, "f"_a, "size"_a)
-        .def_static("variables", &Type::variables, "values"_a)
         .def_static("zero", py::overload_cast<>(&Type::zero))
         .def_static("zero", py::overload_cast<hj::index>(&Type::zero), "size"_a)
         // methods
@@ -159,13 +158,16 @@ void register_ddscalar(pybind11::module& m, const std::string& name)
             // methods
             .def("resize", &Type::resize, "size"_a)
             .def("pad_right", &Type::pad_right, "new_size"_a)
-            .def("pad_left", &Type::pad_left, "new_size"_a);
+            .def("pad_left", &Type::pad_left, "new_size"_a)
+            // static methods
+            .def_static("variables", [](const std::vector<TScalar>& values) { return Type::variables(values); }, "values"_a);
     } else {
         py_class
             // constructor
             .def(py::init(py::overload_cast<TScalar>(&Type::constant)), "f"_a=0)
             // static methods
-            .def_static("variable", py::overload_cast<hj::index, double>(&Type::variable), "i"_a, "f"_a);
+            .def_static("variable", py::overload_cast<hj::index, double>(&Type::variable), "i"_a, "f"_a)
+            .def_static("variables", py::overload_cast<const std::array<TScalar, TSize>&>(&Type::variables<TSize>), "values"_a);
     }
 }
 
