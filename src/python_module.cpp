@@ -167,7 +167,7 @@ void register_ddscalar(pybind11::module& m, const std::string& name)
             .def(py::init(py::overload_cast<TScalar>(&Type::constant)), "f"_a=0)
             // static methods
             .def_static("variable", py::overload_cast<hj::index, double>(&Type::variable), "i"_a, "f"_a)
-            .def_static("variables", [](const std::array<TScalar, TSize>& values) { return Type::variables<TSize>(values); }, "values"_a);
+            .def_static("variables", [](const std::array<TScalar, TSize>& values) { return Type::variables< TSize >(values); }, "values"_a);
     }
 }
 
