@@ -30,6 +30,7 @@ jobs:
 
     - name: Configure CMake
       if: ${{ !startsWith(runner.os, 'Windows') }}
+      working-directory: ${{runner.workspace}}/build
       shell: bash
       run:  |
         source ${CONDA}/bin/activate
@@ -38,6 +39,7 @@ jobs:
 
     - name: Configure CMake
       if: ${{ startsWith(runner.os, 'Windows') }}
+      working-directory: ${{runner.workspace}}/build
       shell: bash
       run:  |
         source ${CONDA}/Scripts/activate
