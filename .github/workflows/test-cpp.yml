@@ -28,24 +28,20 @@ jobs:
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
 
-    - name: Configure Conda
+    - name: Configure CMake
       if: ${{ !startsWith(runner.os, 'Windows') }}
       shell: bash
       run:  |
         source ${CONDA}/bin/activate
         sudo conda install -c conda-forge benchmark catch2 eigen pybind11
+        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_PREFIX_PATH=$CONDA_PREFIX -DBUILD_PYTHON_MODULE=OFF
 
-    - name: Configure Conda
+    - name: Configure CMake
       if: ${{ startsWith(runner.os, 'Windows') }}
       shell: bash
       run:  |
         source ${CONDA}/Scripts/activate
         conda install -c conda-forge benchmark catch2 eigen pybind11
-
-    - name: Configure CMake
-      shell: bash
-      working-directory: ${{runner.workspace}}/build
-      run:  |
         cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_PREFIX_PATH=$CONDA_PREFIX -DBUILD_PYTHON_MODULE=OFF
 
     - name: Build
