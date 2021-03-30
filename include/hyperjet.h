@@ -235,7 +235,7 @@ public:
         }
 
         for (index i = 0; i < size(); i++) {
-            for (index j = i; j < size(); j++) {
+            for (index j = 0; j <= i; j++) {
                 *target++ = *source++;
             }
         }
@@ -267,7 +267,7 @@ public:
         }
 
         for (index i = 0; i < size(); i++) {
-            for (index j = i; j < size(); j++) {
+            for (index j = 0; j <= i; j++) {
                 *target++ = *source++;
             }
 
@@ -546,7 +546,7 @@ public:
         index it = 0;
 
         for (index i = 0; i < size(); i++) {
-            for (index j = i; j < size(); j++) {
+            for (index j = 0; j <= i; j++) {
                 out(i, j) = h(it++);
             }
         }
@@ -573,7 +573,7 @@ public:
         index it = 0;
 
         for (index i = 0; i < size(); i++) {
-            for (index j = i; j < size(); j++) {
+            for (index j = 0; j <= i; j++) {
                 h(it++) = value(i, j);
             }
         }
@@ -623,7 +623,7 @@ public:
                 k += size() - j - 1;
             }
 
-            for (index j = i; j < size(); j++) {
+            for (index j = 0; j <= i; j++) {
                 s += d[j] * m_data[k++];
             }
 
@@ -786,7 +786,7 @@ public:
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
-            for (index j = i; j < size(); j++) {
+            for (index j = 0; j <= i; j++) {
                 *it++ += m_data[1 + i] * b.m_data[1 + j] + m_data[1 + j] * b.m_data[1 + i];
             }
         }
@@ -831,7 +831,7 @@ public:
         auto* it = &m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
-            for (index j = i; j < size(); j++) {
+            for (index j = 0; j <= i; j++) {
                 *it++ += a_m_data[1 + i] * b.m_data[1 + j] + a_m_data[1 + j] * b.m_data[1 + i];
             }
         }
@@ -876,7 +876,7 @@ public:
             const Scalar ca = dd_ab * b.m_data[1 + i];
             const Scalar cb = dd_ab * m_data[1 + i] + dd_bb * b.m_data[1 + i];
 
-            for (index j = i; j < size(); j++) {
+            for (index j = 0; j <= i; j++) {
                 *it++ += ca * m_data[1 + j] + cb * b.m_data[1 + j];
             }
         }
@@ -946,7 +946,7 @@ public:
         for (index i = 0; i < size(); i++) {
             const Scalar ca = dd_ab * b.m_data[1 + i];
             const Scalar cb = dd_ab * a_m_data[1 + i] + dd_bb * b.m_data[1 + i];
-            for (index j = i; j < size(); j++) {
+            for (index j = 0; j <= i; j++) {
                 *it++ += ca * a_m_data[1 + j] + cb * b.m_data[1 + j];
             }
         }
@@ -986,7 +986,7 @@ public:
 
         for (index i = 0; i < size(); i++) {
             const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
+            for (index j = 0; j <= i; j++) {
                 *it++ += c * m_data[1 + j];
             }
         }
@@ -1019,7 +1019,7 @@ public:
 
         for (index i = 0; i < size(); i++) {
             const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
+            for (index j = 0; j <= i; j++) {
                 *it++ += c * m_data[1 + j];
             }
         }
@@ -1051,7 +1051,7 @@ public:
 
         for (index i = 0; i < size(); i++) {
             const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
+            for (index j = 0; j <= i; j++) {
                 *it++ += c * m_data[1 + j];
             }
         }
@@ -1081,7 +1081,7 @@ public:
 
         for (index i = 0; i < size(); i++) {
             const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
+            for (index j = 0; j <= i; j++) {
                 *it++ += c * m_data[1 + j];
             }
         }
@@ -1115,7 +1115,7 @@ public:
 
         for (index i = 0; i < size(); i++) {
             const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
+            for (index j = 0; j <= i; j++) {
                 *it++ += c * m_data[1 + j];
             }
         }
@@ -1147,7 +1147,7 @@ public:
 
         for (index i = 0; i < size(); i++) {
             const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
+            for (index j = 0; j <= i; j++) {
                 *it++ += c * m_data[1 + j];
             }
         }
@@ -1180,7 +1180,7 @@ public:
 
         for (index i = 0; i < size(); i++) {
             const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
+            for (index j = 0; j <= i; j++) {
                 *it++ += c * m_data[1 + j];
             }
         }
@@ -1214,7 +1214,7 @@ public:
 
         for (index i = 0; i < size(); i++) {
             const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
+            for (index j = 0; j <= i; j++) {
                 *it++ += c * m_data[1 + j];
             }
         }
@@ -1248,7 +1248,7 @@ public:
 
         for (index i = 0; i < size(); i++) {
             const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
+            for (index j = 0; j <= i; j++) {
                 *it++ += c * m_data[1 + j];
             }
         }
@@ -1279,7 +1279,7 @@ public:
 
         for (index i = 0; i < size(); i++) {
             const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
+            for (index j = 0; j <= i; j++) {
                 *it++ += c * m_data[1 + j];
             }
         }
@@ -1313,7 +1313,7 @@ public:
         auto* it = &result.m_data[1 + size()];
 
         for (index i = 0; i < size(); i++) {
-            for (index j = i; j < size(); j++) {
+            for (index j = 0; j <= i; j++) {
                 *it++ += d_aa * (m_data[1 + i] * m_data[1 + j] - b.m_data[1 + i] * b.m_data[1 + j]) + d_ab * (m_data[1 + i] * b.m_data[1 + j] + b.m_data[1 + i] * m_data[1 + j]);
             }
         }
@@ -1347,7 +1347,7 @@ public:
 
         for (index i = 0; i < size(); i++) {
             const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
+            for (index j = 0; j <= i; j++) {
                 *it++ += c * m_data[1 + j];
             }
         }
@@ -1379,7 +1379,7 @@ public:
 
         for (index i = 0; i < size(); i++) {
             const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
+            for (index j = 0; j <= i; j++) {
                 *it++ += c * m_data[1 + j];
             }
         }
@@ -1412,7 +1412,7 @@ public:
 
         for (index i = 0; i < size(); i++) {
             const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
+            for (index j = 0; j <= i; j++) {
                 *it++ += c * m_data[1 + j];
             }
         }
@@ -1444,7 +1444,7 @@ public:
 
         for (index i = 0; i < size(); i++) {
             const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
+            for (index j = 0; j <= i; j++) {
                 *it++ += c * m_data[1 + j];
             }
         }
@@ -1476,7 +1476,7 @@ public:
 
         for (index i = 0; i < size(); i++) {
             const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
+            for (index j = 0; j <= i; j++) {
                 *it++ += c * m_data[1 + j];
             }
         }
@@ -1510,7 +1510,7 @@ public:
 
         for (index i = 0; i < size(); i++) {
             const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
+            for (index j = 0; j <= i; j++) {
                 *it++ += c * m_data[1 + j];
             }
         }
@@ -1545,7 +1545,7 @@ public:
 
         for (index i = 0; i < size(); i++) {
             const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
+            for (index j = 0; j <= i; j++) {
                 *it++ += c * m_data[1 + j];
             }
         }
@@ -1578,7 +1578,7 @@ public:
 
         for (index i = 0; i < size(); i++) {
             const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
+            for (index j = 0; j <= i; j++) {
                 *it++ += c * m_data[1 + j];
             }
         }
@@ -1610,7 +1610,7 @@ public:
 
         for (index i = 0; i < size(); i++) {
             const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
+            for (index j = 0; j <= i; j++) {
                 *it++ += c * m_data[1 + j];
             }
         }
@@ -1644,7 +1644,7 @@ public:
 
         for (index i = 0; i < size(); i++) {
             const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
+            for (index j = 0; j <= i; j++) {
                 *it++ += c * m_data[1 + j];
             }
         }
@@ -1678,7 +1678,7 @@ public:
 
         for (index i = 0; i < size(); i++) {
             const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
+            for (index j = 0; j <= i; j++) {
                 *it++ += c * m_data[1 + j];
             }
         }
