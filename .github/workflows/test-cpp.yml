@@ -32,7 +32,7 @@ jobs:
       shell: bash
       working-directory: ${{runner.workspace}}/build
       run:  |
-        ${CONDA}/conda activate
+        ${CONDA}/bin/conda activate
         conda install -c conda-forge benchmark catch2 eigen pybind11
         cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_PREFIX_PATH=$CONDA_PREFIX -DBUILD_PYTHON_MODULE=OFF
 
