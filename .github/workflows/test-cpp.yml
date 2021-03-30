@@ -28,9 +28,10 @@ jobs:
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
     
-    - run: |
+    - shell: bash
+      run: |
         ${CONDA}/bin/activate
-        conda install -c conda-forge benchmark eigen3 pybind11
+        conda install -c conda-forge benchmark eigen pybind11
 
     - name: Configure CMake
       shell: bash
