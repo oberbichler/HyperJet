@@ -33,7 +33,7 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       run:  |
         source ${CONDA}/bin/activate
-        conda install -c conda-forge benchmark catch2 eigen pybind11
+        sudo conda install -c conda-forge benchmark catch2 eigen pybind11
         cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_PREFIX_PATH=$CONDA_PREFIX -DBUILD_PYTHON_MODULE=OFF
 
     - name: Build
