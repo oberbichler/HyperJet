@@ -31,7 +31,7 @@ jobs:
     - shell: bash
       run: |
         ${CONDA}/bin/activate
-        conda install -c conda-forge benchmark eigen pybind11
+        conda install -c conda-forge benchmark catch2 eigen pybind11
 
     - name: Configure CMake
       shell: bash
