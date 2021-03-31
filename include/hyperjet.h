@@ -106,6 +106,115 @@ public:
     index m_size;
     Data m_data;
 
+private:
+    struct Zero {
+        HYPERJET_INLINE Zero operator*(const Scalar) const
+        {
+            return Zero();
+        }
+
+        template <typename T>
+        HYPERJET_INLINE T operator+(const T b) const
+        {
+            return b;
+        }
+
+        template <typename T>
+        HYPERJET_INLINE friend T operator+(const T a, const Zero)
+        {
+            return a;
+        }
+    };
+
+    struct MinusOne {
+        HYPERJET_INLINE Scalar operator*(const Scalar b) const
+        {
+            return -b;
+        }
+    };
+
+    struct One {
+        HYPERJET_INLINE MinusOne operator-() const
+        {
+            return MinusOne();
+        }
+
+        HYPERJET_INLINE Scalar operator*(const Scalar b) const
+        {
+            return b;
+        }
+    };
+
+    template <bool TIncrement, typename TDa, typename TDaa>
+    HYPERJET_INLINE void unary(const Data& a, const Scalar f, const TDa da, const TDaa daa, Data& r) const noexcept
+    {
+        const index n = length(a);
+
+        r[0] = f;
+
+        if constexpr (TOrder < 1 || std::is_same<TDa, Zero>()) {
+            return;
+        }
+
+        for (index i = 1; i < n; i++) {
+            if constexpr (TIncrement) {
+                r[i] += da * a[i];
+            } else {
+                r[i] = da * a[i];
+            }
+        }
+
+        if constexpr (TOrder < 2 || std::is_same<TDaa, Zero>()) {
+            return;
+        }
+
+        index k = 1 + size();
+
+        for (index i = 0; i < size(); i++) {
+            const auto ca = daa * a[1 + i];
+
+            for (index j = 0; j < i + 1; j++) {
+                r[k++] += ca * a[1 + j];
+            }
+        }
+    }
+
+    template <bool TIncrement, typename TDa, typename TDb, typename TDaa, typename TDab, typename TDbb>
+    HYPERJET_INLINE void binary(const Data& a, const Data& b, const Scalar f, const TDa da, const TDb db, const TDaa daa, const TDab dab, const TDbb dbb, Data& r) const noexcept
+    {
+        const index n = length(a);
+
+        r[0] = f;
+
+        if constexpr (TOrder < 1 || (std::is_same_v<TDa, Zero> && std::is_same_v<TDb, Zero>)) {
+            return;
+        } else {
+            for (index i = 1; i < n; i++) {
+                if constexpr (TIncrement) {
+                    r[i] += da * a[i] + db * b[i];
+                } else {
+                    r[i] = da * a[i] + db * b[i];
+                }
+            }
+        }
+
+        if constexpr (TOrder < 2 || (std::is_same_v<TDaa, Zero> && std::is_same_v<TDab, Zero> && std::is_same_v<TDbb, Zero>)) {
+            return;
+        } else {
+            index k = 1 + size();
+
+            for (index i = 0; i < size(); i++) {
+                const auto ca = daa * a[1 + i] + dab * b[1 + i];
+                const auto cb = dab * a[1 + i] + dbb * b[1 + i];
+
+                for (index j = i; j < size(); j++) {
+                    r[k++] += ca * a[1 + j] + cb * b[1 + j];
+                }
+            }
+        }
+    }
+
+public:
     DDScalar()
     {
         static_assert(0 < order() && order() <= 2);
@@ -579,9 +688,12 @@ public:
         }
     }
 
-    Eigen::Ref<Eigen::Matrix<TScalar, 1, TSize < 0 ? Dynamic : TOrder == 1 ? 1 + TSize : (TSize + 1) * (TSize + 2) / 2>> adata()
+    Eigen::Ref < Eigen::Matrix<TScalar, 1, TSize<0 ? Dynamic : TOrder == 1 ? 1 + TSize
+                                                                           : (TSize + 1) * (TSize + 2) / 2>>
+        adata()
     {
-        return Eigen::Map<Eigen::Matrix<TScalar, 1, TSize < 0 ? Dynamic : TOrder == 1 ? 1 + TSize : (TSize + 1) * (TSize + 2) / 2>>(ptr(), length(m_data));
+        return Eigen::Map < Eigen::Matrix<TScalar, 1, TSize<0 ? Dynamic : TOrder == 1 ? 1 + TSize
+                                                                                      : (TSize + 1) * (TSize + 2) / 2>>(ptr(), length(m_data));
     }
 
     static Type from_arrays(const TScalar f, Eigen::Ref<const Vector> g, Eigen::Ref<const Matrix> hm)
@@ -599,7 +711,7 @@ public:
         return result;
     }
 
-    Scalar eval(typename std::conditional<TSize == Dynamic, std::vector<Scalar>, std::array<Scalar, TSize < 0 ? 0 : TSize>>::type d) const
+    Scalar eval(typename std::conditional < TSize == Dynamic, std::vector<Scalar>, std::array<Scalar, TSize<0 ? 0 : TSize>>::type d) const
     {
         Scalar result = f();
 
@@ -612,7 +724,7 @@ public:
         }
 
         Scalar t(0);
-        
+
         for (index i = 0; i < size(); i++) {
             Scalar s(0);
 
@@ -631,7 +743,7 @@ public:
         }
 
         result += 0.5 * t;
-        
+
         return result;
     }
 
@@ -671,11 +783,18 @@ public:
     {
         check_equal_size<TSize>(size(), b.size());
 
-        Type result = *this;
+        Type result = Type::empty(size());
 
-        for (index i = 0; i < length(result.m_data); i++) {
-            result.m_data[i] += b.m_data[i];
-        }
+        const auto f = m_data[0] + b.m_data[0];
+
+        const auto da = One();
+        const auto db = One();
+
+        const auto daa = Zero();
+        const auto dab = Zero();
+        const auto dbb = Zero();
+
+        binary<false>(m_data, b.m_data, f, da, db, daa, dab, dbb, result.m_data);
 
         return result;
     }
@@ -718,11 +837,18 @@ public:
     {
         check_equal_size<TSize>(size(), b.size());
 
-        Type result = *this;
+        Type result = Type::empty(size());
 
-        for (index i = 0; i < length(result.m_data); i++) {
-            result.m_data[i] -= b.m_data[i];
-        }
+        const auto f = m_data[0] - b.m_data[0];
+
+        const auto da = One();
+        const auto db = -One();
+
+        const auto daa = Zero();
+        const auto dab = Zero();
+        const auto dbb = Zero();
+
+        binary<false>(m_data, b.m_data, f, da, db, daa, dab, dbb, result.m_data);
 
         return result;
     }
@@ -770,26 +896,17 @@ public:
         check_equal_size<TSize>(size(), b.size());
 
         Type result = Type::empty(size());
-        const Scalar d_a = b.m_data[0];
-        const Scalar d_b = m_data[0];
 
-        result.m_data[0] = m_data[0] * b.m_data[0];
+        const auto f = m_data[0] * b.m_data[0];
 
-        for (index i = 1; i < length(result.m_data); i++) {
-            result.m_data[i] = d_a * m_data[i] + d_b * b.m_data[i];
-        }
+        const auto da = b.m_data[0];
+        const auto db = m_data[0];
 
-        if constexpr (order() == 1) {
-            return result;
-        }
+        const auto daa = Zero();
+        const auto dab = One();
+        const auto dbb = Zero();
 
-        auto* it = &result.m_data[1 + size()];
-
-        for (index i = 0; i < size(); i++) {
-            for (index j = i; j < size(); j++) {
-                *it++ += m_data[1 + i] * b.m_data[1 + j] + m_data[1 + j] * b.m_data[1 + i];
-            }
-        }
+        binary<false>(m_data, b.m_data, f, da, db, daa, dab, dbb, result.m_data);
 
         return result;
     }
@@ -816,13 +933,13 @@ public:
 
         const Data a_m_data = m_data;
 
-        const Scalar d_a = b.m_data[0];
-        const Scalar d_b = m_data[0];
+        const Scalar da = b.m_data[0];
+        const Scalar db = m_data[0];
 
         m_data[0] *= b.m_data[0];
 
         for (index i = 1; i < length(m_data); i++) {
-            m_data[i] = d_a * m_data[i] + d_b * b.m_data[i];
+            m_data[i] = da * m_data[i] + db * b.m_data[i];
         }
 
         if constexpr (order() == 1)
@@ -847,39 +964,25 @@ public:
 
         return *this;
     }
+
     // --- div
 
     Type operator/(const Type& b) const
     {
         check_equal_size<TSize>(size(), b.size());
 
-        const Scalar d_a = 1 / b.m_data[0];
-        const Scalar d_b = -m_data[0] / std::pow(b.m_data[0], 2);
-        const Scalar dd_ab = -1 / std::pow(b.m_data[0], 2);
-        const Scalar dd_bb = 2 * m_data[0] / std::pow(b.m_data[0], 3);
+        const Scalar tmp = 1 / b.m_data[0];
+
+        const auto f = m_data[0] * tmp;
+        const auto da = tmp;
+        const auto db = -m_data[0] / std::pow(b.m_data[0], 2);
+        const auto daa = Zero();
+        const auto dab = -1 / std::pow(b.m_data[0], 2);
+        const auto dbb = 2 * m_data[0] / std::pow(b.m_data[0], 3);
 
         Type result = Type::empty(size());
 
-        result.m_data[0] = m_data[0] * d_a;
-
-        for (index i = 1; i < length(result.m_data); i++) {
-            result.m_data[i] = d_a * m_data[i] + d_b * b.m_data[i];
-        }
-
-        if constexpr (order() == 1) {
-            return result;
-        }
-
-        auto* it = &result.m_data[1 + size()];
-
-        for (index i = 0; i < size(); i++) {
-            const Scalar ca = dd_ab * b.m_data[1 + i];
-            const Scalar cb = dd_ab * m_data[1 + i] + dd_bb * b.m_data[1 + i];
-
-            for (index j = i; j < size(); j++) {
-                *it++ += ca * m_data[1 + j] + cb * b.m_data[1 + j];
-            }
-        }
+        binary<false>(m_data, b.m_data, f, da, db, daa, dab, dbb, result.m_data);
 
         return result;
     }
@@ -891,32 +994,13 @@ public:
 
     friend Type operator/(const Scalar a, const Type& b)
     {
-        const Scalar d_b = -a / std::pow(b.m_data[0], 2);
-        const Scalar dd_bb = 2 * a / std::pow(b.m_data[0], 3);
+        Type result = Type::empty(b.size());
 
-        const index s = b.size();
+        const auto f = a / b.m_data[0];
+        const auto db = -a / std::pow(b.m_data[0], 2);
+        const auto dbb = 2 * a / std::pow(b.m_data[0], 3);
 
-        Type result = Type::empty(s);
-
-        result.m_data[0] = a / b.m_data[0];
-
-        for (index i = 1; i < length(result.m_data); i++) {
-            result.m_data[i] = d_b * b.m_data[i];
-        }
-
-        if constexpr (order() == 1) {
-            return result;
-        }
-
-        auto* it = &result.m_data[1 + s];
-
-        for (index i = 0; i < s; i++) {
-            const Scalar cb = dd_bb * b.m_data[1 + i];
-
-            for (index j = i; j < s; j++) {
-                *it++ += cb * b.m_data[1 + j];
-            }
-        }
+        b.unary<false>(b.m_data, f, db, dbb, result.m_data);
 
         return result;
     }
@@ -927,29 +1011,14 @@ public:
 
         const Data a_m_data = m_data;
 
-        const Scalar d_a = 1 / b.m_data[0];
-        const Scalar d_b = -m_data[0] / std::pow(b.m_data[0], 2);
-        const Scalar dd_ab = -1 / std::pow(b.m_data[0], 2);
-        const Scalar dd_bb = 2 * m_data[0] / std::pow(b.m_data[0], 3);
+        const auto f = a_m_data[0] / b.m_data[0];
+        const auto da = 1 / b.m_data[0];
+        const auto db = -a_m_data[0] / std::pow(b.m_data[0], 2);
+        const auto daa = Zero();
+        const auto dab = -1 / std::pow(b.m_data[0], 2);
+        const auto dbb = 2 * a_m_data[0] / std::pow(b.m_data[0], 3);
 
-        m_data[0] = m_data[0] * d_a;
-
-        for (index i = 1; i < length(m_data); i++) {
-            m_data[i] = d_a * m_data[i] + d_b * b.m_data[i];
-        }
-
-        if constexpr (order() == 1)
-            return *this;
-
-        auto* it = &m_data[1 + size()];
-
-        for (index i = 0; i < size(); i++) {
-            const Scalar ca = dd_ab * b.m_data[1 + i];
-            const Scalar cb = dd_ab * a_m_data[1 + i] + dd_bb * b.m_data[1 + i];
-            for (index j = i; j < size(); j++) {
-                *it++ += ca * a_m_data[1 + j] + cb * b.m_data[1 + j];
-            }
-        }
+        binary<false>(a_m_data, b.m_data, f, da, db, daa, dab, dbb, m_data);
 
         return *this;
     }
@@ -967,29 +1036,13 @@ public:
     {
         using std::pow;
 
-        const Scalar d = b * pow(m_data[0], b - 1);
-        const Scalar dd = (b - 1) * b * pow(m_data[0], b - 2);
-
         Type result = Type::empty(size());
 
-        result.m_data[0] = pow(m_data[0], b);
+        const auto f = pow(m_data[0], b);
+        const auto da = b * pow(m_data[0], b - 1);
+        const auto daa = (b - 1) * b * pow(m_data[0], b - 2);
 
-        for (index i = 1; i < length(result.m_data); i++) {
-            result.m_data[i] = d * m_data[i];
-        }
-
-        if constexpr (order() == 1) {
-            return result;
-        }
-
-        auto* it = &result.m_data[1 + size()];
-
-        for (index i = 0; i < size(); i++) {
-            const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
-                *it++ += c * m_data[1 + j];
-            }
-        }
+        unary<false>(m_data, f, da, daa, result.m_data);
 
         return result;
     }
@@ -999,30 +1052,13 @@ public:
         using std::pow;
         using std::sqrt;
 
-        const Scalar f = sqrt(m_data[0]);
-        const Scalar d = 1 / (2 * f);
-        const Scalar dd = -d / (2 * m_data[0]);
-
         Type result = Type::empty(size());
 
-        result.m_data[0] = f;
+        const auto f = sqrt(m_data[0]);
+        const auto da = 1 / (2 * f);
+        const auto daa = -da / (2 * m_data[0]);
 
-        for (index i = 1; i < length(result.m_data); i++) {
-            result.m_data[i] = d * m_data[i];
-        }
-
-        if constexpr (order() == 1) {
-            return result;
-        }
-
-        auto* it = &result.m_data[1 + size()];
-
-        for (index i = 0; i < size(); i++) {
-            const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
-                *it++ += c * m_data[1 + j];
-            }
-        }
+        unary<false>(m_data, f, da, daa, result.m_data);
 
         return result;
     }
@@ -1031,60 +1067,26 @@ public:
     {
         using std::cbrt;
 
-        const Scalar f = cbrt(m_data[0]);
-        const Scalar d = 1 / (3 * f * f);
-        const Scalar dd = -d * 2 / (3 * m_data[0]);
-
         Type result = Type::empty(size());
 
-        result.m_data[0] = f;
+        const auto f = cbrt(m_data[0]);
+        const auto da = 1 / (3 * f * f);
+        const auto daa = -da * 2 / (3 * m_data[0]);
 
-        for (index i = 1; i < length(result.m_data); i++) {
-            result.m_data[i] = d * m_data[i];
-        }
-
-        if constexpr (order() == 1) {
-            return result;
-        }
-
-        auto* it = &result.m_data[1 + size()];
-
-        for (index i = 0; i < size(); i++) {
-            const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
-                *it++ += c * m_data[1 + j];
-            }
-        }
+        unary<false>(m_data, f, da, daa, result.m_data);
 
         return result;
     }
 
     Type reciprocal() const
     {
-        const Scalar f = 1 / m_data[0];
-        const Scalar d = -f * f;
-        const Scalar dd = -2 * f * d;
-
         Type result = Type::empty(size());
 
-        result.m_data[0] = f;
+        const auto f = 1 / m_data[0];
+        const auto da = -f * f;
+        const auto daa = -2 * f * da;
 
-        for (index i = 1; i < length(result.m_data); i++) {
-            result.m_data[i] = d * m_data[i];
-        }
-
-        if constexpr (order() == 1) {
-            return result;
-        }
-
-        auto* it = &result.m_data[1 + size()];
-
-        for (index i = 0; i < size(); i++) {
-            const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
-                *it++ += c * m_data[1 + j];
-            }
-        }
+        unary<false>(m_data, f, da, daa, result.m_data);
 
         return result;
     }
@@ -1096,29 +1098,13 @@ public:
         using std::cos;
         using std::sin;
 
-        const Scalar d = -sin(m_data[0]);
-        const Scalar dd = -cos(m_data[0]);
-
         Type result = Type::empty(size());
 
-        result.m_data[0] = cos(m_data[0]);
+        const auto f = cos(m_data[0]);
+        const auto da = -sin(m_data[0]);
+        const auto daa = -cos(m_data[0]);
 
-        for (index i = 1; i < length(result.m_data); i++) {
-            result.m_data[i] = d * m_data[i];
-        }
-
-        if constexpr (order() == 1) {
-            return result;
-        }
-
-        auto* it = &result.m_data[1 + size()];
-
-        for (index i = 0; i < size(); i++) {
-            const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
-                *it++ += c * m_data[1 + j];
-            }
-        }
+        unary<false>(m_data, f, da, daa, result.m_data);
 
         return result;
     }
@@ -1128,29 +1114,13 @@ public:
         using std::cos;
         using std::sin;
 
-        const Scalar d = cos(m_data[0]);
-        const Scalar dd = -sin(m_data[0]);
-
         Type result = Type::empty(size());
 
-        result.m_data[0] = sin(m_data[0]);
+        const auto f = sin(m_data[0]);
+        const auto da = cos(m_data[0]);
+        const auto daa = -sin(m_data[0]);
 
-        for (index i = 1; i < length(result.m_data); i++) {
-            result.m_data[i] = d * m_data[i];
-        }
-
-        if constexpr (order() == 1) {
-            return result;
-        }
-
-        auto* it = &result.m_data[1 + size()];
-
-        for (index i = 0; i < size(); i++) {
-            const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
-                *it++ += c * m_data[1 + j];
-            }
-        }
+        unary<false>(m_data, f, da, daa, result.m_data);
 
         return result;
     }
@@ -1159,31 +1129,13 @@ public:
     {
         using std::tan;
 
-        const Scalar tmp = tan(m_data[0]);
-
-        const Scalar d = tmp * tmp + 1;
-        const Scalar dd = d * 2 * tmp;
-
         Type result = Type::empty(size());
 
-        result.m_data[0] = tmp;
+        const auto f = tan(m_data[0]);
+        const auto da = f * f + 1;
+        const auto daa = da * 2 * f;
 
-        for (index i = 1; i < length(result.m_data); i++) {
-            result.m_data[i] = d * m_data[i];
-        }
-
-        if constexpr (order() == 1) {
-            return result;
-        }
-
-        auto* it = &result.m_data[1 + size()];
-
-        for (index i = 0; i < size(); i++) {
-            const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
-                *it++ += c * m_data[1 + j];
-            }
-        }
+        unary<false>(m_data, f, da, daa, result.m_data);
 
         return result;
     }
@@ -1193,31 +1145,15 @@ public:
         using std::acos;
         using std::sqrt;
 
-        const Scalar tmp = 1 - m_data[0] * m_data[0];
-
-        const Scalar d = -1 / sqrt(tmp);
-        const Scalar dd = d * m_data[0] / tmp;
-
         Type result = Type::empty(size());
 
-        result.m_data[0] = acos(m_data[0]);
+        const Scalar tmp = 1 - m_data[0] * m_data[0];
 
-        for (index i = 1; i < length(result.m_data); i++) {
-            result.m_data[i] = d * m_data[i];
-        }
+        const auto f = acos(m_data[0]);
+        const auto da = -1 / sqrt(tmp);
+        const auto daa = da * m_data[0] / tmp;
 
-        if constexpr (order() == 1) {
-            return result;
-        }
-
-        auto* it = &result.m_data[1 + size()];
-
-        for (index i = 0; i < size(); i++) {
-            const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
-                *it++ += c * m_data[1 + j];
-            }
-        }
+        unary<false>(m_data, f, da, daa, result.m_data);
 
         return result;
     }
@@ -1227,31 +1163,15 @@ public:
         using std::asin;
         using std::sqrt;
 
-        const Scalar tmp = 1 - m_data[0] * m_data[0];
-
-        const Scalar d = 1 / sqrt(tmp);
-        const Scalar dd = d * m_data[0] / tmp;
-
         Type result = Type::empty(size());
 
-        result.m_data[0] = asin(m_data[0]);
+        const Scalar tmp = 1 - m_data[0] * m_data[0];
 
-        for (index i = 1; i < length(result.m_data); i++) {
-            result.m_data[i] = d * m_data[i];
-        }
+        const auto f = asin(m_data[0]);
+        const auto da = 1 / sqrt(tmp);
+        const auto daa = da * m_data[0] / tmp;
 
-        if constexpr (order() == 1) {
-            return result;
-        }
-
-        auto* it = &result.m_data[1 + size()];
-
-        for (index i = 0; i < size(); i++) {
-            const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
-                *it++ += c * m_data[1 + j];
-            }
-        }
+        unary<false>(m_data, f, da, daa, result.m_data);
 
         return result;
     }
@@ -1260,29 +1180,13 @@ public:
     {
         using std::atan;
 
-        const Scalar d = 1 / (m_data[0] * m_data[0] + 1);
-        const Scalar dd = -d * d * 2 * m_data[0];
-
         Type result = Type::empty(size());
 
-        result.m_data[0] = atan(m_data[0]);
+        const auto f = atan(m_data[0]);
+        const auto da = 1 / (m_data[0] * m_data[0] + 1);
+        const auto daa = -da * da * 2 * m_data[0];
 
-        for (index i = 1; i < length(result.m_data); i++) {
-            result.m_data[i] = d * m_data[i];
-        }
-
-        if constexpr (order() == 1) {
-            return result;
-        }
-
-        auto* it = &result.m_data[1 + size()];
-
-        for (index i = 0; i < size(); i++) {
-            const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
-                *it++ += c * m_data[1 + j];
-            }
-        }
+        unary<false>(m_data, f, da, daa, result.m_data);
 
         return result;
     }
@@ -1291,32 +1195,18 @@ public:
     {
         using std::atan2;
 
-        const Scalar tmp = m_data[0] * m_data[0] + b.m_data[0] * b.m_data[0];
-
-        const Scalar d_a = b.m_data[0] / tmp;
-        const Scalar d_b = -m_data[0] / tmp;
-        const Scalar d_aa = d_b * d_a * 2; // = -d_bb
-        const Scalar d_ab = d_b * d_b - d_a * d_a;
-
         Type result = Type::empty(size());
 
-        result.m_data[0] = atan2(m_data[0], b.m_data[0]);
+        const Scalar tmp = m_data[0] * m_data[0] + b.m_data[0] * b.m_data[0];
 
-        for (index i = 1; i < length(result.m_data); i++) {
-            result.m_data[i] = d_a * m_data[i] + d_b * b.m_data[i];
-        }
+        const auto f = atan2(m_data[0], b.m_data[0]);
+        const auto da = b.m_data[0] / tmp;
+        const auto db = -m_data[0] / tmp;
+        const auto daa = db * da * 2;
+        const auto dab = db * db - da * da;
+        const auto dbb = -daa;
 
-        if constexpr (order() == 1) {
-            return result;
-        }
-
-        auto* it = &result.m_data[1 + size()];
-
-        for (index i = 0; i < size(); i++) {
-            for (index j = i; j < size(); j++) {
-                *it++ += d_aa * (m_data[1 + i] * m_data[1 + j] - b.m_data[1 + i] * b.m_data[1 + j]) + d_ab * (m_data[1 + i] * b.m_data[1 + j] + b.m_data[1 + i] * m_data[1 + j]);
-            }
-        }
+        binary<false>(m_data, b.m_data, f, da, db, daa, dab, dbb, result.m_data);
 
         return result;
     }
@@ -1328,29 +1218,13 @@ public:
         using std::cosh;
         using std::sinh;
 
-        const Scalar d = sinh(m_data[0]);
-        const Scalar dd = cosh(m_data[0]);
-
         Type result = Type::empty(size());
 
-        result.m_data[0] = dd;
+        const auto f = cosh(m_data[0]);
+        const auto da = sinh(m_data[0]);
+        const auto daa = f;
 
-        for (index i = 1; i < length(result.m_data); i++) {
-            result.m_data[i] = d * m_data[i];
-        }
-
-        if constexpr (order() == 1) {
-            return result;
-        }
-
-        auto* it = &result.m_data[1 + size()];
-
-        for (index i = 0; i < size(); i++) {
-            const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
-                *it++ += c * m_data[1 + j];
-            }
-        }
+        unary<false>(m_data, f, da, daa, result.m_data);
 
         return result;
     }
@@ -1360,29 +1234,13 @@ public:
         using std::cosh;
         using std::sinh;
 
-        const Scalar d = cosh(m_data[0]);
-        const Scalar dd = sinh(m_data[0]);
-
         Type result = Type::empty(size());
 
-        result.m_data[0] = dd;
+        const auto f = sinh(m_data[0]);
+        const auto da = cosh(m_data[0]);
+        const auto daa = f;
 
-        for (index i = 1; i < length(result.m_data); i++) {
-            result.m_data[i] = d * m_data[i];
-        }
-
-        if constexpr (order() == 1) {
-            return result;
-        }
-
-        auto* it = &result.m_data[1 + size()];
-
-        for (index i = 0; i < size(); i++) {
-            const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
-                *it++ += c * m_data[1 + j];
-            }
-        }
+        unary<false>(m_data, f, da, daa, result.m_data);
 
         return result;
     }
@@ -1391,31 +1249,13 @@ public:
     {
         using std::tanh;
 
-        const Scalar f = tanh(m_data[0]);
-
-        const Scalar d = 1 - f * f;
-        const Scalar dd = -2 * f * d;
-
         Type result = Type::empty(size());
 
-        result.m_data[0] = f;
+        const auto f = tanh(m_data[0]);
+        const auto da = 1 - f * f;
+        const auto daa = -2 * f * da;
 
-        for (index i = 1; i < length(result.m_data); i++) {
-            result.m_data[i] = d * m_data[i];
-        }
-
-        if constexpr (order() == 1) {
-            return result;
-        }
-
-        auto* it = &result.m_data[1 + size()];
-
-        for (index i = 0; i < size(); i++) {
-            const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
-                *it++ += c * m_data[1 + j];
-            }
-        }
+        unary<false>(m_data, f, da, daa, result.m_data);
 
         return result;
     }
@@ -1425,29 +1265,13 @@ public:
         using std::acosh;
         using std::sqrt;
 
-        const Scalar d = 1 / (sqrt(m_data[0] - 1) * sqrt(m_data[0] + 1));
-        const Scalar dd = -d * m_data[0] / ((m_data[0] - 1) * (m_data[0] + 1));
-
         Type result = Type::empty(size());
 
-        result.m_data[0] = acosh(m_data[0]);
+        const auto f = acosh(m_data[0]);
+        const auto da = 1 / (sqrt(m_data[0] - 1) * sqrt(m_data[0] + 1));
+        const auto daa = -da * m_data[0] / ((m_data[0] - 1) * (m_data[0] + 1));
 
-        for (index i = 1; i < length(result.m_data); i++) {
-            result.m_data[i] = d * m_data[i];
-        }
-
-        if constexpr (order() == 1) {
-            return result;
-        }
-
-        auto* it = &result.m_data[1 + size()];
-
-        for (index i = 0; i < size(); i++) {
-            const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
-                *it++ += c * m_data[1 + j];
-            }
-        }
+        unary<false>(m_data, f, da, daa, result.m_data);
 
         return result;
     }
@@ -1457,29 +1281,13 @@ public:
         using std::asinh;
         using std::sqrt;
 
-        const Scalar d = 1 / sqrt(1 + m_data[0] * m_data[0]);
-        const Scalar dd = -d * m_data[0] / (1 + m_data[0] * m_data[0]);
-
         Type result = Type::empty(size());
 
-        result.m_data[0] = asinh(m_data[0]);
+        const auto f = asinh(m_data[0]);
+        const auto da = 1 / sqrt(1 + m_data[0] * m_data[0]);
+        const auto daa = -da * m_data[0] / (1 + m_data[0] * m_data[0]);
 
-        for (index i = 1; i < length(result.m_data); i++) {
-            result.m_data[i] = d * m_data[i];
-        }
-
-        if constexpr (order() == 1) {
-            return result;
-        }
-
-        auto* it = &result.m_data[1 + size()];
-
-        for (index i = 0; i < size(); i++) {
-            const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
-                *it++ += c * m_data[1 + j];
-            }
-        }
+        unary<false>(m_data, f, da, daa, result.m_data);
 
         return result;
     }
@@ -1489,31 +1297,13 @@ public:
         using std::atanh;
         using std::pow;
 
-        const Scalar f = atanh(m_data[0]);
-
-        const Scalar d = 1 / (1 - m_data[0] * m_data[0]);
-        const Scalar dd = 2 * m_data[0] / pow(m_data[0] * m_data[0] - 1, 2);
-
         Type result = Type::empty(size());
 
-        result.m_data[0] = f;
+        const auto f = atanh(m_data[0]);
+        const auto da = 1 / (1 - m_data[0] * m_data[0]);
+        const auto daa = 2 * m_data[0] / pow(m_data[0] * m_data[0] - 1, 2);
 
-        for (index i = 1; i < length(result.m_data); i++) {
-            result.m_data[i] = d * m_data[i];
-        }
-
-        if constexpr (order() == 1) {
-            return result;
-        }
-
-        auto* it = &result.m_data[1 + size()];
-
-        for (index i = 0; i < size(); i++) {
-            const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
-                *it++ += c * m_data[1 + j];
-            }
-        }
+        unary<false>(m_data, f, da, daa, result.m_data);
 
         return result;
     }
@@ -1524,31 +1314,13 @@ public:
     {
         using std::exp;
 
-        const Scalar f = exp(m_data[0]);
-
-        const Scalar d = f;
-        const Scalar dd = f;
-
         Type result = Type::empty(size());
 
-        result.m_data[0] = f;
+        const auto f = exp(m_data[0]);
+        const auto da = f;
+        const auto daa = f;
 
-        for (index i = 1; i < length(result.m_data); i++) {
-            result.m_data[i] = d * m_data[i];
-        }
-
-        if constexpr (order() == 1) {
-            return result;
-        }
-
-        auto* it = &result.m_data[1 + size()];
-
-        for (index i = 0; i < size(); i++) {
-            const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
-                *it++ += c * m_data[1 + j];
-            }
-        }
+        unary<false>(m_data, f, da, daa, result.m_data);
 
         return result;
     }
@@ -1557,31 +1329,13 @@ public:
     {
         using std::log;
 
-        const Scalar f = log(m_data[0]);
-
-        const Scalar d = 1 / m_data[0];
-        const Scalar dd = -d * d;
-
         Type result = Type::empty(size());
 
-        result.m_data[0] = f;
+        const auto f = log(m_data[0]);
+        const auto da = 1 / m_data[0];
+        const auto daa = -da * da;
 
-        for (index i = 1; i < length(result.m_data); i++) {
-            result.m_data[i] = d * m_data[i];
-        }
-
-        if constexpr (order() == 1) {
-            return result;
-        }
-
-        auto* it = &result.m_data[1 + size()];
-
-        for (index i = 0; i < size(); i++) {
-            const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
-                *it++ += c * m_data[1 + j];
-            }
-        }
+        unary<false>(m_data, f, da, daa, result.m_data);
 
         return result;
     }
@@ -1590,30 +1344,13 @@ public:
     {
         using std::log;
 
-        const Scalar f = log(m_data[0]) / log(base);
-        const Scalar d = 1 / (m_data[0] * log(base));
-        const Scalar dd = -d / m_data[0];
-
         Type result = Type::empty(size());
 
-        result.m_data[0] = f;
+        const auto f = log(m_data[0]) / log(base);
+        const auto da = 1 / (m_data[0] * log(base));
+        const auto daa = -da / m_data[0];
 
-        for (index i = 1; i < length(result.m_data); i++) {
-            result.m_data[i] = d * m_data[i];
-        }
-
-        if constexpr (order() == 1) {
-            return result;
-        }
-
-        auto* it = &result.m_data[1 + size()];
-
-        for (index i = 0; i < size(); i++) {
-            const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
-                *it++ += c * m_data[1 + j];
-            }
-        }
+        unary<false>(m_data, f, da, daa, result.m_data);
 
         return result;
     }
@@ -1623,31 +1360,13 @@ public:
         using std::log;
         using std::log2;
 
-        const Scalar f = log2(m_data[0]);
-
-        const Scalar d = 1 / (m_data[0] * log(2));
-        const Scalar dd = -d / m_data[0];
-
         Type result = Type::empty(size());
 
-        result.m_data[0] = f;
+        const auto f = log2(m_data[0]);
+        const auto da = 1 / (m_data[0] * log(2));
+        const auto daa = -da / m_data[0];
 
-        for (index i = 1; i < length(result.m_data); i++) {
-            result.m_data[i] = d * m_data[i];
-        }
-
-        if constexpr (order() == 1) {
-            return result;
-        }
-
-        auto* it = &result.m_data[1 + size()];
-
-        for (index i = 0; i < size(); i++) {
-            const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
-                *it++ += c * m_data[1 + j];
-            }
-        }
+        unary<false>(m_data, f, da, daa, result.m_data);
 
         return result;
     }
@@ -1657,31 +1376,13 @@ public:
         using std::log;
         using std::log10;
 
-        const Scalar f = log10(m_data[0]);
-
-        const Scalar d = 1 / (m_data[0] * log(10));
-        const Scalar dd = -d / m_data[0];
-
         Type result = Type::empty(size());
 
-        result.m_data[0] = f;
+        const auto f = log10(m_data[0]);
+        const auto da = 1 / (m_data[0] * log(10));
+        const auto daa = -da / m_data[0];
 
-        for (index i = 1; i < length(result.m_data); i++) {
-            result.m_data[i] = d * m_data[i];
-        }
-
-        if constexpr (order() == 1) {
-            return result;
-        }
-
-        auto* it = &result.m_data[1 + size()];
-
-        for (index i = 0; i < size(); i++) {
-            const Scalar c = dd * m_data[1 + i];
-            for (index j = i; j < size(); j++) {
-                *it++ += c * m_data[1 + j];
-            }
-        }
+        unary<false>(m_data, f, da, daa, result.m_data);
 
         return result;
     }
