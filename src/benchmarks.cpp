@@ -12,13 +12,10 @@ const hj::DDScalar<2, double, 3> dd3 {0.3, 0.1, 0.8, 0.2, 0.5, 0.7, 0.9, 0.4, 0.
 #define HJ_BENCHMARK(method) \
 BENCHMARK_TEMPLATE(method, 1); \
 BENCHMARK_TEMPLATE(method, 2); \
-BENCHMARK_TEMPLATE(method, 3); \
 BENCHMARK_TEMPLATE(method, 4); \
-BENCHMARK_TEMPLATE(method, 5); \
-BENCHMARK_TEMPLATE(method, 6); \
-BENCHMARK_TEMPLATE(method, 7); \
 BENCHMARK_TEMPLATE(method, 8); \
-BENCHMARK_TEMPLATE(method, -1)->DenseRange(1, 8); \
+BENCHMARK_TEMPLATE(method, 16); \
+BENCHMARK_TEMPLATE(method, -1)->RangeMultiplier(2)->Range(1, 64); \
 
 // add
 
