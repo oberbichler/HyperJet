@@ -35,64 +35,6 @@ HYPERJET_INLINE constexpr bool throw_exceptions()
 #endif
 }
 
-template <index TOrder>
-HYPERJET_INLINE index data_length_from_size(const index size)
-{
-    return TOrder == 1 ? 1 + size : (size + 1) * (size + 2) / 2;
-}
-
-template <index TOrder, typename T>
-HYPERJET_INLINE index size_from_data_length(const T& container)
-{
-    const index s = TOrder == 1 ? length(container) - 1 : static_cast<index>(std::sqrt(1 + 8 * length(container)) - 3) / 2;
-
-    if constexpr (throw_exceptions()) {
-        if (data_length_from_size<TOrder>(s) != length(container)) {
-            throw std::runtime_error("Invalid length");
-        }
-    } else {
-        assert(data_length_from_size<TOrder>(s) == length(container) == 0 && "Invalid length");
-    }
-
-    return s;
-}
-
-template <index TSize>
-HYPERJET_INLINE void check_valid_size(const index size)
-{
-    if constexpr (TSize == Dynamic) {
-        if constexpr (throw_exceptions()) {
-            if (size < 0) {
-                throw std::runtime_error("Negative size");
-            }
-        } else {
-            assert(size >= 0 && "Negative size");
-        }
-    } else {
-        if constexpr (throw_exceptions()) {
-            if (size != TSize) {
-                throw std::runtime_error("Invalid size");
-            }
-        } else {
-            assert(size == TSize && "Invalid size");
-        }
-    }
-}
-
-template <index TSize>
-HYPERJET_INLINE void check_equal_size(const index size_a, const index size_b)
-{
-    if constexpr (TSize == Dynamic) {
-        if constexpr (throw_exceptions()) {
-            if (size_a != size_b) {
-                throw std::runtime_error("Incompatible size");
-            }
-        } else {
-            assert(size_a == size_b && "Incompatible size");
-        }
-    }
-}
-
 template <index TOrder, typename TScalar, index TSize>
 class DDScalar {
     using DynamicStorage = std::vector<TScalar>;
@@ -106,7 +48,62 @@ public:
     index m_size;
     Data m_data;
 
+public:
+    HYPERJET_INLINE static index data_length_from_size(const index size)
+    {
+        return TOrder == 1 ? 1 + size : (size + 1) * (size + 2) / 2;
+    }
+
+    HYPERJET_INLINE static index size_from_data_length(const index n)
+    {
+        const index s = TOrder == 1 ? n - 1 : static_cast<index>(std::sqrt(1 + 8 * n) - 3) / 2;
+
+        if constexpr (throw_exceptions()) {
+            if (data_length_from_size(s) != n) {
+                throw std::runtime_error("Invalid length");
+            }
+        } else {
+            assert(data_length_from_size(s) == n == 0 && "Invalid length");
+        }
+
+        return s;
+    }
+
 private:
+    HYPERJET_INLINE static void check_valid_size(const index size)
+    {
+        if constexpr (TSize == Dynamic) {
+            if constexpr (throw_exceptions()) {
+                if (size < 0) {
+                    throw std::runtime_error("Negative size");
+                }
+            } else {
+                assert(size >= 0 && "Negative size");
+            }
+        } else {
+            if constexpr (throw_exceptions()) {
+                if (size != TSize) {
+                    throw std::runtime_error("Invalid size");
+                }
+            } else {
+                assert(size == TSize && "Invalid size");
+            }
+        }
+    }
+
+    HYPERJET_INLINE static void check_equal_size(const index size_a, const index size_b)
+    {
+        if constexpr (TSize == Dynamic) {
+            if constexpr (throw_exceptions()) {
+                if (size_a != size_b) {
+                    throw std::runtime_error("Incompatible size");
+                }
+            } else {
+                assert(size_a == size_b && "Incompatible size");
+            }
+        }
+    }
+
     struct Zero {
         HYPERJET_INLINE Zero operator*(const Scalar) const
         {
@@ -258,7 +255,7 @@ public:
     }
 
     DDScalar(std::initializer_list<TScalar> data)
-        : m_size(size_from_data_length<TOrder>(data))
+        : m_size(size_from_data_length(length(data)))
     {
         static_assert(0 < order() && order() <= 2);
 
@@ -308,7 +305,7 @@ public:
     {
         static_assert(is_dynamic());
         m_size = size;
-        const index n = data_length_from_size<TOrder>(size);
+        const index n = data_length_from_size(size);
         m_data.resize(n);
     }
 
@@ -402,12 +399,12 @@ public:
     static Type create(const Data& data)
     {
         if constexpr (is_dynamic()) {
-            const auto s = size_from_data_length<TOrder>(data);
+            const auto s = size_from_data_length(length(data));
             Type result(data, s);
             return result;
         } else {
-            const auto s = size_from_data_length<TOrder>(data);
-            check_valid_size<TSize>(s);
+            const auto s = size_from_data_length(length(data));
+            check_valid_size(s);
             Type result(data);
             return result;
         }
@@ -429,12 +426,12 @@ public:
     static Type empty(const index size)
     {
         if constexpr (is_dynamic()) {
-            const index n = data_length_from_size<TOrder>(size);
+            const index n = data_length_from_size(size);
             const Data data(n);
             Type result(data, size);
             return result;
         } else {
-            check_valid_size<TSize>(size);
+            check_valid_size(size);
             return empty();
         }
     }
@@ -456,11 +453,11 @@ public:
     static Type zero(const index size)
     {
         if constexpr (is_dynamic()) {
-            const Data data(data_length_from_size<TOrder>(size), 0);
+            const Data data(data_length_from_size(size), 0);
             Type result(data, size);
             return result;
         } else {
-            check_valid_size<TSize>(size);
+            check_valid_size(size);
             return zero();
         }
     }
@@ -479,7 +476,7 @@ public:
             result.f() = f;
             return result;
         } else {
-            check_valid_size<TSize>(size);
+            check_valid_size(size);
             return constant(f);
         }
     }
@@ -501,7 +498,7 @@ public:
             result.g(i) = 1;
             return result;
         } else {
-            check_valid_size<TSize>(size);
+            check_valid_size(size);
             return variable(i, f);
         }
     }
@@ -781,7 +778,7 @@ public:
 
     Type operator+(const Type& b) const
     {
-        check_equal_size<TSize>(size(), b.size());
+        check_equal_size(size(), b.size());
 
         Type result = Type::empty(size());
 
@@ -815,7 +812,7 @@ public:
 
     Type& operator+=(const Type& b)
     {
-        check_equal_size<TSize>(size(), b.size());
+        check_equal_size(size(), b.size());
 
         for (index i = 0; i < length(m_data); i++) {
             m_data[i] += b.m_data[i];
@@ -835,7 +832,7 @@ public:
 
     Type operator-(const Type& b) const
     {
-        check_equal_size<TSize>(size(), b.size());
+        check_equal_size(size(), b.size());
 
         Type result = Type::empty(size());
 
@@ -873,7 +870,7 @@ public:
 
     Type& operator-=(const Type& b)
     {
-        check_equal_size<TSize>(size(), b.size());
+        check_equal_size(size(), b.size());
 
         for (index i = 0; i < length(m_data); i++) {
             m_data[i] -= b.m_data[i];
@@ -893,7 +890,7 @@ public:
 
     Type operator*(const Type& b) const
     {
-        check_equal_size<TSize>(size(), b.size());
+        check_equal_size(size(), b.size());
 
         Type result = Type::empty(size());
 
@@ -929,7 +926,7 @@ public:
 
     Type& operator*=(const Type& b)
     {
-        check_equal_size<TSize>(size(), b.size());
+        check_equal_size(size(), b.size());
 
         const Data a_m_data = m_data;
 
@@ -969,7 +966,7 @@ public:
 
     Type operator/(const Type& b) const
     {
-        check_equal_size<TSize>(size(), b.size());
+        check_equal_size(size(), b.size());
 
         const Scalar tmp = 1 / b.m_data[0];
 
@@ -1007,7 +1004,7 @@ public:
 
     Type& operator/=(const Type& b)
     {
-        check_equal_size<TSize>(size(), b.size());
+        check_equal_size(size(), b.size());
 
         const Data a_m_data = m_data;
 
