@@ -2,6 +2,7 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/eigen.h>
+#include <pybind11/eval.h>
 #include <pybind11/numpy.h>
 #include <pybind11/operators.h>
 #include <pybind11/stl_bind.h>
@@ -38,7 +39,6 @@ void register_ddscalar(pybind11::module& m, const std::string& name)
         .def_static("empty", py::overload_cast<>(&Type::empty))
         .def_static("empty", py::overload_cast<hj::index>(&Type::empty), "size"_a)
         .def_static("variable", py::overload_cast<hj::index, double, hj::index>(&Type::variable), "i"_a, "f"_a, "size"_a)
-        .def_static("variables", &Type::variables, "values"_a)
         .def_static("zero", py::overload_cast<>(&Type::zero))
         .def_static("zero", py::overload_cast<hj::index>(&Type::zero), "size"_a)
         // methods
@@ -48,10 +48,6 @@ void register_ddscalar(pybind11::module& m, const std::string& name)
         .def("__repr__", &Type::to_string)
         .def("abs", &Type::abs)
         .def("eval", &Type::eval, "d"_a)
-        .def("h", py::overload_cast<hj::index, hj::index>(&Type::h), "row"_a, "col"_a)
-        .def("set_h", py::overload_cast<hj::index, hj::index, TScalar>(&Type::set_h), "row"_a, "col"_a, "value"_a)
-        .def("hm", py::overload_cast<std::string>(&Type::hm, py::const_), "mode"_a="full")
-        .def("set_hm", &Type::set_hm, "value"_a)
         // methods: arithmetic operations
         .def("reciprocal", &Type::reciprocal)
         .def("sqrt", &Type::sqrt)
@@ -146,7 +142,13 @@ void register_ddscalar(pybind11::module& m, const std::string& name)
         // FIXME: add from_gradient
     } else {
         py_class
-            .def(py::init(&Type::from_arrays), "f"_a, "g"_a, "hm"_a);
+            // constructors
+            .def(py::init(&Type::from_arrays), "f"_a, "g"_a, "hm"_a)
+            // methods
+            .def("h", py::overload_cast<hj::index, hj::index>(&Type::h), "row"_a, "col"_a)
+            .def("set_h", py::overload_cast<hj::index, hj::index, TScalar>(&Type::set_h), "row"_a, "col"_a, "value"_a)
+            .def("hm", py::overload_cast<std::string>(&Type::hm, py::const_), "mode"_a="full")
+            .def("set_hm", &Type::set_hm, "value"_a);
     }
 
     if constexpr(Type::is_dynamic()) {
@@ -156,18 +158,26 @@ void register_ddscalar(pybind11::module& m, const std::string& name)
             // methods
             .def("resize", &Type::resize, "size"_a)
             .def("pad_right", &Type::pad_right, "new_size"_a)
-            .def("pad_left", &Type::pad_left, "new_size"_a);
+            .def("pad_left", &Type::pad_left, "new_size"_a)
+            // static methods
+            .def_static("variables", [](const std::vector<TScalar>& values) { return Type::variables(values); }, "values"_a);
     } else {
         py_class
             // constructor
             .def(py::init(py::overload_cast<TScalar>(&Type::constant)), "f"_a=0)
             // static methods
-            .def_static("variable", py::overload_cast<hj::index, double>(&Type::variable), "i"_a, "f"_a);
+            .def_static("variable", py::overload_cast<hj::index, double>(&Type::variable), "i"_a, "f"_a)
+            .def_static("variables", [](const std::array<TScalar, TSize>& values) { return Type::template variables<TSize>(values); }, "values"_a);
     }
 }
 
 PYBIND11_MODULE(hyperjet, m)
 {
+    using namespace pybind11::literals;
+
+    namespace py = pybind11;
+    namespace hj = hyperjet;
+
     m.doc() = "HyperJet by Thomas Oberbichler";
     m.attr("__author__") = "Thomas Oberbichler";
     m.attr("__copyright__") = "Copyright (c) 2019-2021, Thomas Oberbichler";
@@ -210,4 +220,140 @@ PYBIND11_MODULE(hyperjet, m)
     register_ddscalar<2, double, 14>(m, "DD14Scalar");
     register_ddscalar<2, double, 15>(m, "DD15Scalar");
     register_ddscalar<2, double, 16>(m, "DD16Scalar");
+
+    // utilities
+    {
+        py::object numpy = py::module::import("numpy");
+        auto global = py::dict();
+        global["np"] = numpy;
+
+        m.attr("f") = py::eval("np.vectorize(lambda v: v.f if hasattr(v, 'f') else v)", global);
+        m.attr("d") = py::eval("np.vectorize(lambda v: v.g if hasattr(v, 'g') else np.zeros((0)), signature='()->(n)')", global);
+        m.attr("dd") = py::eval("np.vectorize(lambda v: v.hm() if hasattr(v, 'hm') else np.zeros((0, 0)), signature='()->(n,m)')", global);
+
+        m.def("variables", [](const std::vector<double>& values, const hj::index order) {
+            if (order < 0 || 2 < order) {
+                throw std::runtime_error("Invalid order");
+            }
+
+            py::list results;
+
+            const auto extend = results.attr("extend");
+
+            switch (order) {
+            case 0:
+                extend(values);
+                break;
+            case 1:
+                switch (hj::length(values)) {
+                case 0:
+                    break;
+                case 1:
+                    extend(hj::DDScalar<1, double, 1>::variables(values));
+                    break;
+                case 2:
+                    extend(hj::DDScalar<1, double, 2>::variables(values));
+                    break;
+                case 3:
+                    extend(hj::DDScalar<1, double, 3>::variables(values));
+                    break;
+                case 4:
+                    extend(hj::DDScalar<1, double, 4>::variables(values));
+                    break;
+                case 5:
+                    extend(hj::DDScalar<1, double, 5>::variables(values));
+                    break;
+                case 6:
+                    extend(hj::DDScalar<1, double, 6>::variables(values));
+                    break;
+                case 7:
+                    extend(hj::DDScalar<1, double, 7>::variables(values));
+                    break;
+                case 8:
+                    extend(hj::DDScalar<1, double, 8>::variables(values));
+                    break;
+                case 9:
+                    extend(hj::DDScalar<1, double, 9>::variables(values));
+                    break;
+                case 10:
+                    extend(hj::DDScalar<1, double, 10>::variables(values));
+                    break;
+                case 11:
+                    extend(hj::DDScalar<1, double, 11>::variables(values));
+                    break;
+                case 12:
+                    extend(hj::DDScalar<1, double, 12>::variables(values));
+                    break;
+                case 13:
+                    extend(hj::DDScalar<1, double, 13>::variables(values));
+                    break;
+                case 14:
+                    extend(hj::DDScalar<1, double, 14>::variables(values));
+                    break;
+                case 15:
+                    extend(hj::DDScalar<1, double, 15>::variables(values));
+                    break;
+                default:
+                    extend(hj::DDScalar<1, double, -1>::variables(values));
+                    break;
+                }
+                break;
+            case 2:
+                switch (hj::length(values)) {
+                case 0:
+                    break;
+                case 1:
+                    extend(hj::DDScalar<2, double, 1>::variables(values));
+                    break;
+                case 2:
+                    extend(hj::DDScalar<2, double, 2>::variables(values));
+                    break;
+                case 3:
+                    extend(hj::DDScalar<2, double, 3>::variables(values));
+                    break;
+                case 4:
+                    extend(hj::DDScalar<2, double, 4>::variables(values));
+                    break;
+                case 5:
+                    extend(hj::DDScalar<2, double, 5>::variables(values));
+                    break;
+                case 6:
+                    extend(hj::DDScalar<2, double, 6>::variables(values));
+                    break;
+                case 7:
+                    extend(hj::DDScalar<2, double, 7>::variables(values));
+                    break;
+                case 8:
+                    extend(hj::DDScalar<2, double, 8>::variables(values));
+                    break;
+                case 9:
+                    extend(hj::DDScalar<2, double, 9>::variables(values));
+                    break;
+                case 10:
+                    extend(hj::DDScalar<2, double, 10>::variables(values));
+                    break;
+                case 11:
+                    extend(hj::DDScalar<2, double, 11>::variables(values));
+                    break;
+                case 12:
+                    extend(hj::DDScalar<2, double, 12>::variables(values));
+                    break;
+                case 13:
+                    extend(hj::DDScalar<2, double, 13>::variables(values));
+                    break;
+                case 14:
+                    extend(hj::DDScalar<2, double, 14>::variables(values));
+                    break;
+                case 15:
+                    extend(hj::DDScalar<2, double, 15>::variables(values));
+                    break;
+                default:
+                    extend(hj::DDScalar<2, double, -1>::variables(values));
+                    break;
+                }
+                break;
+            }
+            return results;
+        }, "values"_a, "order"_a=2);
+    }
 }

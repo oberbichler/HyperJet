@@ -397,7 +397,7 @@ public:
         }
     }
 
-    static std::vector<Type> variables(std::vector<Scalar> values)
+    static std::vector<Type> variables(const std::vector<Scalar>& values)
     {
         const index s = length(values);
 
@@ -410,6 +410,30 @@ public:
             vars[i] = variable(i, values[i], s);
         }
         return vars;
+    }
+
+    template <index T>
+    static std::conditional_t<TSize == Dynamic, std::vector<Type>, std::array<Type, T>> variables(const std::array<Scalar, T>& values)
+    {
+        if constexpr (!is_dynamic()) {
+            static_assert(T == TSize);
+        }
+
+        const index s = length(values);
+
+        if constexpr (is_dynamic()) {
+            std::vector<Type> vars(s);
+            for (index i = 0; i < s; i++) {
+                vars[i] = variable(i, values[i], s);
+            }
+            return vars;
+        } else {
+            std::array<Type, TSize> vars;
+            for (index i = 0; i < s; i++) {
+                vars[i] = variable(i, values[i], s);
+            }
+            return vars;
+        }
     }
 
     Scalar& f()
@@ -587,14 +611,27 @@ public:
             return result;
         }
 
+        Scalar t(0);
+        
         for (index i = 0; i < size(); i++) {
-            auto s = Scalar(0);
-            for (index j = 0; j < size(); j++) {
-                s += d[j] * h(i, j);
+            Scalar s(0);
+
+            index k = 1 + size() + i;
+
+            for (index j = 0; j < i; j++) {
+                s += d[j] * m_data[k];
+                k += size() - j - 1;
             }
-            result += 0.5 * d[i] * s;
+
+            for (index j = i; j < size(); j++) {
+                s += d[j] * m_data[k++];
+            }
+
+            t += d[i] * s;
         }
 
+        result += 0.5 * t;
+        
         return result;
     }
 

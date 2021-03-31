@@ -6,7 +6,7 @@
 
 A header-only library for algorithmic differentiation with hyper-dual numbers. Written in C++17 with an extensive Python interface.
 
-[![Build Status](https://github.com/oberbichler/HyperJet/workflows/Python%20package/badge.svg?branch=master)](https://github.com/oberbichler/HyperJet/actions) [![PyPI](https://img.shields.io/pypi/v/hyperjet)](https://pypi.org/project/hyperjet) ![PyPI - License](https://img.shields.io/pypi/l/hyperjet) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/hyperjet) ![PyPI - Format](https://img.shields.io/pypi/format/hyperjet)
+[![PyPI](https://img.shields.io/pypi/v/hyperjet)](https://pypi.org/project/hyperjet) [![DOI](https://zenodo.org/badge/165487832.svg)](https://zenodo.org/badge/latestdoi/165487832) [![Build Status](https://github.com/oberbichler/HyperJet/workflows/Python%20package/badge.svg?branch=master)](https://github.com/oberbichler/HyperJet/actions) ![PyPI - License](https://img.shields.io/pypi/l/hyperjet) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/hyperjet) ![PyPI - Format](https://img.shields.io/pypi/format/hyperjet)
 
 ## Installation
 
@@ -25,7 +25,7 @@ import hyperjet as hj
 Create a set of variables e.g. `x=3` and `y=6`:
 
 ```python
-x, y = hj.DDScalar.variables([3, 6])
+x, y = hj.variables([3, 6])
 ```
 
 `x` and `y` are hyper-dual numbers. This is indicated by the postfix `hj`:
@@ -120,11 +120,11 @@ normal[0].g
 
 normal[0].hm()
 >>> array([[ 0.00434846, -0.01091775,  0.00647611, -0.0029818 , -0.01143025, -0.02335746],
-           [-0.01091775,  0.02711578, -0.01655522,  0.00444165,  0.03081974, 0.04858632],
+           [-0.01091775,  0.02711578, -0.01655522,  0.00444165,  0.03081974,  0.04858632],
            [ 0.00647611, -0.01655522,  0.0093492 , -0.00295074, -0.02510461, -0.03690759],
            [-0.0029818 ,  0.00444165, -0.00295074, -0.02956956,  0.03025289, -0.01546811],
            [-0.01143025,  0.03081974, -0.02510461,  0.03025289,  0.01355789, -0.02868433],
-           [-0.02335746,  0.04858632, -0.03690759, -0.01546811, -0.02868433, 0.03641839]])
+           [-0.02335746,  0.04858632, -0.03690759, -0.01546811, -0.02868433,  0.03641839]])
 ```
 
 ## Reference
