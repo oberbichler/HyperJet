@@ -170,7 +170,7 @@ private:
         for (index i = 0; i < size(); i++) {
             const auto ca = daa * a[1 + i];
 
-            for (index j = 0; j < i + 1; j++) {
+            for (index j = i; j < size(); j++) {
                 r[k++] += ca * a[1 + j];
             }
         }
