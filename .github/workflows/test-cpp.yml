@@ -16,7 +16,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     env:
-    - VCPKG_ROOT: ${{ env.VCPKG_INSTALLATION_ROOT }}
+      VCPKG_ROOT: ${{ env.VCPKG_INSTALLATION_ROOT }}
 
     strategy:
       fail-fast: false
