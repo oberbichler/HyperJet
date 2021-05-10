@@ -15,6 +15,9 @@ jobs:
     
     runs-on: ${{ matrix.os }}
 
+    env:
+    - VCPKG_ROOT: $VCPKG_INSTALLATION_ROOT
+
     strategy:
       fail-fast: false
       max-parallel: 4
@@ -29,22 +32,11 @@ jobs:
       run: cmake -E make_directory ${{runner.workspace}}/build
 
     - name: Configure CMake
-      if: ${{ !startsWith(runner.os, 'Windows') }}
       working-directory: ${{runner.workspace}}/build
       shell: bash
-      run:  |
-        source ${CONDA}/bin/activate
-        sudo conda install -c conda-forge benchmark catch2 eigen pybind11
-        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_PREFIX_PATH=$CONDA_PREFIX -DBUILD_PYTHON_MODULE=OFF
-
-    - name: Configure CMake
-      if: ${{ startsWith(runner.os, 'Windows') }}
-      working-directory: ${{runner.workspace}}/build
-      shell: bash
-      run:  |
-        source ${CONDA}/Scripts/activate
-        conda install -c conda-forge benchmark catch2 eigen pybind11
-        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_PREFIX_PATH=$CONDA_PREFIX -DBUILD_PYTHON_MODULE=OFF
+      run: |
+        $VCPKG_ROOT/vcpkg install benchmark catch2 eigen3 pybind11
+        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_PYTHON_MODULE=OFF
 
     - name: Build
       shell: bash
