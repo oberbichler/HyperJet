@@ -51,7 +51,8 @@ endif()
 # --- python_module
 
 if (${BUILD_PYTHON_MODULE})
-    find_package(pybind11 REQUIRED)
+    add_subdirectory(external_libraries/pybind11)
+
     find_package(Eigen3 REQUIRED)
 
     pybind11_add_module(python_module src/python_module.cpp)
