@@ -18,7 +18,7 @@ option(BUILD_PYTHON_MODULE "Build the Python module" ON )
 option(BUILD_TESTS         "Build the C++ tests"     ON )
 option(BUILD_BENCHMARKS    "Build the benchmarks"    OFF)
 
-include_directories("include")
+include_directories("include" "external_libraries")
 
 # --- tests
 
