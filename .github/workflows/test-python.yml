@@ -31,6 +31,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install dependencies
+      shell: bash
       run: |
         export VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT
         ${VCPKG_ROOT}/vcpkg install eigen3
@@ -38,6 +39,7 @@ jobs:
         pip install -r requirements.txt
 
     - name: Install package
+      shell: bash
       run: |
         export VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT
         pip install .
