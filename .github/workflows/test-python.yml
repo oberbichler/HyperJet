@@ -32,11 +32,14 @@ jobs:
 
     - name: Install dependencies
       run: |
+        export VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT
+        ${VCPKG_ROOT}/vcpkg install eigen3
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
     - name: Install package
       run: |
+        export VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT
         pip install .
 
     - name: Test with pytest
