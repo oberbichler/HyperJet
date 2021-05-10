@@ -28,6 +28,8 @@ jobs:
     - name: Create Build Environment
       run: |
         echo "VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT" >> $GITHUB_ENV
+        echo $VCPKG_INSTALLATION_ROOT
+        echo $VCPKG_ROOT
         cmake -E make_directory ${{runner.workspace}}/build
 
     - name: Configure CMake
