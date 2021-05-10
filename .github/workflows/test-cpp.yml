@@ -27,6 +27,9 @@ jobs:
           - os: macOS-latest
             VCPKG_DEFAULT_TRIPLET: x64-osx
 
+    env:
+      VCPKG_DEFAULT_TRIPLET: ${{ matrix.VCPKG_DEFAULT_TRIPLET }}
+
     steps:
     - name: Checkout
       uses: actions/checkout@v2
