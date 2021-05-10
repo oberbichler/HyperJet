@@ -34,6 +34,7 @@ jobs:
       shell: bash
       run: |
         export VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT
+        export VCPKG_DEFAULT_TRIPLET=x64
         ${VCPKG_ROOT}/vcpkg install benchmark catch2 eigen3
         cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_PYTHON_MODULE=OFF
 
