@@ -39,9 +39,9 @@ class CMakeBuild(build_ext):
         cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
                       '-DPYTHON_EXECUTABLE=' + sys.executable,
                       '-DHYPERJET_VERSION=' + HYPERJET_VERSION,
-                      '-DBUILD_PYTHON_MODULE: ON',
-                      '-DBUILD_TESTS: OFF',
-                      '-DBUILD_BENCHMARKS: OFF']
+                      '-DBUILD_PYTHON_MODULE=ON',
+                      '-DBUILD_TESTS=OFF',
+                      '-DBUILD_BENCHMARKS=OFF']
 
         cfg = 'Debug' if self.debug else 'Release'
         build_args = ['--config', cfg]
