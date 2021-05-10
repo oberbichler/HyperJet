@@ -18,7 +18,7 @@ option(BUILD_PYTHON_MODULE "Build the Python module" ON )
 option(BUILD_TESTS         "Build the C++ tests"     ON )
 option(BUILD_BENCHMARKS    "Build the benchmarks"    OFF)
 
-include_directories("include" "external_libraries")
+include_directories("include")
 
 # --- tests
 
@@ -55,9 +55,9 @@ endif()
 # --- python_module
 
 if (${BUILD_PYTHON_MODULE})
-    add_subdirectory(external_libraries/pybind11)
+    include_directories("external_libraries")
 
-    find_package(Eigen3 REQUIRED)
+    add_subdirectory(external_libraries/pybind11)
 
     pybind11_add_module(python_module src/python_module.cpp)
 
@@ -70,8 +70,6 @@ if (${BUILD_PYTHON_MODULE})
     target_compile_features(python_module PRIVATE cxx_std_17)
 
     set_target_properties(python_module PROPERTIES OUTPUT_NAME hyperjet)
-
-    target_link_libraries(python_module PRIVATE Eigen3::Eigen)
 
     install(TARGETS python_module DESTINATION bin)
 endif()
