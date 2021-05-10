@@ -27,15 +27,13 @@ jobs:
 
     - name: Create Build Environment
       run: |
-        echo "VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT" >> $GITHUB_ENV
         cmake -E make_directory ${{runner.workspace}}/build
 
     - name: Configure CMake
       working-directory: ${{runner.workspace}}/build
       shell: bash
       run: |
-        echo $VCPKG_INSTALLATION_ROOT
-        echo $VCPKG_ROOT
+        VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT
         ${VCPKG_ROOT}/vcpkg install benchmark catch2 eigen3
         cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_PYTHON_MODULE=OFF
 
