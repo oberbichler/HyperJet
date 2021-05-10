@@ -19,19 +19,32 @@ jobs:
       fail-fast: false
       max-parallel: 4
       matrix:
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+        include:
+          - os: ubuntu-latest
+            VCPKG_DEFAULT_TRIPLET: x64-linux
+          - os: windows-latest
+            VCPKG_DEFAULT_TRIPLET: x64-windows
+          - os: macOS-latest
+            VCPKG_DEFAULT_TRIPLET: x64-osx
+
+    env:
+      VCPKG_DEFAULT_TRIPLET: ${{ matrix.VCPKG_DEFAULT_TRIPLET }}
 
     steps:
     - name: Checkout
       uses: actions/checkout@v2
 
     - name: Create Build Environment
-      run: cmake -E make_directory ${{runner.workspace}}/build
+      run: |
+        cmake -E make_directory ${{runner.workspace}}/build
 
     - name: Configure CMake
-      shell: bash
       working-directory: ${{runner.workspace}}/build
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+      shell: bash
+      run: |
+        export VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT
+        ${VCPKG_ROOT}/vcpkg install benchmark catch2 eigen3
+        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_PYTHON_MODULE=OFF
 
     - name: Build
       shell: bash
