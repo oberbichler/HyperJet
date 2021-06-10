@@ -1690,7 +1690,7 @@ DDScalar<TOrder, TScalar, TSize> log2(const DDScalar<TOrder, TScalar, TSize>& a)
     return a.log2();
 }
 
-// std::cbrt
+// std::log10
 
 using std::log10;
 
