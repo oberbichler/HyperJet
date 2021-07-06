@@ -1,6 +1,7 @@
 #include <array> // array
 #include <assert.h> // assert
 #include <cstddef> // ptrdiff_t
+#include <cmath> // acos, acosh, asin, asinh, atan, atanh, atan2, cbrt, cos, cosh, exp, log, log2, log10, pow, sin, sinh, sqrt, tan, tanh
 #include <initializer_list> // initializer_list
 #include <ostream> // ostream
 #include <sstream> // stringstream
