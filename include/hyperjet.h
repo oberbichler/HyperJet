@@ -238,6 +238,7 @@ public:
             static_assert(TSize >= 0);
         }
         m_data[0] = f;
+        std::fill(m_data.begin() + 1, m_data.end(), 0);
     }
 
     DDScalar(const Data& data)
