@@ -1,3 +1,5 @@
+#pragma once
+
 #include <array> // array
 #include <assert.h> // assert
 #include <cstddef> // ptrdiff_t
