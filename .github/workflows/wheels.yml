@@ -51,6 +51,7 @@ jobs:
     - uses: pypa/cibuildwheel@v2.0.0
       env:
         CIBW_ARCHS_MACOS: x86_64
+        CIBW_SKIP: pp*-macosx*
         CIBW_TEST_EXTRAS: test
         CIBW_TEST_COMMAND: pytest {project}/tests
 
