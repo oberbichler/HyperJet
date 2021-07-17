@@ -47,8 +47,11 @@ class CMakeBuild(build_ext):
         cmake_args = [
             "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY={}".format(extdir),
             "-DPYTHON_EXECUTABLE={}".format(sys.executable),
-            "-DEXAMPLE_VERSION_INFO={}".format(self.distribution.get_version()),
+            "-DHYPERJET_VERSION={}".format(self.distribution.get_version()),
             "-DCMAKE_BUILD_TYPE={}".format(cfg),  # not used on MSVC, but no harm
+            "-DBUILD_PYTHON_MODULE=ON",
+            "-DBUILD_TESTS=OFF",
+            "-DBUILD_BENCHMARKS=OFF",
         ]
         build_args = []
 
@@ -84,7 +87,7 @@ class CMakeBuild(build_ext):
             if not single_config:
                 cmake_args += [
                     "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{}={}".format(cfg.upper(), extdir),
-                    "-DHYPERJET_VERSION=" + HYPERJET_VERSION,
+                    "-DHYPERJET_VERSION={}".format(self.distribution.get_version()),
                     "-DBUILD_PYTHON_MODULE=ON",
                     "-DBUILD_TESTS=OFF",
                     "-DBUILD_BENCHMARKS=OFF",
