@@ -25,6 +25,16 @@ jobs:
       with:
         submodules: true
 
+    - name: Patch version
+      run: |
+        import os
+        with open('setup.py', 'r') as f:
+            content = f.read()
+        content = content.replace('0.0.0', os.getenv('HYPERJET_VERSION', '0.0.0'))
+        with open('setup.py', 'w') as f:
+            f.write(content)
+      shell: python
+
     - name: Build SDist
       run: pipx run build --sdist
 
@@ -49,13 +59,22 @@ jobs:
       with:
         submodules: true
 
+    - name: Patch version
+      run: |
+        import os
+        with open('setup.py', 'r') as f:
+            content = f.read()
+        content = content.replace('0.0.0', os.getenv('HYPERJET_VERSION', '0.0.0'))
+        with open('setup.py', 'w') as f:
+            f.write(content)
+      shell: python
+
     - uses: pypa/cibuildwheel@v2.0.0
       env:
         CIBW_ARCHS_MACOS: x86_64
         CIBW_SKIP: pp*-macosx*
         CIBW_TEST_EXTRAS: test
         CIBW_TEST_COMMAND: pytest {project}/tests
-        HYPERJET_VERSION: ${{ github.event.release.tag_name }}
 
     - name: Verify clean directory
       run: git diff --exit-code

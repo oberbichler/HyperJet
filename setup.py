@@ -8,7 +8,7 @@ from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 
 
-HYPERJET_VERSION = os.getenv('HYPERJET_VERSION', '0.0.0')
+HYPERJET_VERSION = '0.0.0'
 
 # Convert distutils Windows platform specifiers to CMake -A arguments
 PLAT_TO_CMAKE = {
