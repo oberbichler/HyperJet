@@ -57,7 +57,7 @@ endif()
 if (${BUILD_PYTHON_MODULE})
     include_directories("external_libraries")
 
-    add_subdirectory(external_libraries/pybind11)
+    add_subdirectory(pybind11)
 
     pybind11_add_module(python_module src/python_module.cpp)
 
