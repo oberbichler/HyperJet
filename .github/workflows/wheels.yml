@@ -30,7 +30,9 @@ jobs:
         import os
         with open('setup.py', 'r') as f:
             content = f.read()
-        content = content.replace('0.0.0', os.getenv('HYPERJET_VERSION', '0.0.0'))
+        version = os.getenv('HYPERJET_VERSION', 'v0.0.0')[1:]
+        print(version)
+        content = content.replace('0.0.0', version)
         with open('setup.py', 'w') as f:
             f.write(content)
       shell: python
