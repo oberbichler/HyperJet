@@ -83,5 +83,6 @@ setup(
     ext_modules=[CMakeExtension('hyperjet')],
     cmdclass=dict(build_ext=CMakeBuild),
     install_requires=['msvc-runtime ; platform_system=="Windows"', 'numpy'],
+    extras_require={"test": ["pytest"]},
     zip_safe=False,
 )
