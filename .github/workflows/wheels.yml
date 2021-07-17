@@ -80,10 +80,6 @@ jobs:
         CIBW_TEST_EXTRAS: test
         CIBW_TEST_COMMAND: pytest {project}/tests
 
-    - name: Verify clean directory
-      run: git diff --exit-code
-      shell: bash
-
     - name: Upload wheels
       uses: actions/upload-artifact@v2
       with:
