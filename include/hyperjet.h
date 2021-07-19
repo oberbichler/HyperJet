@@ -678,7 +678,7 @@ public:
         }
     }
 
-    void set_hm(Eigen::Ref<const Matrix> value)
+    void set_hm(const Eigen::Ref<const Matrix>& value)
     {
         index it = 0;
 
@@ -697,7 +697,7 @@ public:
                                                                                       : (TSize + 1) * (TSize + 2) / 2>>(ptr(), length(m_data));
     }
 
-    static Type from_arrays(const TScalar f, Eigen::Ref<const Vector> g, Eigen::Ref<const Matrix> hm)
+    static Type from_arrays(const TScalar f, const Eigen::Ref<const Vector>& g, const Eigen::Ref<const Matrix>& hm)
     {
         static_assert(order() == 2);
 
