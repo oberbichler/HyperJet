@@ -1,6 +1,11 @@
 path_classifiers:
+  docs:
+    - exclude: / # ignore default classification
+    - docs
   library:
+    - exclude: / # ignore default classification
     - pybind11
     - external_libraries
   test:
+    - exclude: / # ignore default classification
     - tests
