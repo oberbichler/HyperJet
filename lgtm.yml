@@ -1,1 +1,6 @@
-
+path_classifiers:
+  library:
+    - pybind11
+    - external_libraries
+  test:
+    - tests
