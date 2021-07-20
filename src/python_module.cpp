@@ -141,11 +141,11 @@ void register_ddscalar(pybind11::module& m, const std::string& name)
     if constexpr(Type::order() == 1) {
         py_class
             // constructors
-            .def(py::init(&Type::from_arrays), "f"_a, "g"_a);
+            .def(py::init<const TScalar, const Eigen::Ref<const Type::Vector>&>(&Type::from_arrays), "f"_a, "g"_a);
     } else {
         py_class
             // constructors
-            .def(py::init(&Type::from_arrays), "f"_a, "g"_a, "hm"_a)
+            .def(py::init<const TScalar, const Eigen::Ref<const Type::Vector>&, const Eigen::Ref<const Type::Matrix>&>(&Type::from_arrays), "f"_a, "g"_a, "hm"_a)
             // methods
             .def("h", py::overload_cast<hj::index, hj::index>(&Type::h), "row"_a, "col"_a)
             .def("set_h", py::overload_cast<hj::index, hj::index, TScalar>(&Type::set_h), "row"_a, "col"_a, "value"_a)
