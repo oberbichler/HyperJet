@@ -697,7 +697,7 @@ public:
                                                                                       : (TSize + 1) * (TSize + 2) / 2>>(ptr(), length(m_data));
     }
 
-    static Type from_arrays(const TScalar f, const Eigen::Ref<const Vector>& g)
+    static Type from_gradient(const TScalar f, const Eigen::Ref<const Vector>& g)
     {
         static_assert(order() == 1);
 
