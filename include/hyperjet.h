@@ -347,7 +347,7 @@ public:
     constexpr index data_length() const
     {
         if constexpr (is_dynamic()) {
-            return length(data);
+            return length(m_data);
         } else {
             return StaticDataSize;
         }
