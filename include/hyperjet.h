@@ -3,7 +3,7 @@
 #include <array> // array
 #include <assert.h> // assert
 #include <cstddef> // ptrdiff_t
-#include <cmath> // acos, acosh, asin, asinh, atan, atanh, atan2, cbrt, cos, cosh, exp, log, log2, log10, pow, sin, sinh, sqrt, tan, tanh
+#include <cmath> // acos, acosh, asin, asinh, atan, atanh, atan2, cbrt, cos, cosh, exp, hypot, log, log2, log10, pow, sin, sinh, sqrt, tan, tanh
 #include <initializer_list> // initializer_list
 #include <ostream> // ostream
 #include <sstream> // stringstream
@@ -1248,6 +1248,55 @@ public:
         return result;
     }
 
+    static Type hypot(const Type& a, const Type& b)
+    {
+        using std::hypot;
+        
+        check_equal_size(a.size(), b.size());
+
+        Type result = Type::empty(a.size());
+
+        const auto f = hypot(a.m_data[0], b.m_data[0]);
+        const auto f3 = f * f * f;
+        const auto da = a.m_data[0] / f;
+        const auto db = b.m_data[0] / f;
+        const auto daa = b.m_data[0] * b.m_data[0] / f3;
+        const auto dab = -a.m_data[0] * b.m_data[0] / f3;
+        const auto dbb = a.m_data[0] * a.m_data[0] / f3;
+
+        a.binary<false>(a.m_data, b.m_data, f, da, db, daa, dab, dbb, result.m_data);
+
+        return result;
+    }
+
+    static Type hypot(const Type& a, const Type& b, const Type& c)
+    {
+        using std::hypot;
+        
+        check_equal_size(a.size(), b.size());
+
+        Type result = Type::empty(a.size());
+
+        const auto f = hypot(a.m_data[0], b.m_data[0], c.m_data[0]);
+        const auto f3 = f * f * f;
+        const auto a2 = a.m_data[0] * a.m_data[0];
+        const auto b2 = b.m_data[0] * b.m_data[0];
+        const auto c2 = c.m_data[0] * c.m_data[0];
+        const auto da = a.m_data[0] / f;
+        const auto db = b.m_data[0] / f;
+        const auto dc = c.m_data[0] / f;
+        const auto daa = (b2 + c2) / f3;
+        const auto dab = -(a.m_data[0] * b.m_data[0]) / f3;
+        const auto dac = -(a.m_data[0] * c.m_data[0]) / f3;
+        const auto dbb = (a2 + c2) / f3;
+        const auto dbc = -(b.m_data[0] * c.m_data[0]) / f3;
+        const auto dcc = (a2 + b2) / f3;
+
+        a.ternary<false>(a.m_data, b.m_data, c.m_data, f, da, db, dc, daa, dab, dac, dbb, dbc, dcc, result.m_data);
+
+        return result;
+    }
+
     // --- hyperbolic functions
 
     Type cosh() const
@@ -1638,6 +1687,16 @@ template <index TOrder, typename TScalar, index TSize>
 DDScalar<TOrder, TScalar, TSize> atan2(const DDScalar<TOrder, TScalar, TSize>& a, const DDScalar<TOrder, TScalar, TSize>& b)
 {
     return a.atan2(b);
+}
+
+// std::hypot
+
+using std::hypot;
+
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> hypot(const DDScalar<TOrder, TScalar, TSize>& a, const DDScalar<TOrder, TScalar, TSize>& b)
+{
+    return DDScalar<TOrder, TScalar, TSize>::hypot(a, b);
 }
 
 // std::cosh
