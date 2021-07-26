@@ -678,7 +678,7 @@ def test_hypot_2d(ctx):
 
 @pytest.mark.parametrize('ctx', **test_data)
 def test_hypot_3d(ctx):
-    r = np.hypot(ctx.u7, ctx.u8, ctx.u9)
+    r = ctx.u7.hypot(ctx.u8, ctx.u9)
     ctx.check(r, [3.3989455964303383, 3.8508803611271274, -0.09611211609065046, 6.762542570418667, 0.38740979652217894, 5.493497125410167])
 
 
