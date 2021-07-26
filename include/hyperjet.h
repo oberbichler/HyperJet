@@ -151,7 +151,7 @@ private:
     template <bool TIncrement, typename TDa, typename TDaa>
     HYPERJET_INLINE void unary(const Data& a, const Scalar f, const TDa da, const TDaa daa, Data& r) const noexcept
     {
-        const index n = length(a);
+        const index n = data_length();
 
         r[0] = f;
 
