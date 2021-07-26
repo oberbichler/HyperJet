@@ -26,7 +26,7 @@ if (${BUILD_TESTS})
     find_package(Catch2 CONFIG REQUIRED)
     find_package(Eigen3 REQUIRED)
 
-    add_executable(tests src/tests.cpp)
+    add_executable(tests src/test/tests.cpp)
 
     target_compile_features(tests PRIVATE cxx_std_17)
 
@@ -42,7 +42,7 @@ if (${BUILD_BENCHMARKS})
     find_package(benchmark REQUIRED)
     find_package(Eigen3 REQUIRED)
 
-    add_executable(benchmarks src/benchmarks.cpp)
+    add_executable(benchmarks src/benchmark/benchmarks.cpp)
 
     target_compile_features(benchmarks PRIVATE cxx_std_17)
 
@@ -59,7 +59,26 @@ if (${BUILD_PYTHON_MODULE})
 
     add_subdirectory(pybind11)
 
-    pybind11_add_module(python_module src/python_module.cpp)
+    pybind11_add_module(python_module src/python/python_module.cpp
+      src/python/bind_ddscalar_xd.cpp
+      src/python/bind_ddscalar_0d.cpp
+      src/python/bind_ddscalar_1d.cpp
+      src/python/bind_ddscalar_2d.cpp
+      src/python/bind_ddscalar_3d.cpp
+      src/python/bind_ddscalar_4d.cpp
+      src/python/bind_ddscalar_5d.cpp
+      src/python/bind_ddscalar_6d.cpp
+      src/python/bind_ddscalar_7d.cpp
+      src/python/bind_ddscalar_8d.cpp
+      src/python/bind_ddscalar_9d.cpp
+      src/python/bind_ddscalar_10d.cpp
+      src/python/bind_ddscalar_11d.cpp
+      src/python/bind_ddscalar_12d.cpp
+      src/python/bind_ddscalar_13d.cpp
+      src/python/bind_ddscalar_14d.cpp
+      src/python/bind_ddscalar_15d.cpp
+      src/python/bind_ddscalar_16d.cpp
+      )
 
     target_compile_definitions(python_module PRIVATE
         -DEIGEN_DEFAULT_TO_ROW_MAJOR
