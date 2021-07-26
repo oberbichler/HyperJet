@@ -40,8 +40,11 @@ HYPERJET_INLINE constexpr bool throw_exceptions()
 
 template <index TOrder, typename TScalar, index TSize>
 class DDScalar {
+    static constexpr index StaticDataSize = TOrder == 1 ? 1 + TSize : (TSize + 1) * (TSize + 2) / 2;
+    static constexpr index DataSize = TSize < 0 ? Dynamic : StaticDataSize;
+
     using DynamicStorage = std::vector<TScalar>;
-    using StaticStorage = std::array<TScalar, TOrder == 1 ? 1 + TSize : (TSize + 1) * (TSize + 2) / 2>;
+    using StaticStorage = std::array<TScalar, StaticDataSize>;
 
 public:
     using Type = DDScalar<TOrder, TScalar, TSize>;
@@ -667,6 +670,7 @@ public:
 #if defined EIGEN_WORLD_VERSION
     using Vector = Eigen::Matrix<TScalar, 1, TSize>;
     using Matrix = Eigen::Matrix<TScalar, TSize, TSize>;
+    using DataVector = Eigen::Matrix<TScalar, 1, DataSize>;
 
     Eigen::Ref<const Vector> ag() const
     {
@@ -725,12 +729,14 @@ public:
         }
     }
 
-    Eigen::Ref < Eigen::Matrix<TScalar, 1, TSize<0 ? Dynamic : TOrder == 1 ? 1 + TSize
-                                                                           : (TSize + 1) * (TSize + 2) / 2>>
-        adata()
+    Eigen::Ref<DataVector> adata()
     {
-        return Eigen::Map < Eigen::Matrix<TScalar, 1, TSize<0 ? Dynamic : TOrder == 1 ? 1 + TSize
-                                                                                      : (TSize + 1) * (TSize + 2) / 2>>(ptr(), length(m_data));
+        return Eigen::Map <DataVector >(ptr(), length(m_data));
+    }
+
+    void set_adata(const Eigen::Ref<DataVector> value)
+    {
+        Eigen::Map<DataVector>(ptr(), length(m_data)) = value;
     }
 
     static Type from_gradient(const TScalar f, const Eigen::Ref<const Vector>& g)
@@ -797,6 +803,11 @@ public:
     }
 
 #endif
+
+    void set_zero()
+    {
+        std::fill(m_data.begin(), m_data.end(), 0);
+    }
 
     friend std::ostream& operator<<(std::ostream& out, const Type& value)
     {
