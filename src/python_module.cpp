@@ -141,7 +141,9 @@ void register_ddscalar(pybind11::module& m, const std::string& name)
         .def("__deepcopy__", [](const Type& self, py::dict& memo) { return self; }, "memodict"_a);
 
     if constexpr(Type::order() == 1) {
-        // FIXME: add from_gradient
+        py_class
+            // constructors
+            .def(py::init(&Type::from_gradient), "f"_a, "g"_a);
     } else {
         py_class
             // constructors
