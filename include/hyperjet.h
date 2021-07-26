@@ -1711,6 +1711,12 @@ DDScalar<TOrder, TScalar, TSize> hypot(const DDScalar<TOrder, TScalar, TSize>& a
     return DDScalar<TOrder, TScalar, TSize>::hypot(a, b);
 }
 
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> hypot(const DDScalar<TOrder, TScalar, TSize>& a, const DDScalar<TOrder, TScalar, TSize>& b, const DDScalar<TOrder, TScalar, TSize>& c)
+{
+    return DDScalar<TOrder, TScalar, TSize>::hypot(a, b, c);
+}
+
 // std::cosh
 
 using std::cosh;
