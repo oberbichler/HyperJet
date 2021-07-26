@@ -337,7 +337,7 @@ public:
 
     constexpr index size() const
     {
-        if (is_dynamic()) {
+        if constexpr (is_dynamic()) {
             return m_size;
         } else {
             return TSize;
