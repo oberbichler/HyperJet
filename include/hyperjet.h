@@ -38,7 +38,7 @@ HYPERJET_INLINE constexpr bool throw_exceptions()
 #endif
 }
 
-template <index TOrder, typename TScalar, index TSize>
+template <index TOrder, typename TScalar = double, index TSize = Dynamic>
 class DDScalar {
     static constexpr index StaticDataSize = TOrder == 1 ? 1 + TSize : (TSize + 1) * (TSize + 2) / 2;
     static constexpr index DataSize = TSize < 0 ? Dynamic : StaticDataSize;

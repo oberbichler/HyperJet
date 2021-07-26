@@ -191,8 +191,8 @@ auto bind(py::module &m, const std::string &name)
         .def("__copy__", [](const T& self) { return self; })
         .def("__deepcopy__", [](const T& self, py::dict& memo) { return self; }, "memodict"_a);
 
-    m.def("hypot", py::overload_cast<const Type&, const Type&>(&Type::hypot));
-    m.def("hypot", py::overload_cast<const Type&, const Type&, const Type&>(&Type::hypot));
+    m.def("hypot", py::overload_cast<const T&, const T&>(&T::hypot));
+    m.def("hypot", py::overload_cast<const T&, const T&, const T&>(&T::hypot));
 
     return cls;
 }

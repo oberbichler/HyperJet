@@ -1,7 +1,23 @@
 #include "common.h"
 
-template <hyperjet::index TOrder, typename TScalar, hyperjet::index TSize = hyperjet::Dynamic>
-void bind_ddscalar(pybind11::module&, const std::string&);
+void bind_ddscalar_xd(pybind11::module&);
+void bind_ddscalar_0d(pybind11::module&);
+void bind_ddscalar_1d(pybind11::module&);
+void bind_ddscalar_2d(pybind11::module&);
+void bind_ddscalar_3d(pybind11::module&);
+void bind_ddscalar_4d(pybind11::module&);
+void bind_ddscalar_5d(pybind11::module&);
+void bind_ddscalar_6d(pybind11::module&);
+void bind_ddscalar_7d(pybind11::module&);
+void bind_ddscalar_8d(pybind11::module&);
+void bind_ddscalar_9d(pybind11::module&);
+void bind_ddscalar_10d(pybind11::module&);
+void bind_ddscalar_11d(pybind11::module&);
+void bind_ddscalar_12d(pybind11::module&);
+void bind_ddscalar_13d(pybind11::module&);
+void bind_ddscalar_14d(pybind11::module&);
+void bind_ddscalar_15d(pybind11::module&);
+void bind_ddscalar_16d(pybind11::module&);
 
 PYBIND11_MODULE(hyperjet, m)
 {
@@ -17,41 +33,24 @@ PYBIND11_MODULE(hyperjet, m)
     m.attr("__email__") = "thomas.oberbichler@gmail.com";
     m.attr("__status__") = "Development";
 
-    bind_ddscalar<1, double, -1>(m, "DScalar");
-    bind_ddscalar<1, double, 1>(m, "D1Scalar");
-    bind_ddscalar<1, double, 2>(m, "D2Scalar");
-    bind_ddscalar<1, double, 3>(m, "D3Scalar");
-    bind_ddscalar<1, double, 4>(m, "D4Scalar");
-    bind_ddscalar<1, double, 5>(m, "D5Scalar");
-    bind_ddscalar<1, double, 6>(m, "D6Scalar");
-    bind_ddscalar<1, double, 7>(m, "D7Scalar");
-    bind_ddscalar<1, double, 8>(m, "D8Scalar");
-    bind_ddscalar<1, double, 9>(m, "D9Scalar");
-    bind_ddscalar<1, double, 10>(m, "D10Scalar");
-    bind_ddscalar<1, double, 11>(m, "D11Scalar");
-    bind_ddscalar<1, double, 12>(m, "D12Scalar");
-    bind_ddscalar<1, double, 13>(m, "D13Scalar");
-    bind_ddscalar<1, double, 14>(m, "D14Scalar");
-    bind_ddscalar<1, double, 15>(m, "D15Scalar");
-    bind_ddscalar<1, double, 16>(m, "D16Scalar");
-
-    bind_ddscalar<2, double>(m, "DDScalar");
-    bind_ddscalar<2, double, 1>(m, "DD1Scalar");
-    bind_ddscalar<2, double, 2>(m, "DD2Scalar");
-    bind_ddscalar<2, double, 3>(m, "DD3Scalar");
-    bind_ddscalar<2, double, 4>(m, "DD4Scalar");
-    bind_ddscalar<2, double, 5>(m, "DD5Scalar");
-    bind_ddscalar<2, double, 6>(m, "DD6Scalar");
-    bind_ddscalar<2, double, 7>(m, "DD7Scalar");
-    bind_ddscalar<2, double, 8>(m, "DD8Scalar");
-    bind_ddscalar<2, double, 9>(m, "DD9Scalar");
-    bind_ddscalar<2, double, 10>(m, "DD10Scalar");
-    bind_ddscalar<2, double, 11>(m, "DD11Scalar");
-    bind_ddscalar<2, double, 12>(m, "DD12Scalar");
-    bind_ddscalar<2, double, 13>(m, "DD13Scalar");
-    bind_ddscalar<2, double, 14>(m, "DD14Scalar");
-    bind_ddscalar<2, double, 15>(m, "DD15Scalar");
-    bind_ddscalar<2, double, 16>(m, "DD16Scalar");
+    bind_ddscalar_xd(m);
+    bind_ddscalar_0d(m);
+    bind_ddscalar_1d(m);
+    bind_ddscalar_2d(m);
+    bind_ddscalar_3d(m);
+    bind_ddscalar_4d(m);
+    bind_ddscalar_5d(m);
+    bind_ddscalar_6d(m);
+    bind_ddscalar_7d(m);
+    bind_ddscalar_8d(m);
+    bind_ddscalar_9d(m);
+    bind_ddscalar_10d(m);
+    bind_ddscalar_11d(m);
+    bind_ddscalar_12d(m);
+    bind_ddscalar_13d(m);
+    bind_ddscalar_14d(m);
+    bind_ddscalar_15d(m);
+    bind_ddscalar_16d(m);
 
     // utilities
     {
