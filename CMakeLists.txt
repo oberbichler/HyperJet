@@ -59,7 +59,7 @@ if (${BUILD_PYTHON_MODULE})
 
     add_subdirectory(pybind11)
 
-    pybind11_add_module(python_module src/python/python_module.cpp
+    pybind11_add_module(python_module src/python/main.cpp
       src/python/bind_ddscalar_xd.cpp
       src/python/bind_ddscalar_0d.cpp
       src/python/bind_ddscalar_1d.cpp
