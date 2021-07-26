@@ -214,6 +214,42 @@ private:
         }
     }
 
+    template <bool TIncrement, typename TDa, typename TDb, typename TDc, typename TDaa, typename TDab, typename TDac, typename TDbb, typename TDbc, typename TDcc>
+    HYPERJET_INLINE void ternary(const Data& a, const Data& b, const Data& c, const Scalar f, const TDa da, const TDb db, const TDc dc, const TDaa daa, const TDab dab, const TDac dac, const TDbb dbb, const TDbc dbc, const TDcc dcc, Data& r) const noexcept
+    {
+        const index n = length(a);
+
+        r[0] = f;
+
+        if constexpr (TOrder < 1 || (std::is_same_v<TDa, Zero> && std::is_same_v<TDb, Zero> && std::is_same_v<TDc, Zero>)) {
+            return;
+        } else {
+            for (index i = 1; i < n; i++) {
+                if constexpr (TIncrement) {
+                    r[i] += da * a[i] + db * b[i] + dc * c[i];
+                } else {
+                    r[i] = da * a[i] + db * b[i] + dc * c[i];
+                }
+            }
+        }
+
+        if constexpr (TOrder < 2 || (std::is_same_v<TDaa, Zero> && std::is_same_v<TDab, Zero> && std::is_same_v<TDac, Zero> && std::is_same_v<TDbb, Zero> && std::is_same_v<TDbc, Zero> && std::is_same_v<TDcc, Zero>)) {
+            return;
+        } else {
+            index k = 1 + size();
+
+            for (index i = 0; i < size(); i++) {
+                const auto ca = daa * a[1 + i] + dab * b[1 + i] + dac * c[1 + i];
+                const auto cb = dab * a[1 + i] + dbb * b[1 + i] + dbc * c[1 + i];
+                const auto cc = dac * a[1 + i] + dbc * b[1 + i] + dcc * c[1 + i];
+
+                for (index j = i; j < size(); j++) {
+                    r[k++] += ca * a[1 + j] + cb * b[1 + j] + cc * c[1 + j];
+                }
+            }
+        }
+    }
+
 public:
     DDScalar()
     {
