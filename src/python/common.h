@@ -24,9 +24,9 @@ auto bind(py::module &m, const std::string &name)
 
     // constructor
     cls
-        .def(py::init(py::overload_cast<T::Scalar, hj::index>(&T::constant)), "f"_a=0, "size"_a)
+        .def(py::init(py::overload_cast<typename T::Scalar, hj::index>(&T::constant)), "f"_a=0, "size"_a)
         .def(py::init(py::overload_cast<const typename T::Data&>(&T::create)), "data"_a)
-        .def(py::init(py::overload_cast<T::Scalar>(&T::constant)), "f"_a=0);
+        .def(py::init(py::overload_cast<typename T::Scalar>(&T::constant)), "f"_a=0);
 
     if constexpr(T::order() == 1) {
         cls
@@ -53,8 +53,8 @@ auto bind(py::module &m, const std::string &name)
     
     // static methods
     cls
-        .def_static("constant", py::overload_cast<T::Scalar, hj::index>(&T::constant), "f"_a, "size"_a)
-        .def_static("constant", py::overload_cast<T::Scalar>(&T::constant), "f"_a)
+        .def_static("constant", py::overload_cast<typename T::Scalar, hj::index>(&T::constant), "f"_a, "size"_a)
+        .def_static("constant", py::overload_cast<typename T::Scalar>(&T::constant), "f"_a)
         .def_static("empty", py::overload_cast<>(&T::empty))
         .def_static("empty", py::overload_cast<hj::index>(&T::empty), "size"_a)
         .def_static("variable", py::overload_cast<hj::index, double, hj::index>(&T::variable), "i"_a, "f"_a, "size"_a)
@@ -63,11 +63,11 @@ auto bind(py::module &m, const std::string &name)
 
     if constexpr(T::is_dynamic()) {
         cls
-            .def_static("variables", [](const std::vector<T::Scalar>& values) { return T::variables(values); }, "values"_a);
+            .def_static("variables", [](const std::vector<typename T::Scalar>& values) { return T::variables(values); }, "values"_a);
     } else {
         cls
             .def_static("variable", py::overload_cast<hj::index, double>(&T::variable), "i"_a, "f"_a)
-            .def_static("variables", [](const std::array<T::Scalar, T::static_size()>& values) { return T::template variables<T::static_size()>(values); }, "values"_a);
+            .def_static("variables", [](const std::array<typename T::Scalar, T::static_size()>& values) { return T::template variables<T::static_size()>(values); }, "values"_a);
     }
 
     // methods
@@ -87,7 +87,7 @@ auto bind(py::module &m, const std::string &name)
     } else {
         cls
             .def("h", py::overload_cast<hj::index, hj::index>(&T::h), "row"_a, "col"_a)
-            .def("set_h", py::overload_cast<hj::index, hj::index, T::Scalar>(&T::set_h), "row"_a, "col"_a, "value"_a)
+            .def("set_h", py::overload_cast<hj::index, hj::index, typename T::Scalar>(&T::set_h), "row"_a, "col"_a, "value"_a)
             .def("hm", py::overload_cast<std::string>(&T::hm, py::const_), "mode"_a="full")
             .def("set_hm", &T::set_hm, "value"_a);
     }
@@ -127,7 +127,7 @@ auto bind(py::module &m, const std::string &name)
     cls
         .def("exp", &T::exp)
         .def("log", py::overload_cast<>(&T::log, py::const_))
-        .def("log", py::overload_cast<T::Scalar>(&T::log, py::const_), "base"_a)
+        .def("log", py::overload_cast<typename T::Scalar>(&T::log, py::const_), "base"_a)
         .def("log2", &T::log2)
         .def("log10", &T::log10);
     
