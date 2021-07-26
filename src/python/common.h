@@ -18,9 +18,7 @@ using namespace py::literals;
 template <typename T>
 auto bind(py::module &m, const std::string &name)
 {
-    using namespace eqlib;
-
-    py::class_<T, Pointer<T>> cls(m, name.c_str());
+    py::class_<T> cls(m, name.c_str());
 
     return cls;
 }
