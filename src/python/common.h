@@ -77,19 +77,17 @@ auto bind(py::module &m, const std::string &name)
         .def("__pow__", &T::pow)
         .def("__repr__", &T::to_string)
         .def("abs", &T::abs)
-        .def("eval", &T::eval, "d"_a);
+        .def("eval", &T::eval, "d"_a)
+        .def("h", py::overload_cast<hj::index, hj::index>(&T::h), "row"_a, "col"_a)
+        .def("set_h", py::overload_cast<hj::index, hj::index, typename T::Scalar>(&T::set_h), "row"_a, "col"_a, "value"_a)
+        .def("hm", py::overload_cast<std::string>(&T::hm, py::const_), "mode"_a="full")
+        .def("set_hm", &T::set_hm, "value"_a);
     
     if constexpr(T::is_dynamic()) {
         cls
             .def("resize", &T::resize, "size"_a)
             .def("pad_right", &T::pad_right, "new_size"_a)
             .def("pad_left", &T::pad_left, "new_size"_a);
-    } else {
-        cls
-            .def("h", py::overload_cast<hj::index, hj::index>(&T::h), "row"_a, "col"_a)
-            .def("set_h", py::overload_cast<hj::index, hj::index, typename T::Scalar>(&T::set_h), "row"_a, "col"_a, "value"_a)
-            .def("hm", py::overload_cast<std::string>(&T::hm, py::const_), "mode"_a="full")
-            .def("set_hm", &T::set_hm, "value"_a);
     }
 
     // methods: arithmetic operations
@@ -192,6 +190,9 @@ auto bind(py::module &m, const std::string &name)
             }))
         .def("__copy__", [](const T& self) { return self; })
         .def("__deepcopy__", [](const T& self, py::dict& memo) { return self; }, "memodict"_a);
+
+    m.def("hypot", py::overload_cast<const Type&, const Type&>(&Type::hypot));
+    m.def("hypot", py::overload_cast<const Type&, const Type&, const Type&>(&Type::hypot));
 
     return cls;
 }
