@@ -64,7 +64,7 @@ void register_ddscalar(pybind11::module& m, const std::string& name)
         .def("arctan", &Type::atan)
         .def("arctan2", &Type::atan2)
         .def("hypot", py::overload_cast<const Type&, const Type&>(&Type::hypot))
-        .def("hypot", py::overload_cast<const Type&, const Type&>(&Type::hypot))
+        .def("hypot", py::overload_cast<const Type&, const Type&, const Type&>(&Type::hypot))
         // methods: hyperbolic functions
         .def("cosh", &Type::cosh)
         .def("sinh", &Type::sinh)
