@@ -671,6 +671,24 @@ def test_asinh(ctx):
 
 
 @pytest.mark.parametrize('ctx', **test_data)
+def test_hypot_2d(ctx):
+    r = np.hypot(ctx.u7, ctx.u8)
+    ctx.check(r, [3.248512146736285, 3.4135420601625106, -1.0240626180487475, 5.591028639945467, -2.0186627979998866, 0.8104113630097172])
+
+    r = hj.hypot(ctx.u7, ctx.u8)
+    ctx.check(r, [3.248512146736285, 3.4135420601625106, -1.0240626180487475, 5.591028639945467, -2.0186627979998866, 0.8104113630097172])
+
+
+@pytest.mark.parametrize('ctx', **test_data)
+def test_hypot_3d(ctx):
+    r = ctx.u7.hypot(ctx.u8, ctx.u9)
+    ctx.check(r, [3.3989455964303383, 3.8508803611271274, -0.09611211609065046, 6.762542570418667, 0.38740979652217894, 5.493497125410167])
+
+    r = hj.hypot(ctx.u7, ctx.u8, ctx.u9)
+    ctx.check(r, [3.3989455964303383, 3.8508803611271274, -0.09611211609065046, 6.762542570418667, 0.38740979652217894, 5.493497125410167])
+
+
+@pytest.mark.parametrize('ctx', **test_data)
 def test_atanh(ctx):
     r = np.arctanh(ctx.u8)
     ctx.check(r, [1.8, 1.2, -0.36, 0.4, -0.24, 0.144])

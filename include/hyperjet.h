@@ -3,7 +3,7 @@
 #include <array> // array
 #include <assert.h> // assert
 #include <cstddef> // ptrdiff_t
-#include <cmath> // acos, acosh, asin, asinh, atan, atanh, atan2, cbrt, cos, cosh, exp, log, log2, log10, pow, sin, sinh, sqrt, tan, tanh
+#include <cmath> // acos, acosh, asin, asinh, atan, atanh, atan2, cbrt, cos, cosh, exp, hypot, log, log2, log10, pow, sin, sinh, sqrt, tan, tanh
 #include <initializer_list> // initializer_list
 #include <ostream> // ostream
 #include <sstream> // stringstream
@@ -209,6 +209,42 @@ private:
 
                 for (index j = i; j < size(); j++) {
                     r[k++] += ca * a[1 + j] + cb * b[1 + j];
+                }
+            }
+        }
+    }
+
+    template <bool TIncrement, typename TDa, typename TDb, typename TDc, typename TDaa, typename TDab, typename TDac, typename TDbb, typename TDbc, typename TDcc>
+    HYPERJET_INLINE void ternary(const Data& a, const Data& b, const Data& c, const Scalar f, const TDa da, const TDb db, const TDc dc, const TDaa daa, const TDab dab, const TDac dac, const TDbb dbb, const TDbc dbc, const TDcc dcc, Data& r) const noexcept
+    {
+        const index n = length(a);
+
+        r[0] = f;
+
+        if constexpr (TOrder < 1 || (std::is_same_v<TDa, Zero> && std::is_same_v<TDb, Zero> && std::is_same_v<TDc, Zero>)) {
+            return;
+        } else {
+            for (index i = 1; i < n; i++) {
+                if constexpr (TIncrement) {
+                    r[i] += da * a[i] + db * b[i] + dc * c[i];
+                } else {
+                    r[i] = da * a[i] + db * b[i] + dc * c[i];
+                }
+            }
+        }
+
+        if constexpr (TOrder < 2 || (std::is_same_v<TDaa, Zero> && std::is_same_v<TDab, Zero> && std::is_same_v<TDac, Zero> && std::is_same_v<TDbb, Zero> && std::is_same_v<TDbc, Zero> && std::is_same_v<TDcc, Zero>)) {
+            return;
+        } else {
+            index k = 1 + size();
+
+            for (index i = 0; i < size(); i++) {
+                const auto ca = daa * a[1 + i] + dab * b[1 + i] + dac * c[1 + i];
+                const auto cb = dab * a[1 + i] + dbb * b[1 + i] + dbc * c[1 + i];
+                const auto cc = dac * a[1 + i] + dbc * b[1 + i] + dcc * c[1 + i];
+
+                for (index j = i; j < size(); j++) {
+                    r[k++] += ca * a[1 + j] + cb * b[1 + j] + cc * c[1 + j];
                 }
             }
         }
@@ -1224,6 +1260,55 @@ public:
         return result;
     }
 
+    static Type hypot(const Type& a, const Type& b)
+    {
+        using std::hypot;
+        
+        check_equal_size(a.size(), b.size());
+
+        Type result = Type::empty(a.size());
+
+        const auto f = hypot(a.m_data[0], b.m_data[0]);
+        const auto f3 = f * f * f;
+        const auto da = a.m_data[0] / f;
+        const auto db = b.m_data[0] / f;
+        const auto daa = b.m_data[0] * b.m_data[0] / f3;
+        const auto dab = -a.m_data[0] * b.m_data[0] / f3;
+        const auto dbb = a.m_data[0] * a.m_data[0] / f3;
+
+        a.binary<false>(a.m_data, b.m_data, f, da, db, daa, dab, dbb, result.m_data);
+
+        return result;
+    }
+
+    static Type hypot(const Type& a, const Type& b, const Type& c)
+    {
+        using std::hypot;
+        
+        check_equal_size(a.size(), b.size());
+
+        Type result = Type::empty(a.size());
+
+        const auto f = hypot(a.m_data[0], b.m_data[0], c.m_data[0]);
+        const auto f3 = f * f * f;
+        const auto a2 = a.m_data[0] * a.m_data[0];
+        const auto b2 = b.m_data[0] * b.m_data[0];
+        const auto c2 = c.m_data[0] * c.m_data[0];
+        const auto da = a.m_data[0] / f;
+        const auto db = b.m_data[0] / f;
+        const auto dc = c.m_data[0] / f;
+        const auto daa = (b2 + c2) / f3;
+        const auto dab = -(a.m_data[0] * b.m_data[0]) / f3;
+        const auto dac = -(a.m_data[0] * c.m_data[0]) / f3;
+        const auto dbb = (a2 + c2) / f3;
+        const auto dbc = -(b.m_data[0] * c.m_data[0]) / f3;
+        const auto dcc = (a2 + b2) / f3;
+
+        a.ternary<false>(a.m_data, b.m_data, c.m_data, f, da, db, dc, daa, dab, dac, dbb, dbc, dcc, result.m_data);
+
+        return result;
+    }
+
     // --- hyperbolic functions
 
     Type cosh() const
@@ -1614,6 +1699,22 @@ template <index TOrder, typename TScalar, index TSize>
 DDScalar<TOrder, TScalar, TSize> atan2(const DDScalar<TOrder, TScalar, TSize>& a, const DDScalar<TOrder, TScalar, TSize>& b)
 {
     return a.atan2(b);
+}
+
+// std::hypot
+
+using std::hypot;
+
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> hypot(const DDScalar<TOrder, TScalar, TSize>& a, const DDScalar<TOrder, TScalar, TSize>& b)
+{
+    return DDScalar<TOrder, TScalar, TSize>::hypot(a, b);
+}
+
+template <index TOrder, typename TScalar, index TSize>
+DDScalar<TOrder, TScalar, TSize> hypot(const DDScalar<TOrder, TScalar, TSize>& a, const DDScalar<TOrder, TScalar, TSize>& b, const DDScalar<TOrder, TScalar, TSize>& c)
+{
+    return DDScalar<TOrder, TScalar, TSize>::hypot(a, b, c);
 }
 
 // std::cosh
