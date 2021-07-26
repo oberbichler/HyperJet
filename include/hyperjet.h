@@ -185,7 +185,7 @@ private:
     template <bool TIncrement, typename TDa, typename TDb, typename TDaa, typename TDab, typename TDbb>
     HYPERJET_INLINE void binary(const Data& a, const Data& b, const Scalar f, const TDa da, const TDb db, const TDaa daa, const TDab dab, const TDbb dbb, Data& r) const noexcept
     {
-        const index n = length(a);
+        const index n = data_length();
 
         r[0] = f;
 
@@ -220,7 +220,7 @@ private:
     template <bool TIncrement, typename TDa, typename TDb, typename TDc, typename TDaa, typename TDab, typename TDac, typename TDbb, typename TDbc, typename TDcc>
     HYPERJET_INLINE void ternary(const Data& a, const Data& b, const Data& c, const Scalar f, const TDa da, const TDb db, const TDc dc, const TDaa daa, const TDab dab, const TDac dac, const TDbb dbb, const TDbc dbc, const TDcc dcc, Data& r) const noexcept
     {
-        const index n = length(a);
+        const index n = data_length();
 
         r[0] = f;
 
