@@ -191,28 +191,28 @@ private:
 
         if constexpr (TOrder < 1 || (std::is_same_v<TDa, Zero> && std::is_same_v<TDb, Zero>)) {
             return;
-        } else {
-            for (index i = 1; i < n; i++) {
-                if constexpr (TIncrement) {
-                    r[i] += da * a[i] + db * b[i];
-                } else {
-                    r[i] = da * a[i] + db * b[i];
-                }
+        }
+
+        for (index i = 1; i < n; i++) {
+            if constexpr (TIncrement) {
+                r[i] += da * a[i] + db * b[i];
+            } else {
+                r[i] = da * a[i] + db * b[i];
             }
         }
 
         if constexpr (TOrder < 2 || (std::is_same_v<TDaa, Zero> && std::is_same_v<TDab, Zero> && std::is_same_v<TDbb, Zero>)) {
             return;
-        } else {
-            index k = 1 + size();
+        }
 
-            for (index i = 0; i < size(); i++) {
-                const auto ca = daa * a[1 + i] + dab * b[1 + i];
-                const auto cb = dab * a[1 + i] + dbb * b[1 + i];
+        index k = 1 + size();
 
-                for (index j = i; j < size(); j++) {
-                    r[k++] += ca * a[1 + j] + cb * b[1 + j];
-                }
+        for (index i = 0; i < size(); i++) {
+            const auto ca = daa * a[1 + i] + dab * b[1 + i];
+            const auto cb = dab * a[1 + i] + dbb * b[1 + i];
+
+            for (index j = i; j < size(); j++) {
+                r[k++] += ca * a[1 + j] + cb * b[1 + j];
             }
         }
     }
@@ -226,29 +226,29 @@ private:
 
         if constexpr (TOrder < 1 || (std::is_same_v<TDa, Zero> && std::is_same_v<TDb, Zero> && std::is_same_v<TDc, Zero>)) {
             return;
-        } else {
-            for (index i = 1; i < n; i++) {
-                if constexpr (TIncrement) {
-                    r[i] += da * a[i] + db * b[i] + dc * c[i];
-                } else {
-                    r[i] = da * a[i] + db * b[i] + dc * c[i];
-                }
+        }
+        
+        for (index i = 1; i < n; i++) {
+            if constexpr (TIncrement) {
+                r[i] += da * a[i] + db * b[i] + dc * c[i];
+            } else {
+                r[i] = da * a[i] + db * b[i] + dc * c[i];
             }
         }
 
         if constexpr (TOrder < 2 || (std::is_same_v<TDaa, Zero> && std::is_same_v<TDab, Zero> && std::is_same_v<TDac, Zero> && std::is_same_v<TDbb, Zero> && std::is_same_v<TDbc, Zero> && std::is_same_v<TDcc, Zero>)) {
             return;
-        } else {
-            index k = 1 + size();
+        }
 
-            for (index i = 0; i < size(); i++) {
-                const auto ca = daa * a[1 + i] + dab * b[1 + i] + dac * c[1 + i];
-                const auto cb = dab * a[1 + i] + dbb * b[1 + i] + dbc * c[1 + i];
-                const auto cc = dac * a[1 + i] + dbc * b[1 + i] + dcc * c[1 + i];
+        index k = 1 + size();
 
-                for (index j = i; j < size(); j++) {
-                    r[k++] += ca * a[1 + j] + cb * b[1 + j] + cc * c[1 + j];
-                }
+        for (index i = 0; i < size(); i++) {
+            const auto ca = daa * a[1 + i] + dab * b[1 + i] + dac * c[1 + i];
+            const auto cb = dab * a[1 + i] + dbb * b[1 + i] + dbc * c[1 + i];
+            const auto cc = dac * a[1 + i] + dbc * b[1 + i] + dcc * c[1 + i];
+
+            for (index j = i; j < size(); j++) {
+                r[k++] += ca * a[1 + j] + cb * b[1 + j] + cc * c[1 + j];
             }
         }
     }
