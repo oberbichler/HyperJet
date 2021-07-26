@@ -344,6 +344,15 @@ public:
         }
     }
 
+    constexpr index data_length() const
+    {
+        if constexpr (is_dynamic()) {
+            return m_size;
+        } else {
+            return StaticDataSize;
+        }
+    }
+
     void resize(const index size)
     {
         static_assert(is_dynamic());
