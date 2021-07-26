@@ -9,14 +9,8 @@
 #include <pybind11/stl.h>
 
 #include <hyperjet.h>
-#include <sparse_lu.h>
 
-// extern template class hyperjet::DDScalar<1, double, 1>;
-// extern template class hyperjet::DDScalar<1, double, 2>;
-// extern template class hyperjet::DDScalar<1, double, 3>;
-// extern template class hyperjet::DDScalar<1, double, 4>;
-
-template <hyperjet::index TOrder, typename TScalar, hyperjet::index TSize = hyperjet::Dynamic>
+template <hyperjet::index TOrder, typename TScalar, hyperjet::index TSize>
 void register_ddscalar(pybind11::module& m, const std::string& name)
 {
     using namespace pybind11::literals;
@@ -32,11 +26,11 @@ void register_ddscalar(pybind11::module& m, const std::string& name)
         .def(py::init(py::overload_cast<const typename Type::Data&>(&Type::create)), "data"_a)
         // properties
         .def_property("f", py::overload_cast<>(&Type::f, py::const_), &Type::set_f)
-        .def_property("data", py::overload_cast<>(&Type::adata), &Type::set_adata)
         // static read-only properties
         .def_property_readonly_static("is_dynamic", [](py::object) { return Type::is_dynamic(); })
         .def_property_readonly_static("order", [](py::object) { return Type::order(); })
         // read-only properties
+        .def_property_readonly("data", py::overload_cast<>(&Type::adata))
         .def_property_readonly("g", py::overload_cast<>(&Type::ag))
         .def_property_readonly("size", &Type::size)
         // static methods
@@ -181,40 +175,6 @@ void register_ddscalar(pybind11::module& m, const std::string& name)
     }
 }
 
-template <typename TScalar>
-void register_sparse_lu(pybind11::module& m, const std::string& name)
-{
-    using namespace pybind11::literals;
-
-    namespace py = pybind11;
-    namespace hj = hyperjet;
-
-    using Type = hj::SparseLU<TScalar>;
-
-    py::class_<Type>(m, name.c_str())
-        .def(py::init<hj::index>(), "size"_a)
-        .def("lhs", &Type::lhs, "row"_a, "col"_a)
-        .def("rhs", &Type::rhs, "row"_a)
-        .def("x", &Type::x, "row"_a)
-        .def("set_lhs", py::overload_cast<hj::index, hj::index, TScalar>(&Type::set_lhs), "row"_a, "col"_a, "value"_a)
-        .def("set_lhs", py::overload_cast<hj::index, hj::index, double>(&Type::set_lhs), "row"_a, "col"_a, "value"_a)
-        .def("set_rhs", py::overload_cast<hj::index, TScalar>(&Type::set_rhs), "row"_a, "value"_a)
-        .def("set_rhs", py::overload_cast<hj::index, double>(&Type::set_rhs), "row"_a, "value"_a)
-        .def("add_lhs", py::overload_cast<hj::index, hj::index, TScalar>(&Type::add_lhs), "row"_a, "col"_a, "value"_a)
-        .def("add_lhs", py::overload_cast<hj::index, hj::index, double>(&Type::add_lhs), "row"_a, "col"_a, "value"_a)
-        .def("add_rhs", py::overload_cast<hj::index, TScalar>(&Type::add_rhs), "row"_a, "value"_a)
-        .def("add_rhs", py::overload_cast<hj::index, double>(&Type::add_rhs), "row"_a, "value"_a)
-        .def("compress", &Type::compress)
-        .def("clear", &Type::clear)
-        .def("analyze_pattern", &Type::analyze_pattern)
-        .def("factorize", &Type::factorize)
-        .def("solve", &Type::solve)
-        ;
-}
-
-template <hyperjet::index TOrder, typename TScalar, hyperjet::index TSize = hyperjet::Dynamic>
-void bind_ddscalar(pybind11::module&, const std::string&);
-
 PYBIND11_MODULE(hyperjet, m)
 {
     using namespace pybind11::literals;
@@ -229,75 +189,41 @@ PYBIND11_MODULE(hyperjet, m)
     m.attr("__email__") = "thomas.oberbichler@gmail.com";
     m.attr("__status__") = "Development";
 
-    register_ddscalar<1, double>(m, "DScalar");
+    register_ddscalar<1, double, -1>(m, "DScalar");
     register_ddscalar<1, double, 1>(m, "D1Scalar");
     register_ddscalar<1, double, 2>(m, "D2Scalar");
     register_ddscalar<1, double, 3>(m, "D3Scalar");
     register_ddscalar<1, double, 4>(m, "D4Scalar");
-    // register_ddscalar<1, double, 5>(m, "D5Scalar");
-    // register_ddscalar<1, double, 6>(m, "D6Scalar");
-    // register_ddscalar<1, double, 7>(m, "D7Scalar");
-    // register_ddscalar<1, double, 8>(m, "D8Scalar");
-    // register_ddscalar<1, double, 9>(m, "D9Scalar");
-    // register_ddscalar<1, double, 10>(m, "D10Scalar");
-    // register_ddscalar<1, double, 11>(m, "D11Scalar");
-    // register_ddscalar<1, double, 12>(m, "D12Scalar");
-    // register_ddscalar<1, double, 13>(m, "D13Scalar");
-    // register_ddscalar<1, double, 14>(m, "D14Scalar");
-    // register_ddscalar<1, double, 15>(m, "D15Scalar");
-    // register_ddscalar<1, double, 16>(m, "D16Scalar");
+    register_ddscalar<1, double, 5>(m, "D5Scalar");
+    register_ddscalar<1, double, 6>(m, "D6Scalar");
+    register_ddscalar<1, double, 7>(m, "D7Scalar");
+    register_ddscalar<1, double, 8>(m, "D8Scalar");
+    register_ddscalar<1, double, 9>(m, "D9Scalar");
+    register_ddscalar<1, double, 10>(m, "D10Scalar");
+    register_ddscalar<1, double, 11>(m, "D11Scalar");
+    register_ddscalar<1, double, 12>(m, "D12Scalar");
+    register_ddscalar<1, double, 13>(m, "D13Scalar");
+    register_ddscalar<1, double, 14>(m, "D14Scalar");
+    register_ddscalar<1, double, 15>(m, "D15Scalar");
+    register_ddscalar<1, double, 16>(m, "D16Scalar");
 
-    register_ddscalar<2, double>(m, "DDScalar");
+    register_ddscalar<2, double, -1>(m, "DDScalar");
     register_ddscalar<2, double, 1>(m, "DD1Scalar");
     register_ddscalar<2, double, 2>(m, "DD2Scalar");
     register_ddscalar<2, double, 3>(m, "DD3Scalar");
     register_ddscalar<2, double, 4>(m, "DD4Scalar");
-    // register_ddscalar<2, double, 5>(m, "DD5Scalar");
-    // register_ddscalar<2, double, 6>(m, "DD6Scalar");
-    // register_ddscalar<2, double, 7>(m, "DD7Scalar");
-    // register_ddscalar<2, double, 8>(m, "DD8Scalar");
-    // register_ddscalar<2, double, 9>(m, "DD9Scalar");
-    // register_ddscalar<2, double, 10>(m, "DD10Scalar");
-    // register_ddscalar<2, double, 11>(m, "DD11Scalar");
-    // register_ddscalar<2, double, 12>(m, "DD12Scalar");
-    // register_ddscalar<2, double, 13>(m, "DD13Scalar");
-    // register_ddscalar<2, double, 14>(m, "DD14Scalar");
-    // register_ddscalar<2, double, 15>(m, "DD15Scalar");
-    // register_ddscalar<2, double, 16>(m, "DD16Scalar");
-
-    // register_sparse_lu<hj::DDScalar<1, double, 1>>(m, "D1SparseLU");
-    // register_sparse_lu<hj::DDScalar<1, double, 2>>(m, "D2SparseLU");
-    // register_sparse_lu<hj::DDScalar<1, double, 3>>(m, "D3SparseLU");
-    // register_sparse_lu<hj::DDScalar<1, double, 4>>(m, "D4SparseLU");
-    // register_sparse_lu<hj::DDScalar<1, double, 5>>(m, "D5SparseLU");
-    // register_sparse_lu<hj::DDScalar<1, double, 6>>(m, "D6SparseLU");
-    // register_sparse_lu<hj::DDScalar<1, double, 7>>(m, "D7SparseLU");
-    // register_sparse_lu<hj::DDScalar<1, double, 8>>(m, "D8SparseLU");
-    // register_sparse_lu<hj::DDScalar<1, double, 9>>(m, "D9SparseLU");
-    // register_sparse_lu<hj::DDScalar<1, double, 10>>(m, "D10SparseLU");
-    // register_sparse_lu<hj::DDScalar<1, double, 11>>(m, "D11SparseLU");
-    // register_sparse_lu<hj::DDScalar<1, double, 12>>(m, "D12SparseLU");
-    // register_sparse_lu<hj::DDScalar<1, double, 13>>(m, "D13SparseLU");
-    // register_sparse_lu<hj::DDScalar<1, double, 14>>(m, "D14SparseLU");
-    // register_sparse_lu<hj::DDScalar<1, double, 15>>(m, "D15SparseLU");
-    // register_sparse_lu<hj::DDScalar<1, double, 16>>(m, "D16SparseLU");
-
-    // register_sparse_lu<hj::DDScalar<2, double, 1>>(m, "DD1SparseLU");
-    // register_sparse_lu<hj::DDScalar<2, double, 2>>(m, "DD2SparseLU");
-    // register_sparse_lu<hj::DDScalar<2, double, 3>>(m, "DD3SparseLU");
-    // register_sparse_lu<hj::DDScalar<2, double, 4>>(m, "DD4SparseLU");
-    // register_sparse_lu<hj::DDScalar<2, double, 5>>(m, "DD5SparseLU");
-    // register_sparse_lu<hj::DDScalar<2, double, 6>>(m, "DD6SparseLU");
-    // register_sparse_lu<hj::DDScalar<2, double, 7>>(m, "DD7SparseLU");
-    // register_sparse_lu<hj::DDScalar<2, double, 8>>(m, "DD8SparseLU");
-    // register_sparse_lu<hj::DDScalar<2, double, 9>>(m, "DD9SparseLU");
-    // register_sparse_lu<hj::DDScalar<2, double, 10>>(m, "DD10SparseLU");
-    // register_sparse_lu<hj::DDScalar<2, double, 11>>(m, "DD11SparseLU");
-    // register_sparse_lu<hj::DDScalar<2, double, 12>>(m, "DD12SparseLU");
-    // register_sparse_lu<hj::DDScalar<2, double, 13>>(m, "DD13SparseLU");
-    // register_sparse_lu<hj::DDScalar<2, double, 14>>(m, "DD14SparseLU");
-    // register_sparse_lu<hj::DDScalar<2, double, 15>>(m, "DD15SparseLU");
-    // register_sparse_lu<hj::DDScalar<2, double, 16>>(m, "DD16SparseLU");
+    register_ddscalar<2, double, 5>(m, "DD5Scalar");
+    register_ddscalar<2, double, 6>(m, "DD6Scalar");
+    register_ddscalar<2, double, 7>(m, "DD7Scalar");
+    register_ddscalar<2, double, 8>(m, "DD8Scalar");
+    register_ddscalar<2, double, 9>(m, "DD9Scalar");
+    register_ddscalar<2, double, 10>(m, "DD10Scalar");
+    register_ddscalar<2, double, 11>(m, "DD11Scalar");
+    register_ddscalar<2, double, 12>(m, "DD12Scalar");
+    register_ddscalar<2, double, 13>(m, "DD13Scalar");
+    register_ddscalar<2, double, 14>(m, "DD14Scalar");
+    register_ddscalar<2, double, 15>(m, "DD15Scalar");
+    register_ddscalar<2, double, 16>(m, "DD16Scalar");
 
     // utilities
     {
@@ -309,7 +235,6 @@ PYBIND11_MODULE(hyperjet, m)
         m.attr("d") = py::eval("np.vectorize(lambda v: v.g if hasattr(v, 'g') else np.zeros((0)), signature='()->(n)')", global);
         m.attr("dd") = py::eval("np.vectorize(lambda v: v.hm() if hasattr(v, 'hm') else np.zeros((0, 0)), signature='()->(n,m)')", global);
 
-/*
         m.def("variables", [](const std::vector<double>& values, const hj::index order) {
             if (order < 0 || 2 < order) {
                 throw std::runtime_error("Invalid order");
@@ -371,9 +296,6 @@ PYBIND11_MODULE(hyperjet, m)
                     break;
                 case 15:
                     extend(hj::DDScalar<1, double, 15>::variables(values));
-                    break;
-                case 16:
-                    extend(hj::DDScalar<1, double, 16>::variables(values));
                     break;
                 default:
                     extend(hj::DDScalar<1, double, -1>::variables(values));
@@ -437,6 +359,5 @@ PYBIND11_MODULE(hyperjet, m)
             }
             return results;
         }, "values"_a, "order"_a=2);
-        */
     }
 }
