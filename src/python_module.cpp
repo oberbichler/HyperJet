@@ -173,6 +173,9 @@ void register_ddscalar(pybind11::module& m, const std::string& name)
             .def_static("variable", py::overload_cast<hj::index, double>(&Type::variable), "i"_a, "f"_a)
             .def_static("variables", [](const std::array<TScalar, TSize>& values) { return Type::template variables<TSize>(values); }, "values"_a);
     }
+
+    m.def("hypot", py::overload_cast<const Type&, const Type&>(&Type::hypot))
+    m.def("hypot", py::overload_cast<const Type&, const Type&, const Type&>(&Type::hypot))
 }
 
 PYBIND11_MODULE(hyperjet, m)
