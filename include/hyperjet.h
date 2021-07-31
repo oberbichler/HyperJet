@@ -276,7 +276,7 @@ public:
         } else {
             static_assert(TSize >= 0);
         }
-        m_data[0] = f;
+        f() = f;
         std::fill(m_data.begin() + 1, m_data.end(), 0);
     }
 
@@ -606,7 +606,7 @@ public:
 
     void set_f(const Scalar value)
     {
-        f() = value;
+        m_data[0] = value;
     }
 
     Scalar& g(const index i)
@@ -820,7 +820,7 @@ public:
 
     friend std::ostream& operator<<(std::ostream& out, const Type& value)
     {
-        out << value.m_data[0] << "hj";
+        out << value.f() << "hj";
         return out;
     }
 
@@ -854,7 +854,7 @@ public:
 
         Type result = Type::empty(size());
 
-        const auto f = m_data[0] + b.m_data[0];
+        const auto f = this->f() + b.f();
 
         const auto da = One();
         const auto db = One();
@@ -872,7 +872,7 @@ public:
     {
         Type result = *this;
 
-        result.m_data[0] += b;
+        result.f() += b;
 
         return result;
     }
@@ -895,7 +895,7 @@ public:
 
     Type& operator+=(const Scalar& b)
     {
-        m_data[0] += b;
+        f() += b;
 
         return *this;
     }
@@ -908,7 +908,7 @@ public:
 
         Type result = Type::empty(size());
 
-        const auto f = m_data[0] - b.m_data[0];
+        const auto f = this->f() - b.f();
 
         const auto da = One();
         const auto db = -One();
@@ -935,7 +935,7 @@ public:
             result.m_data[i] = -b.m_data[i];
         }
 
-        result.m_data[0] += a;
+        result.f() += a;
 
         return result;
     }
@@ -953,7 +953,7 @@ public:
 
     Type& operator-=(const Scalar& b)
     {
-        m_data[0] -= b;
+        f() -= b;
 
         return *this;
     }
@@ -966,10 +966,10 @@ public:
 
         Type result = Type::empty(size());
 
-        const auto f = m_data[0] * b.m_data[0];
+        const auto f = this->f() * b.f();
 
-        const auto da = b.m_data[0];
-        const auto db = m_data[0];
+        const auto da = b.f();
+        const auto db = this->f();
 
         const auto daa = Zero();
         const auto dab = One();
@@ -1002,10 +1002,10 @@ public:
 
         const Data a_m_data = m_data;
 
-        const Scalar da = b.m_data[0];
-        const Scalar db = m_data[0];
+        const Scalar da = b.f();
+        const Scalar db = this->f();
 
-        m_data[0] *= b.m_data[0];
+        f() *= b.f();
 
         for (index i = 1; i < length(m_data); i++) {
             m_data[i] = da * m_data[i] + db * b.m_data[i];
@@ -1040,14 +1040,14 @@ public:
     {
         check_equal_size(size(), b.size());
 
-        const Scalar tmp = 1 / b.m_data[0];
+        const Scalar tmp = 1 / b.f();
 
-        const auto f = m_data[0] * tmp;
+        const auto f = this->f() * tmp;
         const auto da = tmp;
-        const auto db = -m_data[0] / std::pow(b.m_data[0], 2);
+        const auto db = -this->f() / std::pow(b.f(), 2);
         const auto daa = Zero();
-        const auto dab = -1 / std::pow(b.m_data[0], 2);
-        const auto dbb = 2 * m_data[0] / std::pow(b.m_data[0], 3);
+        const auto dab = -1 / std::pow(b.f(), 2);
+        const auto dbb = 2 * this->f() / std::pow(b.f(), 3);
 
         Type result = Type::empty(size());
 
@@ -1065,9 +1065,9 @@ public:
     {
         Type result = Type::empty(b.size());
 
-        const auto f = a / b.m_data[0];
-        const auto db = -a / std::pow(b.m_data[0], 2);
-        const auto dbb = 2 * a / std::pow(b.m_data[0], 3);
+        const auto f = a / b.f();
+        const auto db = -a / std::pow(b.f(), 2);
+        const auto dbb = 2 * a / std::pow(b.f(), 3);
 
         b.unary<false>(b.m_data, f, db, dbb, result.m_data);
 
@@ -1080,12 +1080,12 @@ public:
 
         const Data a_m_data = m_data;
 
-        const auto f = a_m_data[0] / b.m_data[0];
-        const auto da = 1 / b.m_data[0];
-        const auto db = -a_m_data[0] / std::pow(b.m_data[0], 2);
+        const auto f = a_m_data[0] / b.f();
+        const auto da = 1 / b.f();
+        const auto db = -a_m_data[0] / std::pow(b.f(), 2);
         const auto daa = Zero();
-        const auto dab = -1 / std::pow(b.m_data[0], 2);
-        const auto dbb = 2 * a_m_data[0] / std::pow(b.m_data[0], 3);
+        const auto dab = -1 / std::pow(b.f(), 2);
+        const auto dbb = 2 * a_m_data[0] / std::pow(b.f(), 3);
 
         binary<false>(a_m_data, b.m_data, f, da, db, daa, dab, dbb, m_data);
 
@@ -1107,9 +1107,9 @@ public:
 
         Type result = Type::empty(size());
 
-        const auto f = pow(m_data[0], b);
-        const auto da = b * pow(m_data[0], b - 1);
-        const auto daa = (b - 1) * b * pow(m_data[0], b - 2);
+        const auto f = pow(this->f(), b);
+        const auto da = b * pow(this->f(), b - 1);
+        const auto daa = (b - 1) * b * pow(this->f(), b - 2);
 
         unary<false>(m_data, f, da, daa, result.m_data);
 
@@ -1123,9 +1123,9 @@ public:
 
         Type result = Type::empty(size());
 
-        const auto f = sqrt(m_data[0]);
+        const auto f = sqrt(this->f());
         const auto da = 1 / (2 * f);
-        const auto daa = -da / (2 * m_data[0]);
+        const auto daa = -da / (2 * this->f());
 
         unary<false>(m_data, f, da, daa, result.m_data);
 
@@ -1138,9 +1138,9 @@ public:
 
         Type result = Type::empty(size());
 
-        const auto f = cbrt(m_data[0]);
+        const auto f = cbrt(this->f());
         const auto da = 1 / (3 * f * f);
-        const auto daa = -da * 2 / (3 * m_data[0]);
+        const auto daa = -da * 2 / (3 * this->f());
 
         unary<false>(m_data, f, da, daa, result.m_data);
 
@@ -1151,7 +1151,7 @@ public:
     {
         Type result = Type::empty(size());
 
-        const auto f = 1 / m_data[0];
+        const auto f = 1 / this->f();
         const auto da = -f * f;
         const auto daa = -2 * f * da;
 
@@ -1169,9 +1169,9 @@ public:
 
         Type result = Type::empty(size());
 
-        const auto f = cos(m_data[0]);
-        const auto da = -sin(m_data[0]);
-        const auto daa = -cos(m_data[0]);
+        const auto f = cos(this->f());
+        const auto da = -sin(this->f());
+        const auto daa = -cos(this->f());
 
         unary<false>(m_data, f, da, daa, result.m_data);
 
@@ -1185,9 +1185,9 @@ public:
 
         Type result = Type::empty(size());
 
-        const auto f = sin(m_data[0]);
-        const auto da = cos(m_data[0]);
-        const auto daa = -sin(m_data[0]);
+        const auto f = sin(this->f());
+        const auto da = cos(this->f());
+        const auto daa = -sin(this->f());
 
         unary<false>(m_data, f, da, daa, result.m_data);
 
@@ -1200,7 +1200,7 @@ public:
 
         Type result = Type::empty(size());
 
-        const auto f = tan(m_data[0]);
+        const auto f = tan(this->f());
         const auto da = f * f + 1;
         const auto daa = da * 2 * f;
 
@@ -1216,11 +1216,11 @@ public:
 
         Type result = Type::empty(size());
 
-        const Scalar tmp = 1 - m_data[0] * m_data[0];
+        const Scalar tmp = 1 - this->f() * this->f();
 
-        const auto f = acos(m_data[0]);
+        const auto f = acos(this->f());
         const auto da = -1 / sqrt(tmp);
-        const auto daa = da * m_data[0] / tmp;
+        const auto daa = da * this->f() / tmp;
 
         unary<false>(m_data, f, da, daa, result.m_data);
 
@@ -1234,11 +1234,11 @@ public:
 
         Type result = Type::empty(size());
 
-        const Scalar tmp = 1 - m_data[0] * m_data[0];
+        const Scalar tmp = 1 - this->f() * this->f();
 
-        const auto f = asin(m_data[0]);
+        const auto f = asin(this->f());
         const auto da = 1 / sqrt(tmp);
-        const auto daa = da * m_data[0] / tmp;
+        const auto daa = da * this->f() / tmp;
 
         unary<false>(m_data, f, da, daa, result.m_data);
 
@@ -1251,9 +1251,9 @@ public:
 
         Type result = Type::empty(size());
 
-        const auto f = atan(m_data[0]);
-        const auto da = 1 / (m_data[0] * m_data[0] + 1);
-        const auto daa = -da * da * 2 * m_data[0];
+        const auto f = atan(this->f());
+        const auto da = 1 / (this->f() * this->f() + 1);
+        const auto daa = -da * da * 2 * this->f();
 
         unary<false>(m_data, f, da, daa, result.m_data);
 
@@ -1266,11 +1266,11 @@ public:
 
         Type result = Type::empty(size());
 
-        const Scalar tmp = m_data[0] * m_data[0] + b.m_data[0] * b.m_data[0];
+        const Scalar tmp = this->f() * this->f() + b.f() * b.f();
 
-        const auto f = atan2(m_data[0], b.m_data[0]);
-        const auto da = b.m_data[0] / tmp;
-        const auto db = -m_data[0] / tmp;
+        const auto f = atan2(this->f(), b.f());
+        const auto da = b.f() / tmp;
+        const auto db = -this->f() / tmp;
         const auto daa = db * da * 2;
         const auto dab = db * db - da * da;
         const auto dbb = -daa;
@@ -1288,13 +1288,13 @@ public:
 
         Type result = Type::empty(a.size());
 
-        const auto f = hypot(a.m_data[0], b.m_data[0]);
+        const auto f = hypot(a.f(), b.f());
         const auto f3 = f * f * f;
-        const auto da = a.m_data[0] / f;
-        const auto db = b.m_data[0] / f;
-        const auto daa = b.m_data[0] * b.m_data[0] / f3;
-        const auto dab = -a.m_data[0] * b.m_data[0] / f3;
-        const auto dbb = a.m_data[0] * a.m_data[0] / f3;
+        const auto da = a.f() / f;
+        const auto db = b.f() / f;
+        const auto daa = b.f() * b.f() / f3;
+        const auto dab = -a.f() * b.f() / f3;
+        const auto dbb = a.f() * a.f() / f3;
 
         a.binary<false>(a.m_data, b.m_data, f, da, db, daa, dab, dbb, result.m_data);
 
@@ -1309,19 +1309,19 @@ public:
 
         Type result = Type::empty(a.size());
 
-        const auto f = hypot(a.m_data[0], b.m_data[0], c.m_data[0]);
+        const auto f = hypot(a.f(), b.f(), c.f());
         const auto f3 = f * f * f;
-        const auto a2 = a.m_data[0] * a.m_data[0];
-        const auto b2 = b.m_data[0] * b.m_data[0];
-        const auto c2 = c.m_data[0] * c.m_data[0];
-        const auto da = a.m_data[0] / f;
-        const auto db = b.m_data[0] / f;
-        const auto dc = c.m_data[0] / f;
+        const auto a2 = a.f() * a.f();
+        const auto b2 = b.f() * b.f();
+        const auto c2 = c.f() * c.f();
+        const auto da = a.f() / f;
+        const auto db = b.f() / f;
+        const auto dc = c.f() / f;
         const auto daa = (b2 + c2) / f3;
-        const auto dab = -(a.m_data[0] * b.m_data[0]) / f3;
-        const auto dac = -(a.m_data[0] * c.m_data[0]) / f3;
+        const auto dab = -(a.f() * b.f()) / f3;
+        const auto dac = -(a.f() * c.f()) / f3;
         const auto dbb = (a2 + c2) / f3;
-        const auto dbc = -(b.m_data[0] * c.m_data[0]) / f3;
+        const auto dbc = -(b.f() * c.f()) / f3;
         const auto dcc = (a2 + b2) / f3;
 
         a.ternary<false>(a.m_data, b.m_data, c.m_data, f, da, db, dc, daa, dab, dac, dbb, dbc, dcc, result.m_data);
@@ -1338,8 +1338,8 @@ public:
 
         Type result = Type::empty(size());
 
-        const auto f = cosh(m_data[0]);
-        const auto da = sinh(m_data[0]);
+        const auto f = cosh(this->f());
+        const auto da = sinh(this->f());
         const auto daa = f;
 
         unary<false>(m_data, f, da, daa, result.m_data);
@@ -1354,8 +1354,8 @@ public:
 
         Type result = Type::empty(size());
 
-        const auto f = sinh(m_data[0]);
-        const auto da = cosh(m_data[0]);
+        const auto f = sinh(this->f());
+        const auto da = cosh(this->f());
         const auto daa = f;
 
         unary<false>(m_data, f, da, daa, result.m_data);
@@ -1369,7 +1369,7 @@ public:
 
         Type result = Type::empty(size());
 
-        const auto f = tanh(m_data[0]);
+        const auto f = tanh(this->f());
         const auto da = 1 - f * f;
         const auto daa = -2 * f * da;
 
@@ -1385,9 +1385,9 @@ public:
 
         Type result = Type::empty(size());
 
-        const auto f = acosh(m_data[0]);
-        const auto da = 1 / (sqrt(m_data[0] - 1) * sqrt(m_data[0] + 1));
-        const auto daa = -da * m_data[0] / ((m_data[0] - 1) * (m_data[0] + 1));
+        const auto f = acosh(this->f());
+        const auto da = 1 / (sqrt(this->f() - 1) * sqrt(this->f() + 1));
+        const auto daa = -da * this->f() / ((this->f() - 1) * (this->f() + 1));
 
         unary<false>(m_data, f, da, daa, result.m_data);
 
@@ -1401,9 +1401,9 @@ public:
 
         Type result = Type::empty(size());
 
-        const auto f = asinh(m_data[0]);
-        const auto da = 1 / sqrt(1 + m_data[0] * m_data[0]);
-        const auto daa = -da * m_data[0] / (1 + m_data[0] * m_data[0]);
+        const auto f = asinh(this->f());
+        const auto da = 1 / sqrt(1 + this->f() * this->f());
+        const auto daa = -da * this->f() / (1 + this->f() * this->f());
 
         unary<false>(m_data, f, da, daa, result.m_data);
 
@@ -1417,9 +1417,9 @@ public:
 
         Type result = Type::empty(size());
 
-        const auto f = atanh(m_data[0]);
-        const auto da = 1 / (1 - m_data[0] * m_data[0]);
-        const auto daa = 2 * m_data[0] / pow(m_data[0] * m_data[0] - 1, 2);
+        const auto f = atanh(this->f());
+        const auto da = 1 / (1 - this->f() * this->f());
+        const auto daa = 2 * this->f() / pow(this->f() * this->f() - 1, 2);
 
         unary<false>(m_data, f, da, daa, result.m_data);
 
@@ -1434,7 +1434,7 @@ public:
 
         Type result = Type::empty(size());
 
-        const auto f = exp(m_data[0]);
+        const auto f = exp(this->f());
         const auto da = f;
         const auto daa = f;
 
@@ -1449,8 +1449,8 @@ public:
 
         Type result = Type::empty(size());
 
-        const auto f = log(m_data[0]);
-        const auto da = 1 / m_data[0];
+        const auto f = log(this->f());
+        const auto da = 1 / this->f();
         const auto daa = -da * da;
 
         unary<false>(m_data, f, da, daa, result.m_data);
@@ -1464,9 +1464,9 @@ public:
 
         Type result = Type::empty(size());
 
-        const auto f = log(m_data[0]) / log(base);
-        const auto da = 1 / (m_data[0] * log(base));
-        const auto daa = -da / m_data[0];
+        const auto f = log(this->f()) / log(base);
+        const auto da = 1 / (this->f() * log(base));
+        const auto daa = -da / this->f();
 
         unary<false>(m_data, f, da, daa, result.m_data);
 
@@ -1480,9 +1480,9 @@ public:
 
         Type result = Type::empty(size());
 
-        const auto f = log2(m_data[0]);
-        const auto da = 1 / (m_data[0] * log(2));
-        const auto daa = -da / m_data[0];
+        const auto f = log2(this->f());
+        const auto da = 1 / (this->f() * log(2));
+        const auto daa = -da / this->f();
 
         unary<false>(m_data, f, da, daa, result.m_data);
 
@@ -1496,9 +1496,9 @@ public:
 
         Type result = Type::empty(size());
 
-        const auto f = log10(m_data[0]);
-        const auto da = 1 / (m_data[0] * log(10));
-        const auto daa = -da / m_data[0];
+        const auto f = log10(this->f());
+        const auto da = 1 / (this->f() * log(10));
+        const auto daa = -da / this->f();
 
         unary<false>(m_data, f, da, daa, result.m_data);
 
@@ -1509,69 +1509,69 @@ public:
 
     Type abs() const
     {
-        return m_data[0] < 0 ? -(*this) : *this;
+        return f() < 0 ? -(*this) : *this;
     }
 
     // comparison
 
     bool operator==(const Type& b) const
     {
-        return m_data[0] == b.m_data[0];
+        return f() == b.f();
     }
 
     bool operator!=(const Type& b) const
     {
-        return m_data[0] != b.m_data[0];
+        return f() != b.f();
     }
 
     bool operator<(const Type& b) const
     {
-        return m_data[0] < b.m_data[0];
+        return f() < b.f();
     }
 
     bool operator>(const Type& b) const
     {
-        return m_data[0] > b.m_data[0];
+        return f() > b.f();
     }
 
     bool operator<=(const Type& b) const
     {
-        return m_data[0] <= b.m_data[0];
+        return f() <= b.f();
     }
 
     bool operator>=(const Type& b) const
     {
-        return m_data[0] >= b.m_data[0];
+        return f() >= b.f();
     }
 
     bool operator==(const Scalar b) const
     {
-        return m_data[0] == b;
+        return f() == b;
     }
 
     bool operator!=(const Scalar b) const
     {
-        return m_data[0] != b;
+        return f() != b;
     }
 
     bool operator<(const Scalar b) const
     {
-        return m_data[0] < b;
+        return f() < b;
     }
 
     bool operator>(const Scalar b) const
     {
-        return m_data[0] > b;
+        return f() > b;
     }
 
     bool operator<=(const Scalar b) const
     {
-        return m_data[0] <= b;
+        return f() <= b;
     }
 
     bool operator>=(const Scalar b) const
     {
-        return m_data[0] >= b;
+        return f() >= b;
     }
 
     friend bool operator==(const Scalar a, const Type& b)
