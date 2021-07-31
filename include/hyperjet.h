@@ -882,22 +882,14 @@ public:
         return b + a;
     }
 
-    Type& operator+=(const Type& b)
+    Type operator+=(const Type& b)
     {
-        check_equal_size(size(), b.size());
-
-        for (index i = 0; i < length(m_data); i++) {
-            m_data[i] += b.m_data[i];
-        }
-
-        return *this;
+        return this->operator+(b);
     }
 
-    Type& operator+=(const Scalar& b)
+    Type operator+=(const Scalar& b)
     {
-        f() += b;
-
-        return *this;
+        return this->operator+(b);
     }
 
     // --- sub
@@ -940,22 +932,14 @@ public:
         return result;
     }
 
-    Type& operator-=(const Type& b)
+    Type operator-=(const Type& b)
     {
-        check_equal_size(size(), b.size());
-
-        for (index i = 0; i < length(m_data); i++) {
-            m_data[i] -= b.m_data[i];
-        }
-
-        return *this;
+        return this->operator-(b);
     }
 
-    Type& operator-=(const Scalar& b)
+    Type operator-=(const Scalar& b)
     {
-        f() -= b;
-
-        return *this;
+        return this->operator-(b);
     }
 
     // --- mul
@@ -996,42 +980,14 @@ public:
         return b * a;
     }
 
-    Type& operator*=(const Type& b)
+    Type operator*=(const Type& b)
     {
-        check_equal_size(size(), b.size());
-
-        const Data a_m_data = m_data;
-
-        const Scalar da = b.f();
-        const Scalar db = this->f();
-
-        f() *= b.f();
-
-        for (index i = 1; i < length(m_data); i++) {
-            m_data[i] = da * m_data[i] + db * b.m_data[i];
-        }
-
-        if constexpr (order() == 1)
-            return *this;
-
-        auto* it = &m_data[1 + size()];
-
-        for (index i = 0; i < size(); i++) {
-            for (index j = i; j < size(); j++) {
-                *it++ += a_m_data[1 + i] * b.m_data[1 + j] + a_m_data[1 + j] * b.m_data[1 + i];
-            }
-        }
-
-        return *this;
+        return this->operator*(b);
     }
 
-    Type& operator*=(const Scalar& b)
+    Type operator*=(const Scalar& b)
     {
-        for (index i = 0; i < length(m_data); i++) {
-            m_data[i] = m_data[i] * b;
-        }
-
-        return *this;
+        return this->operator*(b);
     }
 
     // --- div
@@ -1074,29 +1030,14 @@ public:
         return result;
     }
 
-    Type& operator/=(const Type& b)
+    Type operator/=(const Type& b)
     {
-        check_equal_size(size(), b.size());
-
-        const Data a_m_data = m_data;
-
-        const auto f = a_m_data[0] / b.f();
-        const auto da = 1 / b.f();
-        const auto db = -a_m_data[0] / std::pow(b.f(), 2);
-        const auto daa = Zero();
-        const auto dab = -1 / std::pow(b.f(), 2);
-        const auto dbb = 2 * a_m_data[0] / std::pow(b.f(), 3);
-
-        binary<false>(a_m_data, b.m_data, f, da, db, daa, dab, dbb, m_data);
-
-        return *this;
+        return this->operator/(b);
     }
 
-    Type& operator/=(const Scalar& b)
+    Type operator/=(const Scalar& b)
     {
-        operator*=(1 / b);
-
-        return *this;
+        return this->operator/(b);
     }
 
     // --- arithmetic operations
