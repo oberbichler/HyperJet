@@ -1,6 +1,6 @@
 #include "common.h"
 
-void bind_ddscalar_12d(pybind11::module& m)
+void bind_ddscalar_12d(pybind11::module &m)
 {
     using DType = hyperjet::DDScalar<1, double, 12>;
     using DDType = hyperjet::DDScalar<2, double, 12>;
