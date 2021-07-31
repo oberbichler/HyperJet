@@ -276,7 +276,7 @@ public:
         } else {
             static_assert(TSize >= 0);
         }
-        f() = f;
+        this->f() = f;
         std::fill(m_data.begin() + 1, m_data.end(), 0);
     }
 
