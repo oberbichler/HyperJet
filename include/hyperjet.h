@@ -1283,7 +1283,7 @@ public:
     static Type hypot(const Type& a, const Type& b)
     {
         using std::hypot;
-        
+
         check_equal_size(a.size(), b.size());
 
         Type result = Type::empty(a.size());
@@ -1304,7 +1304,7 @@ public:
     static Type hypot(const Type& a, const Type& b, const Type& c)
     {
         using std::hypot;
-        
+
         check_equal_size(a.size(), b.size());
 
         Type result = Type::empty(a.size());
