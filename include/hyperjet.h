@@ -740,7 +740,7 @@ public:
 
     Eigen::Ref<DataVector> adata()
     {
-        return Eigen::Map <DataVector >(ptr(), length(m_data));
+        return Eigen::Map<DataVector>(ptr(), length(m_data));
     }
 
     void set_adata(const Eigen::Ref<DataVector> value)
