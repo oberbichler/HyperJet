@@ -839,7 +839,7 @@ public:
     {
         Type result = Type::empty(size());
 
-        for (index i = 0; i < length(result.m_data); i++) {
+        for (index i = 0; i < data_length(); i++) {
             result.m_data[i] = -m_data[i];
         }
 
@@ -931,7 +931,7 @@ public:
     {
         Type result = Type::empty(b.size());
 
-        for (index i = 0; i < length(result.m_data); i++) {
+        for (index i = 0; i < result.data_length(); i++) {
             result.m_data[i] = -b.m_data[i];
         }
 
@@ -984,7 +984,7 @@ public:
     {
         Type result = Type::empty(size());
 
-        for (index i = 0; i < length(result.m_data); i++) {
+        for (index i = 0; i < data_length(); i++) {
             result.m_data[i] = m_data[i] * b;
         }
 
