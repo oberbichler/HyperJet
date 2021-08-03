@@ -9,7 +9,8 @@ void bind_sscalar(pybind11::module &m)
     // constructor
     cls
         .def(py::init<>())
-        .def(py::init<T::Scalar, T::Data>(), "f"_a = 0, "d"_a = py::dict());
+        .def(py::init<T::Scalar>(), "f"_a = 0)
+        .def(py::init<T::Scalar, T::Data>(), "f"_a = 0, "d"_a);
 
     // static methods
     cls
