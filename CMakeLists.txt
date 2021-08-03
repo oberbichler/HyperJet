@@ -78,6 +78,7 @@ if (${BUILD_PYTHON_MODULE})
       src/python/bind_ddscalar_14d.cpp
       src/python/bind_ddscalar_15d.cpp
       src/python/bind_ddscalar_16d.cpp
+      src/python/bind_sscalar.cpp
       )
 
     target_compile_definitions(python_module PRIVATE

@@ -52,6 +52,8 @@ PYBIND11_MODULE(hyperjet, m)
     bind_ddscalar_15d(m);
     bind_ddscalar_16d(m);
 
+    bind_sscalar(m);
+
     // utilities
     {
         py::object numpy = py::module::import("numpy");
