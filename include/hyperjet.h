@@ -10,6 +10,7 @@
 #include <string>           // string
 #include <type_traits>      // conditional
 #include <vector>           // vector
+#include <unordered_map>    // unordered_map
 
 namespace hyperjet
 {
@@ -1978,6 +1979,713 @@ namespace hyperjet
     {
         return a.log10();
     }
+
+    template <typename TScalar>
+    class SScalar
+    {
+    public: // types
+        using Type = SScalar<TScalar>;
+        using Scalar = TScalar;
+        using Data = std::unordered_map<std::string, TScalar>;
+
+    private: // variables
+        Scalar m_f;
+        Data m_d;
+
+    private: // methods
+        template <typename TDa>
+        HYPERJET_INLINE static Data unary(const Data &a, const TDa &da)
+        {
+            Data r{a};
+
+            for (auto &d : r)
+                d.second *= da;
+
+            return r;
+        }
+
+        template <typename TDa, typename TDb>
+        HYPERJET_INLINE static Data binary(const Data &a, const Data &b, const TDa &da, const TDb &db)
+        {
+            Data r{a};
+
+            for (auto &d : r)
+                d.second *= da;
+
+            for (auto &d : b)
+                r[d.first] += db * d.second;
+
+            return r;
+        }
+
+        template <typename TDa, typename TDb, typename TDc>
+        HYPERJET_INLINE static Data ternary(const Data &a, const Data &b, const Data &c, const TDa &da, const TDb &db, const TDc &dc)
+        {
+            Data r{a};
+
+            for (auto &d : r)
+                d.second *= da;
+
+            for (auto &d : b)
+                r[d.first] += db * d.second;
+
+            for (auto &d : c)
+                r[d.first] += dc * d.second;
+
+            return r;
+        }
+
+    public: // constructors
+        SScalar(const Scalar f, const Data &d) : m_f(f), m_d(d)
+        {
+        }
+
+        static SScalar constant(const Scalar value)
+        {
+            return SScalar(value, Data());
+        }
+
+        static SScalar variable(const std::string &name, const Scalar value)
+        {
+            return SScalar(value, {{name, Scalar(1)}});
+        }
+
+    public: // methods
+        index size() const
+        {
+            return m_d.size();
+        }
+
+        Scalar f() const
+        {
+            return m_f;
+        }
+
+        Scalar d(const std::string &variable) const
+        {
+            const auto it = m_d.find(variable);
+
+            if (it == m_d.end())
+                return Scalar(0);
+
+            return it->second;
+        }
+
+        Scalar eval(const Data d) const
+        {
+            Scalar r(0);
+
+            for (const auto coef : m_d)
+            {
+                const auto it = d.find(coef.first);
+
+                if (it == m_d.end())
+                    continue;
+
+                r += coef.second * it->second;
+            }
+
+            return r;
+        }
+
+        friend std::ostream &operator<<(std::ostream &out, const Type &value)
+        {
+            out << value.m_f;
+
+            for (const auto &d : value.m_d)
+            {
+                if (d.second < 0)
+                    out << " " << d.second << "*d" << d.first;
+                else
+                    out << " +" << d.second << "*d" << d.first;
+            }
+
+            return out;
+        }
+
+        std::string to_string()
+        {
+            std::stringstream output;
+
+            output << *this;
+
+            return output.str();
+        }
+
+        // operators: negate
+
+        Type operator-() const
+        {
+            Type result = *this;
+
+            result.m_f = -m_f;
+
+            for (auto &d : result.m_d)
+                d.second = -d.second;
+
+            return result;
+        }
+
+        // operators: add
+
+        Type operator+(const Type &b) const
+        {
+            const auto f = m_f + b.f();
+            const auto da = 1;
+            const auto db = 1;
+
+            return Type(f, binary(m_d, b.m_d, da, db));
+        }
+
+        Type operator+(const Scalar b) const
+        {
+            Type result = *this;
+
+            result.m_f += b;
+
+            return result;
+        }
+
+        friend Type operator+(const Scalar a, const Type &b)
+        {
+            return b + a;
+        }
+
+        Type &operator+=(const Type &b)
+        {
+            m_f += b.m_f;
+
+            for (const auto &d : b.m_d)
+                m_d[d.first] += d.second;
+
+            return *this;
+        }
+
+        Type &operator+=(const Scalar &b)
+        {
+            m_f += b;
+
+            return *this;
+        }
+
+        // operators: sub
+
+        Type operator-(const Type &b) const
+        {
+            const auto f = m_f - b.f();
+            const auto da = 1;
+            const auto db = -1;
+
+            return Type(f, binary(m_d, b.m_d, da, db));
+        }
+
+        Type operator-(const Scalar b) const
+        {
+            return -b + *this;
+        }
+
+        friend Type operator-(const Scalar a, const Type &b)
+        {
+            Type result = -b;
+
+            result.m_f += a;
+
+            return result;
+        }
+
+        Type &operator-=(const Type &b)
+        {
+            m_f -= b.m_f;
+
+            for (const auto &d : b.m_d)
+                m_d[d.first] -= d.second;
+
+            return *this;
+        }
+
+        Type &operator-=(const Scalar &b)
+        {
+            m_f -= b;
+
+            return *this;
+        }
+
+        // operators: mul
+
+        Type operator*(const Type &b) const
+        {
+            const auto f = m_f * b.f();
+            const auto da = b.f();
+            const auto db = m_f;
+
+            return Type(f, binary(m_d, b.m_d, da, db));
+        }
+
+        Type operator*(const Scalar b) const
+        {
+            Type result = *this;
+
+            result.m_f *= b;
+
+            for (auto &d : result.m_d)
+                d.second *= b;
+
+            return result;
+        }
+
+        friend Type operator*(const Scalar a, const Type &b)
+        {
+            return b * a;
+        }
+
+        Type &operator*=(const Type &b)
+        {
+            const Scalar da = b.m_f;
+            const Scalar db = m_f;
+
+            m_f *= b.m_f;
+
+            for (auto &d : m_d)
+                d.second *= da;
+
+            for (auto &d : b.m_d)
+                m_d[d.first] += db * d.second;
+
+            return *this;
+        }
+
+        Type &operator*=(const Scalar &b)
+        {
+            m_f *= b;
+
+            for (auto &d : m_d)
+                m_d[d.first] *= b;
+
+            return *this;
+        }
+
+        // operators: div
+
+        Type operator/(const Type &b) const
+        {
+            const auto tmp = 1 / b.f();
+
+            const auto f = m_f * tmp;
+            const auto da = tmp;
+            const auto db = -m_f / std::pow(b.f(), 2);
+
+            return Type(f, binary(m_d, b.m_d, da, db));
+        }
+
+        Type operator/(const Scalar b) const
+        {
+            return Scalar(1) / b * (*this);
+        }
+
+        friend Type operator/(const Scalar a, const Type &b)
+        {
+            const auto f = a / b.f();
+            const auto db = -a / std::pow(b.f(), 2);
+
+            return Type(f, unary(b.m_d, db));
+        }
+
+        Type &operator/=(const Type &b)
+        {
+            const auto da = 1 / b.m_f;
+            const auto db = -m_f / std::pow(b.m_f, 2);
+
+            m_f /= b.m_f;
+
+            for (auto &d : m_d)
+                d.second *= da;
+
+            for (auto &d : b.m_d)
+                m_d[d.first] += db * d.second;
+
+            return *this;
+        }
+
+        Type &operator/=(const Scalar &b)
+        {
+            operator*=(1 / b);
+
+            return *this;
+        }
+
+        // arithmetic
+
+        Type pow(const Scalar b) const
+        {
+            using std::pow;
+
+            const auto f = pow(m_f, b);
+            const auto da = b * pow(m_f, b - Scalar(1));
+
+            return Type(f, unary(m_d, da));
+        }
+
+        Type sqrt() const
+        {
+            using std::sqrt;
+
+            const auto f = sqrt(m_f);
+            const auto da = Scalar(1) / (Scalar(2) * f);
+
+            return Type(f, unary(m_d, da));
+        }
+
+        Type cbrt() const
+        {
+            using std::cbrt;
+
+            const auto f = cbrt(m_f);
+            const auto da = Scalar(1) / (Scalar(3) * f * f);
+
+            return Type(f, unary(m_d, da));
+        }
+
+        Type reciprocal() const
+        {
+            const auto f = Scalar(1) / m_f;
+            const auto da = -f * f;
+
+            return Type(f, unary(m_d, da));
+        }
+
+        // trigonometric
+
+        Type cos() const
+        {
+            using std::cos;
+            using std::sin;
+
+            const auto f = cos(m_f);
+            const auto da = -sin(m_f);
+
+            return Type(f, unary(m_d, da));
+        }
+
+        Type sin() const
+        {
+            using std::cos;
+            using std::sin;
+
+            const auto f = sin(m_f);
+            const auto da = cos(m_f);
+
+            return Type(f, unary(m_d, da));
+        }
+
+        Type tan() const
+        {
+            using std::tan;
+
+            const auto f = tan(m_f);
+            const auto da = f * f + Scalar(1);
+
+            return Type(f, unary(m_d, da));
+        }
+
+        Type acos() const
+        {
+            using std::acos;
+            using std::sqrt;
+
+            const auto tmp = Scalar(1) - m_f * m_f;
+
+            const auto f = acos(m_f);
+            const auto da = -Scalar(1) / sqrt(tmp);
+
+            return Type(f, unary(m_d, da));
+        }
+
+        Type asin() const
+        {
+            using std::asin;
+            using std::sqrt;
+
+            const auto tmp = Scalar(1) - m_f * m_f;
+
+            const auto f = asin(m_f);
+            const auto da = Scalar(1) / sqrt(tmp);
+
+            return Type(f, unary(m_d, da));
+        }
+
+        Type atan() const
+        {
+            using std::atan;
+
+            const auto f = atan(m_f);
+            const auto da = Scalar(1) / (m_f * m_f + Scalar(1));
+
+            return Type(f, unary(m_d, da));
+        }
+
+        Type atan2(const Type &b) const
+        {
+            using std::atan2;
+
+            const auto tmp = m_f * m_f + b.m_f * b.m_f;
+
+            const auto f = atan2(m_f, b.m_f);
+            const auto da = b.m_f / tmp;
+            const auto db = -m_f / tmp;
+
+            return Type(f, binary(m_d, b.m_d, da, db));
+        }
+
+        static Type hypot(const Type &a, const Type &b)
+        {
+            using std::hypot;
+
+            const auto f = hypot(a.m_f, b.m_f);
+            const auto f3 = f * f * f;
+            const auto da = a.m_f / f;
+            const auto db = b.m_f / f;
+
+            return Type(f, binary(a.m_d, b.m_d, da, db));
+        }
+
+        static Type hypot(const Type &a, const Type &b, const Type &c)
+        {
+            using std::hypot;
+
+            const auto f = hypot(a.m_f, b.m_f, c.m_f);
+
+            const auto f3 = f * f * f;
+            const auto a2 = a.m_f * a.m_f;
+            const auto b2 = b.m_f * b.m_f;
+            const auto c2 = c.m_f * c.m_f;
+
+            const auto da = a.m_f / f;
+            const auto db = b.m_f / f;
+            const auto dc = c.m_f / f;
+
+            return Type(f, ternary(a.m_d, b.m_d, c.m_d, da, db, dc));
+        }
+
+        // hyperbolic
+
+        Type cosh() const
+        {
+            using std::cosh;
+            using std::sinh;
+
+            const auto f = cosh(m_f);
+            const auto da = sinh(m_f);
+
+            return Type(f, unary(m_d, da));
+        }
+
+        Type sinh() const
+        {
+            using std::cosh;
+            using std::sinh;
+
+            const auto f = sinh(m_f);
+            const auto da = cosh(m_f);
+
+            return Type(f, unary(m_d, da));
+        }
+
+        Type tanh() const
+        {
+            using std::tanh;
+
+            const auto f = tanh(m_f);
+            const auto da = 1 - f * f;
+
+            return Type(f, unary(m_d, da));
+        }
+
+        Type acosh() const
+        {
+            using std::acosh;
+            using std::sqrt;
+
+            const auto f = acosh(m_f);
+            const auto da = 1 / (sqrt(m_f - 1) * sqrt(m_f + 1));
+
+            return Type(f, unary(m_d, da));
+        }
+
+        Type asinh() const
+        {
+            using std::asinh;
+            using std::sqrt;
+
+            const auto f = asinh(m_f);
+            const auto da = 1 / sqrt(1 + m_f * m_f);
+
+            return Type(f, unary(m_d, da));
+        }
+
+        Type atanh() const
+        {
+            using std::atanh;
+            using std::pow;
+
+            const auto f = atanh(m_f);
+            const auto da = 1 / (1 - m_f * m_f);
+
+            return Type(f, unary(m_d, da));
+        }
+
+        // exponents and logarithms
+
+        Type exp() const
+        {
+            using std::exp;
+
+            const auto f = exp(m_f);
+            const auto da = f;
+
+            return Type(f, unary(m_d, da));
+        }
+
+        Type log() const
+        {
+            using std::log;
+
+            const auto f = log(m_f);
+            const auto da = 1 / m_f;
+
+            return Type(f, unary(m_d, da));
+        }
+
+        Type log(const TScalar base) const
+        {
+            using std::log;
+
+            const auto f = log(m_f) / log(base);
+            const auto da = 1 / (m_f * log(base));
+
+            return Type(f, unary(m_d, da));
+        }
+
+        Type log2() const
+        {
+            using std::log;
+            using std::log2;
+
+            const auto f = log2(m_f);
+            const auto da = 1 / (m_f * log(2));
+
+            return Type(f, unary(m_d, da));
+        }
+
+        Type log10() const
+        {
+            using std::log;
+            using std::log10;
+
+            const auto f = log10(m_f);
+            const auto da = 1 / (m_f * log(10));
+
+            return Type(f, unary(m_d, da));
+        }
+
+        // abs
+
+        Type abs() const
+        {
+            return m_f < 0 ? -(*this) : *this;
+        }
+
+        // comparison
+
+        bool operator==(const Type &b) const
+        {
+            return m_f == b.m_f;
+        }
+
+        bool operator!=(const Type &b) const
+        {
+            return m_f != b.m_f;
+        }
+
+        bool operator<(const Type &b) const
+        {
+            return m_f < b.m_f;
+        }
+
+        bool operator>(const Type &b) const
+        {
+            return m_f > b.m_f;
+        }
+
+        bool operator<=(const Type &b) const
+        {
+            return m_f <= b.m_f;
+        }
+
+        bool operator>=(const Type &b) const
+        {
+            return m_f >= b.m_f;
+        }
+
+        bool operator==(const Scalar b) const
+        {
+            return m_f == b;
+        }
+
+        bool operator!=(const Scalar b) const
+        {
+            return m_f != b;
+        }
+
+        bool operator<(const Scalar b) const
+        {
+            return m_f < b;
+        }
+
+        bool operator>(const Scalar b) const
+        {
+            return m_f > b;
+        }
+
+        bool operator<=(const Scalar b) const
+        {
+            return m_f <= b;
+        }
+
+        bool operator>=(const Scalar b) const
+        {
+            return m_f >= b;
+        }
+
+        friend bool operator==(const Scalar a, const Type &b)
+        {
+            return b.operator==(a);
+        }
+
+        friend bool operator!=(const Scalar a, const Type &b)
+        {
+            return b.operator!=(a);
+        }
+
+        friend bool operator<(const Scalar a, const Type &b)
+        {
+            return b.operator>(a);
+        }
+
+        friend bool operator>(const Scalar a, const Type &b)
+        {
+            return b.operator<(a);
+        }
+
+        friend bool operator<=(const Scalar a, const Type &b)
+        {
+            return b.operator>=(a);
+        }
+
+        friend bool operator>=(const Scalar a, const Type &b)
+        {
+            return b.operator<=(a);
+        }
+    };
 
 } // namespace hyperjet
 
