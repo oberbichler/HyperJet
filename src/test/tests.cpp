@@ -494,7 +494,6 @@ TEST_CASE("Norm")
     REQUIRE(r.h(2, 2) == 9.2320222391647280_a);
 }
 
-
 const SScalar<double> s1(3.0, {{"x", 1.0}, {"y", 6.0}, {"z", 4.0}});
 const SScalar<double> s2(4.0, {{"x", 7.0}, {"y", 1.0}});
 const SScalar<double> s3(0.3, {{"x", 0.1}, {"y", 0.8}, {"z", 0.2}});
@@ -678,4 +677,64 @@ TEST_CASE("SScalar IncDiv", "[SScalar]")
     REQUIRE(r1.d("x") == -1.06250_a);
     REQUIRE(r1.d("y") == 1.31250_a);
     REQUIRE(r1.d("z") == 1.00000_a);
+}
+
+TEST_CASE("SScalar Pow", "[SScalar]")
+{
+    using std::pow;
+
+    const auto r1 = pow(s1, 3.5);
+
+    REQUIRE(r1.f() == 46.765371804359690_a);
+    REQUIRE(r1.d("x") == 54.559600438419636_a);
+    REQUIRE(r1.d("y") == 327.357602630517800_a);
+    REQUIRE(r1.d("z") == 218.238401753678540_a);
+}
+
+TEST_CASE("SScalar Sqrt", "[SScalar]")
+{
+    using std::sqrt;
+
+    const auto r1 = sqrt(s1);
+
+    REQUIRE(r1.f() == 1.732050807568877200_a);
+    REQUIRE(r1.d("x") == 0.288675134594812900_a);
+    REQUIRE(r1.d("y") == 1.732050807568877400_a);
+    REQUIRE(r1.d("z") == 1.154700538379251700_a);
+}
+
+TEST_CASE("SScalar Cos", "[SScalar]")
+{
+    using std::cos;
+
+    const auto r1 = cos(s1);
+
+    REQUIRE(r1.f() == -0.9899924966004454_a);
+    REQUIRE(r1.d("x") == -0.1411200080598672_a);
+    REQUIRE(r1.d("y") == -0.8467200483592032_a);
+    REQUIRE(r1.d("z") == -0.5644800322394689_a);
+}
+
+TEST_CASE("SScalar Sin", "[SScalar]")
+{
+    using std::sin;
+
+    const auto r1 = s1.sin();
+
+    REQUIRE(r1.f() == 0.1411200080598672_a);
+    REQUIRE(r1.d("x") == -0.9899924966004454_a);
+    REQUIRE(r1.d("y") == -5.9399549796026730_a);
+    REQUIRE(r1.d("z") == -3.9599699864017817_a);
+}
+
+TEST_CASE("SScalar Tan", "[SScalar]")
+{
+    using std::tan;
+
+    const auto r1 = tan(s1);
+
+    REQUIRE(r1.f() == -0.14254654307427780_a);
+    REQUIRE(r1.d("x") == 1.02031951694242680_a);
+    REQUIRE(r1.d("y") == 6.12191710165456100_a);
+    REQUIRE(r1.d("z") == 4.08127806776970700_a);
 }
