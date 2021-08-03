@@ -1181,16 +1181,18 @@ namespace hyperjet
 
         Type operator/(const Type &b) const
         {
+            using std::pow;
+
             check_equal_size(size(), b.size());
 
             const Scalar tmp = 1 / b.f();
 
             const auto f = this->f() * tmp;
             const auto da = tmp;
-            const auto db = -this->f() / std::pow(b.f(), 2);
+            const auto db = -this->f() / pow(b.f(), 2);
             const auto daa = Zero();
-            const auto dab = -1 / std::pow(b.f(), 2);
-            const auto dbb = 2 * this->f() / std::pow(b.f(), 3);
+            const auto dab = -1 / pow(b.f(), 2);
+            const auto dbb = 2 * this->f() / pow(b.f(), 3);
 
             Type result = Type::empty(size());
 
@@ -1206,11 +1208,13 @@ namespace hyperjet
 
         friend Type operator/(const Scalar a, const Type &b)
         {
+            using std::pow;
+
             Type result = Type::empty(b.size());
 
             const auto f = a / b.f();
-            const auto db = -a / std::pow(b.f(), 2);
-            const auto dbb = 2 * a / std::pow(b.f(), 3);
+            const auto db = -a / pow(b.f(), 2);
+            const auto dbb = 2 * a / pow(b.f(), 3);
 
             b.unary<false>(b.m_data, f, db, dbb, result.m_data);
 
@@ -1219,16 +1223,18 @@ namespace hyperjet
 
         Type &operator/=(const Type &b)
         {
+            using std::pow;
+
             check_equal_size(size(), b.size());
 
             const Data a_m_data = m_data;
 
             const auto f = a_m_data[0] / b.f();
             const auto da = 1 / b.f();
-            const auto db = -a_m_data[0] / std::pow(b.f(), 2);
+            const auto db = -a_m_data[0] / pow(b.f(), 2);
             const auto daa = Zero();
-            const auto dab = -1 / std::pow(b.f(), 2);
-            const auto dbb = 2 * a_m_data[0] / std::pow(b.f(), 3);
+            const auto dab = -1 / pow(b.f(), 2);
+            const auto dbb = 2 * a_m_data[0] / pow(b.f(), 3);
 
             binary<false>(a_m_data, b.m_data, f, da, db, daa, dab, dbb, m_data);
 
@@ -2274,11 +2280,13 @@ namespace hyperjet
 
         Type operator/(const Type &b) const
         {
+            using std::pow;
+
             const auto tmp = 1 / b.f();
 
             const auto f = m_f * tmp;
             const auto da = tmp;
-            const auto db = -m_f / std::pow(b.f(), 2);
+            const auto db = -m_f / pow(b.f(), 2);
 
             return Type(f, binary(m_d, b.m_d, da, db));
         }
@@ -2290,16 +2298,20 @@ namespace hyperjet
 
         friend Type operator/(const Scalar a, const Type &b)
         {
+            using std::pow;
+
             const auto f = a / b.f();
-            const auto db = -a / std::pow(b.f(), 2);
+            const auto db = -a / pow(b.f(), 2);
 
             return Type(f, unary(b.m_d, db));
         }
 
         Type &operator/=(const Type &b)
         {
+            using std::pow;
+
             const auto da = 1 / b.m_f;
-            const auto db = -m_f / std::pow(b.m_f, 2);
+            const auto db = -m_f / pow(b.m_f, 2);
 
             m_f /= b.m_f;
 
