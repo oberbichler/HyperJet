@@ -19,6 +19,8 @@ void bind_ddscalar_14d(pybind11::module &);
 void bind_ddscalar_15d(pybind11::module &);
 void bind_ddscalar_16d(pybind11::module &);
 
+void bind_sscalar(pybind11::module &);
+
 PYBIND11_MODULE(hyperjet, m)
 {
     using namespace pybind11::literals;
@@ -51,6 +53,8 @@ PYBIND11_MODULE(hyperjet, m)
     bind_ddscalar_14d(m);
     bind_ddscalar_15d(m);
     bind_ddscalar_16d(m);
+
+    bind_sscalar(m);
 
     // utilities
     {

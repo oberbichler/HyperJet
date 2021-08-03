@@ -493,3 +493,189 @@ TEST_CASE("Norm")
     REQUIRE(r.h(1, 2) == 10.9103606598557140_a);
     REQUIRE(r.h(2, 2) == 9.2320222391647280_a);
 }
+
+
+const SScalar<double> s1(3.0, {{"x", 1.0}, {"y", 6.0}, {"z", 4.0}});
+const SScalar<double> s2(4.0, {{"x", 7.0}, {"y", 1.0}});
+const SScalar<double> s3(0.3, {{"x", 0.1}, {"y", 0.8}, {"z", 0.2}});
+
+TEST_CASE("SScalar init", "[SScalar]")
+{
+    using Dual = SScalar<double>;
+
+    const auto x = Dual(1.5, {{"x", 2.0}, {"y", 1.0}});
+
+    REQUIRE(x.size() == 2);
+
+    REQUIRE(x.f() == 1.5_a);
+
+    REQUIRE(x.d("x") == 2.0_a);
+    REQUIRE(x.d("y") == 1.0_a);
+    REQUIRE(x.d("z") == 0.0_a);
+}
+
+TEST_CASE("SScalar constant", "[SScalar]")
+{
+    using Dual = SScalar<double>;
+
+    const auto x = Dual::constant(1.5);
+
+    REQUIRE(x.size() == 0);
+
+    REQUIRE(x.f() == 1.5_a);
+
+    REQUIRE(x.d("x") == 0.0_a);
+    REQUIRE(x.d("y") == 0.0_a);
+}
+
+TEST_CASE("SScalar variable", "[SScalar]")
+{
+    using Dual = SScalar<double>;
+
+    const auto x = Dual::variable("x", 1.5);
+
+    REQUIRE(x.size() == 1);
+
+    REQUIRE(x.f() == 1.5_a);
+
+    REQUIRE(x.d("x") == 1.0_a);
+    REQUIRE(x.d("y") == 0.0_a);
+}
+
+TEST_CASE("SScalar Neg", "[SScalar]")
+{
+    const auto r1 = -s1;
+
+    REQUIRE(r1.f() == -3_a);
+    REQUIRE(r1.d("x") == -1_a);
+    REQUIRE(r1.d("y") == -6_a);
+    REQUIRE(r1.d("z") == -4_a);
+}
+
+TEST_CASE("SScalar Add", "[SScalar]")
+{
+    const auto r1 = s1 + s2;
+
+    REQUIRE(r1.f() == 7_a);
+    REQUIRE(r1.d("x") == 8_a);
+    REQUIRE(r1.d("y") == 7_a);
+    REQUIRE(r1.d("z") == 4_a);
+
+    const auto r2 = s1 + 3.5;
+
+    REQUIRE(r2.f() == 6.5_a);
+    REQUIRE(r2.d("x") == 1.0_a);
+    REQUIRE(r2.d("y") == 6.0_a);
+    REQUIRE(r2.d("z") == 4.0_a);
+
+    const auto r3 = 3.5 + s1;
+
+    REQUIRE(r3.f() == 6.5_a);
+    REQUIRE(r3.d("x") == 1.0_a);
+    REQUIRE(r3.d("y") == 6.0_a);
+    REQUIRE(r3.d("z") == 4.0_a);
+}
+
+TEST_CASE("SScalar IncAdd", "[SScalar]")
+{
+    auto r1 = s1;
+    r1 += s2;
+
+    REQUIRE(r1.f() == 7_a);
+    REQUIRE(r1.d("x") == 8_a);
+    REQUIRE(r1.d("y") == 7_a);
+    REQUIRE(r1.d("z") == 4_a);
+
+    auto r2 = s1;
+    r2 += 3.5;
+
+    REQUIRE(r2.f() == 6.5_a);
+    REQUIRE(r2.d("x") == 1.0_a);
+    REQUIRE(r2.d("y") == 6.0_a);
+    REQUIRE(r2.d("z") == 4.0_a);
+}
+
+TEST_CASE("SScalar Sub", "[SScalar]")
+{
+    const auto r1 = s1 - s2;
+
+    REQUIRE(r1.f() == -1.0_a);
+    REQUIRE(r1.d("x") == -6.0_a);
+    REQUIRE(r1.d("y") == 5.0_a);
+    REQUIRE(r1.d("z") == 4.0_a);
+
+    const auto r2 = s1 - 3.5;
+
+    REQUIRE(r2.f() == -0.5_a);
+    REQUIRE(r2.d("x") == 1.0_a);
+    REQUIRE(r2.d("y") == 6.0_a);
+    REQUIRE(r2.d("z") == 4.0_a);
+
+    const auto r3 = 3.5 - s1;
+
+    REQUIRE(r3.f() == 0.5_a);
+    REQUIRE(r3.d("x") == -1.0_a);
+    REQUIRE(r3.d("y") == -6.0_a);
+    REQUIRE(r3.d("z") == -4.0_a);
+}
+
+TEST_CASE("SScalar IncSub", "[SScalar]")
+{
+    auto r1 = s1;
+    r1 -= s2;
+
+    REQUIRE(r1.f() == -1.0_a);
+    REQUIRE(r1.d("x") == -6.0_a);
+    REQUIRE(r1.d("y") == 5.0_a);
+    REQUIRE(r1.d("z") == 4.0_a);
+
+    auto r2 = s1;
+    r2 -= 3.5;
+
+    REQUIRE(r2.f() == -0.5_a);
+    REQUIRE(r2.d("x") == 1.0_a);
+    REQUIRE(r2.d("y") == 6.0_a);
+    REQUIRE(r2.d("z") == 4.0_a);
+}
+
+TEST_CASE("SScalar Mul", "[SScalar]")
+{
+    const auto r1 = s1 * s2;
+
+    REQUIRE(r1.f() == 12.0_a);
+    REQUIRE(r1.d("x") == 25.0_a);
+    REQUIRE(r1.d("y") == 27.0_a);
+    REQUIRE(r1.d("z") == 16.0_a);
+}
+
+TEST_CASE("SScalar IncMul", "[SScalar]")
+{
+    auto r1 = s1;
+    r1 *= s2;
+
+    REQUIRE(r1.f() == 12.0_a);
+    REQUIRE(r1.d("x") == 25.0_a);
+    REQUIRE(r1.d("y") == 27.0_a);
+    REQUIRE(r1.d("z") == 16.0_a);
+}
+
+TEST_CASE("SScalar Div", "[SScalar]")
+{
+    const auto r1 = s1 / s2;
+
+    REQUIRE(r1.f() == 0.75000_a);
+    REQUIRE(r1.d("x") == -1.06250_a);
+    REQUIRE(r1.d("y") == 1.31250_a);
+    REQUIRE(r1.d("z") == 1.00000_a);
+}
+
+TEST_CASE("SScalar IncDiv", "[SScalar]")
+{
+    auto r1 = s1;
+    r1 /= s2;
+
+    REQUIRE(r1.f() == 0.75000_a);
+    REQUIRE(r1.d("x") == -1.06250_a);
+    REQUIRE(r1.d("y") == 1.31250_a);
+    REQUIRE(r1.d("z") == 1.00000_a);
+}
