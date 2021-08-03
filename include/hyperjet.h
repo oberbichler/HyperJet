@@ -1250,7 +1250,7 @@ namespace hyperjet
 
         // --- arithmetic operations
 
-        Type pow(const Scalar b) const
+        Type pow(const double b) const
         {
             using std::pow;
 
@@ -1775,7 +1775,7 @@ namespace hyperjet
     }
 
     template <index TOrder, typename TScalar, index TSize>
-    DDScalar<TOrder, TScalar, TSize> pow(const DDScalar<TOrder, TScalar, TSize> &a, const TScalar b)
+    DDScalar<TOrder, TScalar, TSize> pow(const DDScalar<TOrder, TScalar, TSize> &a, const double b)
     {
         return a.pow(b);
     }
