@@ -2036,6 +2036,8 @@ namespace hyperjet
         }
 
     public: // constructors
+        SScalar() = default;
+
         SScalar(const Scalar f, const Data &d) : m_f(f), m_d(d)
         {
         }
