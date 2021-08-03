@@ -499,7 +499,7 @@ const SScalar<double> s1(3.0, {{"x", 1.0}, {"y", 6.0}, {"z", 4.0}});
 const SScalar<double> s2(4.0, {{"x", 7.0}, {"y", 1.0}});
 const SScalar<double> s3(0.3, {{"x", 0.1}, {"y", 0.8}, {"z", 0.2}});
 
-TEST_CASE("init", "[SScalar]")
+TEST_CASE("SScalar init", "[SScalar]")
 {
     using Dual = SScalar<double>;
 
@@ -514,7 +514,7 @@ TEST_CASE("init", "[SScalar]")
     REQUIRE(x.d("z") == 0.0_a);
 }
 
-TEST_CASE("constant", "[SScalar]")
+TEST_CASE("SScalar constant", "[SScalar]")
 {
     using Dual = SScalar<double>;
 
@@ -528,7 +528,7 @@ TEST_CASE("constant", "[SScalar]")
     REQUIRE(x.d("y") == 0.0_a);
 }
 
-TEST_CASE("variable", "[SScalar]")
+TEST_CASE("SScalar variable", "[SScalar]")
 {
     using Dual = SScalar<double>;
 
@@ -542,7 +542,7 @@ TEST_CASE("variable", "[SScalar]")
     REQUIRE(x.d("y") == 0.0_a);
 }
 
-TEST_CASE("Neg", "[SScalar]")
+TEST_CASE("SScalar Neg", "[SScalar]")
 {
     const auto r1 = -s1;
 
@@ -552,7 +552,7 @@ TEST_CASE("Neg", "[SScalar]")
     REQUIRE(r1.d("z") == -4_a);
 }
 
-TEST_CASE("Add", "[SScalar]")
+TEST_CASE("SScalar Add", "[SScalar]")
 {
     const auto r1 = s1 + s2;
 
@@ -576,7 +576,7 @@ TEST_CASE("Add", "[SScalar]")
     REQUIRE(r3.d("z") == 4.0_a);
 }
 
-TEST_CASE("IncAdd", "[SScalar]")
+TEST_CASE("SScalar IncAdd", "[SScalar]")
 {
     auto r1 = s1;
     r1 += s2;
@@ -595,7 +595,7 @@ TEST_CASE("IncAdd", "[SScalar]")
     REQUIRE(r2.d("z") == 4.0_a);
 }
 
-TEST_CASE("Sub", "[SScalar]")
+TEST_CASE("SScalar Sub", "[SScalar]")
 {
     const auto r1 = s1 - s2;
 
@@ -619,7 +619,7 @@ TEST_CASE("Sub", "[SScalar]")
     REQUIRE(r3.d("z") == -4.0_a);
 }
 
-TEST_CASE("IncSub", "[SScalar]")
+TEST_CASE("SScalar IncSub", "[SScalar]")
 {
     auto r1 = s1;
     r1 -= s2;
@@ -638,7 +638,7 @@ TEST_CASE("IncSub", "[SScalar]")
     REQUIRE(r2.d("z") == 4.0_a);
 }
 
-TEST_CASE("Mul", "[SScalar]")
+TEST_CASE("SScalar Mul", "[SScalar]")
 {
     const auto r1 = s1 * s2;
 
@@ -648,7 +648,7 @@ TEST_CASE("Mul", "[SScalar]")
     REQUIRE(r1.d("z") == 16.0_a);
 }
 
-TEST_CASE("IncMul", "[SScalar]")
+TEST_CASE("SScalar IncMul", "[SScalar]")
 {
     auto r1 = s1;
     r1 *= s2;
@@ -659,7 +659,7 @@ TEST_CASE("IncMul", "[SScalar]")
     REQUIRE(r1.d("z") == 16.0_a);
 }
 
-TEST_CASE("Div", "[SScalar]")
+TEST_CASE("SScalar Div", "[SScalar]")
 {
     const auto r1 = s1 / s2;
 
@@ -669,7 +669,7 @@ TEST_CASE("Div", "[SScalar]")
     REQUIRE(r1.d("z") == 1.00000_a);
 }
 
-TEST_CASE("IncDiv", "[SScalar]")
+TEST_CASE("SScalar IncDiv", "[SScalar]")
 {
     auto r1 = s1;
     r1 /= s2;
