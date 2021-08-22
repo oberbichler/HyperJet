@@ -77,7 +77,7 @@ auto bind(py::module &m, const std::string &name)
     else
     {
         cls
-            .def_static("variable", py::overload_cast<hj::index, T::Scalar>(&T::variable), "i"_a, "f"_a)
+            .def_static("variable", py::overload_cast<hj::index, typename T::Scalar>(&T::variable), "i"_a, "f"_a)
             .def_static(
                 "variables", [](const std::array<typename T::Scalar, T::static_size()> &values)
                 { return T::template variables<T::static_size()>(values); },
