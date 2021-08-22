@@ -86,11 +86,9 @@ class CMakeBuild(build_ext):
             # Multi-config generators have a different way to specify configs
             if not single_config:
                 cmake_args += [
+                    "-Spython",
                     "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{}={}".format(cfg.upper(), extdir),
                     "-DHYPERJET_VERSION={}".format(self.distribution.get_version()),
-                    "-DBUILD_PYTHON_MODULE=ON",
-                    "-DBUILD_TESTS=OFF",
-                    "-DBUILD_BENCHMARKS=OFF",
                 ]
                 build_args += ["--config", cfg]
 
