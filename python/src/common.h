@@ -52,7 +52,7 @@ auto bind(py::module &m, const std::string &name)
 
     // read-only properties
     cls
-        .def_property_readonly("data", py::overload_cast<>(&T::adata))
+        // .def_property_readonly("data", py::overload_cast<>(&T::adata))
         .def_property_readonly("g", py::overload_cast<>(&T::ag))
         .def_property_readonly("size", &T::size);
 
