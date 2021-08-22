@@ -4,7 +4,6 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 project(
   hyperjet
-  VERSION 2.0.0
   LANGUAGES CXX
 )
 
@@ -17,7 +16,7 @@ if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
   )
 endif()
 
-# --- CPM
+# --- Get CPM
 
 set(CPM_DOWNLOAD_VERSION 0.32.2)
 
