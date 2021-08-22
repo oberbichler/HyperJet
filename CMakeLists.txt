@@ -129,6 +129,8 @@ if (${BUILD_PYTHON_MODULE})
       src/python/bind_sscalar.cpp
       )
 
+    target_link_libraries(benchmarks PRIVATE Eigen)
+
     target_compile_definitions(python_module PRIVATE
         -DEIGEN_DEFAULT_TO_ROW_MAJOR
         -DHYPERJET_VERSION="${HYPERJET_VERSION}"
