@@ -19,27 +19,11 @@ endif()
 
 # --- Get CPM
 
-set(CPM_DOWNLOAD_VERSION 0.32.2)
-
-if(CPM_SOURCE_CACHE)
-  set(CPM_DOWNLOAD_LOCATION "${CPM_SOURCE_CACHE}/cpm/CPM_${CPM_DOWNLOAD_VERSION}.cmake")
-elseif(DEFINED ENV{CPM_SOURCE_CACHE})
-  set(CPM_DOWNLOAD_LOCATION "$ENV{CPM_SOURCE_CACHE}/cpm/CPM_${CPM_DOWNLOAD_VERSION}.cmake")
-else()
-  set(CPM_DOWNLOAD_LOCATION "${CMAKE_BINARY_DIR}/cmake/CPM_${CPM_DOWNLOAD_VERSION}.cmake")
-endif()
-
-if(NOT (EXISTS ${CPM_DOWNLOAD_LOCATION}))
-  message(STATUS "Downloading CPM.cmake to ${CPM_DOWNLOAD_LOCATION}")
-  file(DOWNLOAD
-       https://github.com/TheLartians/CPM.cmake/releases/download/v${CPM_DOWNLOAD_VERSION}/CPM.cmake
-       ${CPM_DOWNLOAD_LOCATION}
-  )
-endif()
-
-include(${CPM_DOWNLOAD_LOCATION})
+include(../cmake/CPM.cmake)
 
 # --- Add dependencies
+
+CPMAddPackage("gh:TheLartians/PackageProject.cmake@1.6.0")
 
 CPMAddPackage(
   NAME benchmark
@@ -52,8 +36,6 @@ CPMAddPackage(
 if (benchmark_ADDED)
   set_target_properties(benchmark PROPERTIES CXX_STANDARD 17)
 endif()
-
-CPMAddPackage("gh:/catchorg/Catch2@2.13.7")
 
 CPMAddPackage(
   NAME Eigen
@@ -76,19 +58,6 @@ option(BUILD_TESTS         "Build the C++ tests"     ON )
 option(BUILD_BENCHMARKS    "Build the benchmarks"    OFF)
 
 include_directories("include")
-
-# --- tests
-
-if (${BUILD_TESTS})
-    add_executable(tests src/test/tests.cpp)
-
-    target_compile_features(tests PRIVATE cxx_std_17)
-
-    target_link_libraries(tests PRIVATE Catch2::Catch2)
-    target_link_libraries(tests PRIVATE Eigen)
-
-    install(TARGETS tests DESTINATION bin)
-endif()
 
 # --- benchmarks
 
@@ -144,3 +113,26 @@ if (${BUILD_PYTHON_MODULE})
 
     install(TARGETS python_module DESTINATION bin)
 endif()
+
+# --- Create library
+
+add_library(${PROJECT_NAME} INTERFACE)
+
+target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
+
+target_include_directories(
+  ${PROJECT_NAME} INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+                            $<INSTALL_INTERFACE:include/${PROJECT_NAME}-${PROJECT_VERSION}>
+)
+
+# ---- Create an installable target ----
+
+packageProject(
+  NAME ${PROJECT_NAME}
+  VERSION ${PROJECT_VERSION}
+  NAMESPACE ${PROJECT_NAME}
+  BINARY_DIR ${PROJECT_BINARY_DIR}
+  INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include
+  INCLUDE_DESTINATION include/${PROJECT_NAME}-${PROJECT_VERSION}
+  COMPATIBILITY SameMajorVersion
+)
