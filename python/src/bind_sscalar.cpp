@@ -2,7 +2,7 @@
 
 void bind_sscalar(pybind11::module &m)
 {
-    using T = hyperjet::SScalar<double>;
+    using T = hj::SScalar<double>;
 
     auto cls = py::class_<T>(m, "SScalar");
 

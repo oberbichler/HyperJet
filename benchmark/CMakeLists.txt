@@ -1,12 +1,22 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-project(HyperJetTest LANGUAGES CXX)
+project(Benchmark LANGUAGES CXX)
 
 # --- Dependencies
 
 include(../cmake/CPM.cmake)
 
-CPMAddPackage("gh:onqtam/doctest#2.4.5")
+CPMAddPackage(
+  NAME benchmark
+  GITHUB_REPOSITORY google/benchmark
+  VERSION 1.5.6
+  OPTIONS
+   "BENCHMARK_ENABLE_TESTING Off"
+)
+
+if (benchmark_ADDED)
+  set_target_properties(benchmark PROPERTIES CXX_STANDARD 17)
+endif()
 
 CPMAddPackage(
   NAME Eigen
@@ -20,6 +30,8 @@ if(Eigen_ADDED)
   target_include_directories(Eigen INTERFACE ${Eigen_SOURCE_DIR})
 endif()
 
+CPMAddPackage("gh:/pybind/pybind11@2.7.1")
+
 if(TEST_INSTALLED_VERSION)
   find_package(HyperJet REQUIRED)
 else()
@@ -29,13 +41,13 @@ endif()
 # --- Create binary
 
 file(GLOB sources CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
-add_executable(HyperJetTest ${sources})
-target_link_libraries(HyperJetTest doctest::doctest hyperjet::hyperjet)
-set_target_properties(HyperJetTest PROPERTIES CXX_STANDARD 17)
+add_executable(Benchmark ${sources})
 
-# --- Add HyperJetTest
+target_link_libraries(Benchmark PRIVATE benchmark::benchmark Eigen hyperjet::hyperjet)
 
-enable_testing()
+target_compile_definitions(Benchmark PRIVATE
+  -DHYPERJET_VERSION="${PROJECT_VERSION}"
+  -DHYPERJET_EXCEPTIONS
+)
 
-include(${doctest_SOURCE_DIR}/scripts/cmake/doctest.cmake)
-doctest_discover_tests(HyperJetTest)
+set_target_properties(Benchmark PROPERTIES CXX_STANDARD 17)
