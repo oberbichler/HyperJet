@@ -33,7 +33,7 @@ include_directories("external_libraries")
 file(GLOB sources CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 pybind11_add_module(HyperJetPython ${sources})
 
-target_link_libraries(HyperJetPython PRIVATE hyperjet::hyperjet)
+target_link_libraries(HyperJetPython PRIVATE hyperjet::hyperjet Eigen)
 
 target_compile_definitions(HyperJetPython PRIVATE
   -DHYPERJET_VERSION="${PROJECT_VERSION}"
