@@ -19,7 +19,7 @@ endif()
 
 # --- Get CPM
 
-include(../cmake/CPM.cmake)
+include(cmake/CPM.cmake)
 
 # --- Add dependencies
 
