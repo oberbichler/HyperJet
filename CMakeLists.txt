@@ -84,7 +84,7 @@ if (${BUILD_TESTS})
     target_compile_features(tests PRIVATE cxx_std_17)
 
     target_link_libraries(tests PRIVATE Catch2::Catch2)
-    target_link_libraries(tests PRIVATE Eigen3)
+    target_link_libraries(tests PRIVATE Eigen)
 
     install(TARGETS tests DESTINATION bin)
 endif()
@@ -97,7 +97,7 @@ if (${BUILD_BENCHMARKS})
     target_compile_features(benchmarks PRIVATE cxx_std_17)
 
     target_link_libraries(benchmarks PRIVATE benchmark::benchmark)
-    target_link_libraries(benchmarks PRIVATE Eigen3)
+    target_link_libraries(benchmarks PRIVATE Eigen)
 
     install(TARGETS benchmarks DESTINATION bin)
 endif()
