@@ -1,18 +1,75 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-if(DEFINED ENV{VCPKG_DEFAULT_TRIPLET} AND NOT DEFINED VCPKG_TARGET_TRIPLET)
-  set(VCPKG_TARGET_TRIPLET "$ENV{VCPKG_DEFAULT_TRIPLET}" CACHE STRING "")
+# --- Project
+
+project(
+  hyperjet
+  VERSION 2.0.0
+  LANGUAGES CXX
+)
+
+# ---- Include guards
+
+if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
+  message(
+    FATAL_ERROR
+      "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there."
+  )
 endif()
 
-if(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-  set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
+# --- CPM
+
+set(CPM_DOWNLOAD_VERSION 0.32.2)
+
+if(CPM_SOURCE_CACHE)
+  set(CPM_DOWNLOAD_LOCATION "${CPM_SOURCE_CACHE}/cpm/CPM_${CPM_DOWNLOAD_VERSION}.cmake")
+elseif(DEFINED ENV{CPM_SOURCE_CACHE})
+  set(CPM_DOWNLOAD_LOCATION "$ENV{CPM_SOURCE_CACHE}/cpm/CPM_${CPM_DOWNLOAD_VERSION}.cmake")
+else()
+  set(CPM_DOWNLOAD_LOCATION "${CMAKE_BINARY_DIR}/cmake/CPM_${CPM_DOWNLOAD_VERSION}.cmake")
 endif()
 
-message(NOTICE "VCPKG_TARGET_TRIPLET: ${VCPKG_TARGET_TRIPLET}")
-message(NOTICE "VCPKG_ROOT: ${VCPKG_ROOT}")
-message(NOTICE "CMAKE_TOOLCHAIN_FILE: ${CMAKE_TOOLCHAIN_FILE}")
+if(NOT (EXISTS ${CPM_DOWNLOAD_LOCATION}))
+  message(STATUS "Downloading CPM.cmake to ${CPM_DOWNLOAD_LOCATION}")
+  file(DOWNLOAD
+       https://github.com/TheLartians/CPM.cmake/releases/download/v${CPM_DOWNLOAD_VERSION}/CPM.cmake
+       ${CPM_DOWNLOAD_LOCATION}
+  )
+endif()
 
-project(hyperjet)
+include(${CPM_DOWNLOAD_LOCATION})
+
+# --- Add dependencies
+
+CPMAddPackage(
+  NAME benchmark
+  GITHUB_REPOSITORY google/benchmark
+  VERSION 1.5.6
+  OPTIONS
+   "BENCHMARK_ENABLE_TESTING Off"
+)
+
+if (benchmark_ADDED)
+  set_target_properties(benchmark PROPERTIES CXX_STANDARD 17)
+endif()
+
+CPMAddPackage("gh:/catchorg/Catch2@2.13.7")
+
+CPMAddPackage(
+  NAME Eigen
+  VERSION 3.4.0
+  URL https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.gz
+  DOWNLOAD_ONLY YES 
+)
+
+if(Eigen_ADDED)
+  add_library(Eigen INTERFACE IMPORTED)
+  target_include_directories(Eigen INTERFACE ${Eigen_SOURCE_DIR})
+endif()
+
+CPMAddPackage("gh:/pybind/pybind11@2.7.1")
+
+# ---
 
 option(BUILD_PYTHON_MODULE "Build the Python module" ON )
 option(BUILD_TESTS         "Build the C++ tests"     ON )
@@ -23,15 +80,12 @@ include_directories("include")
 # --- tests
 
 if (${BUILD_TESTS})
-    find_package(Catch2 CONFIG REQUIRED)
-    find_package(Eigen3 REQUIRED)
-
     add_executable(tests src/test/tests.cpp)
 
     target_compile_features(tests PRIVATE cxx_std_17)
 
     target_link_libraries(tests PRIVATE Catch2::Catch2)
-    target_link_libraries(tests PRIVATE Eigen3::Eigen)
+    target_link_libraries(tests PRIVATE Eigen3)
 
     install(TARGETS tests DESTINATION bin)
 endif()
@@ -39,15 +93,12 @@ endif()
 # --- benchmarks
 
 if (${BUILD_BENCHMARKS})
-    find_package(benchmark REQUIRED)
-    find_package(Eigen3 REQUIRED)
-
     add_executable(benchmarks src/benchmark/benchmarks.cpp)
 
     target_compile_features(benchmarks PRIVATE cxx_std_17)
 
     target_link_libraries(benchmarks PRIVATE benchmark::benchmark)
-    target_link_libraries(benchmarks PRIVATE Eigen3::Eigen)
+    target_link_libraries(benchmarks PRIVATE Eigen3)
 
     install(TARGETS benchmarks DESTINATION bin)
 endif()
@@ -56,8 +107,6 @@ endif()
 
 if (${BUILD_PYTHON_MODULE})
     include_directories("external_libraries")
-
-    add_subdirectory(pybind11)
 
     pybind11_add_module(python_module src/python/main.cpp
       src/python/bind_ddscalar_xd.cpp
