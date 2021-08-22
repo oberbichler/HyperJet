@@ -1,4 +1,4 @@
-#include <hyperjet.h>
+#include <hyperjet/hyperjet.h>
 
 #include <benchmark/benchmark.h>
 

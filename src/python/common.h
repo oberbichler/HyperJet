@@ -2,7 +2,7 @@
 
 #include <Eigen/Core>
 
-#include <hyperjet.h>
+#include <hyperjet/hyperjet.h>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/eigen.h>
@@ -62,7 +62,7 @@ auto bind(py::module &m, const std::string &name)
         .def_static("constant", py::overload_cast<typename T::Scalar>(&T::constant), "f"_a)
         .def_static("empty", py::overload_cast<>(&T::empty))
         .def_static("empty", py::overload_cast<hj::index>(&T::empty), "size"_a)
-        .def_static("variable", py::overload_cast<hj::index, double, hj::index>(&T::variable), "i"_a, "f"_a, "size"_a)
+        .def_static("variable", py::overload_cast<hj::index, T::Scalar, hj::index>(&T::variable), "i"_a, "f"_a, "size"_a)
         .def_static("zero", py::overload_cast<>(&T::zero))
         .def_static("zero", py::overload_cast<hj::index>(&T::zero), "size"_a);
 
@@ -77,7 +77,7 @@ auto bind(py::module &m, const std::string &name)
     else
     {
         cls
-            .def_static("variable", py::overload_cast<hj::index, double>(&T::variable), "i"_a, "f"_a)
+            .def_static("variable", py::overload_cast<hj::index, T::Scalar>(&T::variable), "i"_a, "f"_a)
             .def_static(
                 "variables", [](const std::array<typename T::Scalar, T::static_size()> &values)
                 { return T::template variables<T::static_size()>(values); },
