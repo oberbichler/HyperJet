@@ -49,9 +49,6 @@ class CMakeBuild(build_ext):
             "-DPYTHON_EXECUTABLE={}".format(sys.executable),
             "-DHYPERJET_VERSION={}".format(self.distribution.get_version()),
             "-DCMAKE_BUILD_TYPE={}".format(cfg),  # not used on MSVC, but no harm
-            "-DBUILD_PYTHON_MODULE=ON",
-            "-DBUILD_TESTS=OFF",
-            "-DBUILD_BENCHMARKS=OFF",
         ]
         build_args = []
 
@@ -88,9 +85,6 @@ class CMakeBuild(build_ext):
                 cmake_args += [
                     "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{}={}".format(cfg.upper(), extdir),
                     "-DHYPERJET_VERSION={}".format(self.distribution.get_version()),
-                    "-DBUILD_PYTHON_MODULE=ON",
-                    "-DBUILD_TESTS=OFF",
-                    "-DBUILD_BENCHMARKS=OFF",
                 ]
                 build_args += ["--config", cfg]
 
@@ -136,7 +130,7 @@ setup(
         "License :: OSI Approved :: MIT License",
     ],
     python_requires='>=3.6',
-    ext_modules=[CMakeExtension('hyperjet')],
+    ext_modules=[CMakeExtension('hyperjet', sourcedir='python')],
     cmdclass=dict(build_ext=CMakeBuild),
     install_requires=['msvc-runtime ; platform_system=="Windows"', 'numpy'],
     zip_safe=False,

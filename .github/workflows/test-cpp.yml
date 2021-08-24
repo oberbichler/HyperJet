@@ -7,7 +7,8 @@ on:
     branches: [ main ]
 
 env:
-  BUILD_TYPE: Release
+  CTEST_OUTPUT_ON_FAILURE: 1
+  CPM_SOURCE_CACHE: ${{ github.workspace }}/cpm_modules
 
 jobs:
   test_cpp:
@@ -19,47 +20,23 @@ jobs:
       fail-fast: false
       max-parallel: 4
       matrix:
-        include:
-          - os: ubuntu-latest
-            VCPKG_DEFAULT_TRIPLET: x64-linux
-          - os: windows-latest
-            VCPKG_DEFAULT_TRIPLET: x64-windows
-          - os: macOS-latest
-            VCPKG_DEFAULT_TRIPLET: x64-osx
-
-    env:
-      VCPKG_DEFAULT_TRIPLET: ${{ matrix.VCPKG_DEFAULT_TRIPLET }}
+        os: [ubuntu-latest, windows-latest, macOS-latest]
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-      with:
-        submodules: true
+      - uses: actions/checkout@v2
 
-    - name: Create Build Environment
-      run: |
-        cmake -E make_directory ${{runner.workspace}}/build
+      - uses: actions/cache@v2
+        with:
+          path: "**/cpm_modules"
+          key: ${{ github.workflow }}-cpm-modules-${{ matrix.os }}-${{ hashFiles('**/CMakeLists.txt', '**/*.cmake') }}
 
-    - name: Configure CMake
-      working-directory: ${{runner.workspace}}/build
-      shell: bash
-      run: |
-        export VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT
-        ${VCPKG_ROOT}/vcpkg install benchmark catch2 eigen3
-        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_PYTHON_MODULE=OFF
+      - name: Configure
+        run: cmake -Stest -Bbuild
 
-    - name: Build
-      shell: bash
-      working-directory: ${{runner.workspace}}/build
-      run: cmake --build . --config $BUILD_TYPE
+      - name: Build
+        run: cmake --build build --config Debug -j4
 
-    - name: Test
-      if: ${{ !startsWith(runner.os, 'Windows') }}
-      working-directory: ${{runner.workspace}}/build
-      run: ./tests
-
-    - name: Test
-      if: startsWith(runner.os, 'Windows')
-      working-directory: ${{runner.workspace}}/build
-      run: ${{runner.workspace}}\build\Release\tests.exe
-      shell: cmd
+      - name: Test
+        run: |
+          cd build
+          ctest --build-config Debug
