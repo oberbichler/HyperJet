@@ -4,8 +4,6 @@ path_classifiers:
     - docs
   library:
     - exclude: / # ignore default classification
-    - pybind11
-    - external_libraries
   test:
     - exclude: / # ignore default classification
     - tests
@@ -19,5 +17,5 @@ extraction:
     index:
       build_command:
       - cmake --version
-      - cmake -S all -B build
+      - cmake -S python -B build
       - cmake --build build
