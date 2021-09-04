@@ -72,7 +72,7 @@ jobs:
             f.write(content)
       shell: python
 
-    - uses: pypa/cibuildwheel@v2.1.1
+    - uses: pypa/cibuildwheel@v2.1.0
       env:
         CIBW_ARCHS_MACOS: x86_64
         CIBW_SKIP: pp*-macosx*
