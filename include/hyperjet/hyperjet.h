@@ -312,7 +312,7 @@ namespace hyperjet
         }
 
     public:
-        DDScalar()
+        DDScalar(): m_size(DataSize), m_data({})
         {
             static_assert(0 < order() && order() <= 2);
 
@@ -327,7 +327,7 @@ namespace hyperjet
             }
         }
 
-        DDScalar(const TScalar f)
+	      constexpr DDScalar(const TScalar f) : m_size(DataSize), m_data({})
         {
             static_assert(0 < order() && order() <= 2);
 
@@ -341,10 +341,9 @@ namespace hyperjet
                 static_assert(TSize >= 0);
             }
             this->f() = f;
-            std::fill(m_data.begin() + 1, m_data.end(), 0);
         }
 
-        DDScalar(const Data &data) : m_data(data)
+        DDScalar(const Data &data) : m_size(DataSize), m_data(data)
         {
             static_assert(0 < order() && order() <= 2);
 
@@ -704,7 +703,7 @@ namespace hyperjet
             }
         }
 
-        Scalar &f()
+	      constexpr Scalar &f()
         {
             return m_data[0];
         }
