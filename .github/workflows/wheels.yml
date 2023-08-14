@@ -72,10 +72,8 @@ jobs:
             f.write(content)
       shell: python
 
-    - uses: pypa/cibuildwheel@v2.0.1
+    - uses: pypa/cibuildwheel@v2.15.0
       env:
-        CIBW_ARCHS_MACOS: x86_64
-        CIBW_SKIP: pp*-macosx*
         CIBW_TEST_EXTRAS: test
         CIBW_TEST_COMMAND: pytest {project}
 
@@ -99,7 +97,7 @@ jobs:
         name: artifact
         path: dist
 
-    - uses: pypa/gh-action-pypi-publish@v1.4.2
+    - uses: pypa/gh-action-pypi-publish@release/v1
       with:
         user: ${{ secrets.PYPI_USERNAME }}
         password: ${{ secrets.PYPI_PASSWORD }}
