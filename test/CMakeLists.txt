@@ -6,7 +6,7 @@ project(HyperJetTest LANGUAGES CXX)
 
 include(../cmake/CPM.cmake)
 
-CPMAddPackage("gh:doctest/doctest@2.4.11")
+CPMAddPackage("gh:doctest/doctest@v2.4.11")
 
 CPMAddPackage(
   NAME Eigen
