@@ -74,8 +74,10 @@ jobs:
 
     - uses: pypa/cibuildwheel@v2.15.0
       env:
+        CIBW_ARCHS_MACOS: auto universal2
         CIBW_TEST_EXTRAS: test
         CIBW_TEST_COMMAND: pytest {project}
+        CIBW_SKIP: cp312-*
 
     - name: Upload wheels
       uses: actions/upload-artifact@v2
