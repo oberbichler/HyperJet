@@ -12,6 +12,11 @@
 #include <vector>           // vector
 #include <unordered_map>    // unordered_map
 
+#define MIMIC_FUNCTION(...)	\
+       do { __VA_ARGS__ } while(0)
+
+#define UNUSED_VARIABLE(X)	MIMIC_FUNCTION((void)X;)
+
 namespace hyperjet
 {
 
@@ -225,6 +230,9 @@ namespace hyperjet
 
             if constexpr (TOrder < 1 || (std::is_same_v<TDa, Zero> && std::is_same_v<TDb, Zero>))
             {
+	              UNUSED_VARIABLE(daa);
+	              UNUSED_VARIABLE(dab);
+	              UNUSED_VARIABLE(dbb);
                 return;
             }
             else
@@ -244,7 +252,10 @@ namespace hyperjet
 
             if constexpr (TOrder < 2 || (std::is_same_v<TDaa, Zero> && std::is_same_v<TDab, Zero> && std::is_same_v<TDbb, Zero>))
             {
-                return;
+	            UNUSED_VARIABLE(daa);
+	            UNUSED_VARIABLE(dab);
+	            UNUSED_VARIABLE(dbb);
+	            return;
             }
             else
             {
@@ -312,7 +323,7 @@ namespace hyperjet
         }
 
     public:
-        DDScalar()
+        DDScalar(): m_size(DataSize), m_data({})
         {
             static_assert(0 < order() && order() <= 2);
 
@@ -327,7 +338,7 @@ namespace hyperjet
             }
         }
 
-        DDScalar(const TScalar f)
+	      constexpr DDScalar(const TScalar f) : m_size(DataSize), m_data({})
         {
             static_assert(0 < order() && order() <= 2);
 
@@ -341,10 +352,9 @@ namespace hyperjet
                 static_assert(TSize >= 0);
             }
             this->f() = f;
-            std::fill(m_data.begin() + 1, m_data.end(), 0);
         }
 
-        DDScalar(const Data &data) : m_data(data)
+        DDScalar(const Data &data) : m_size(DataSize), m_data(data)
         {
             static_assert(0 < order() && order() <= 2);
 
@@ -704,7 +714,7 @@ namespace hyperjet
             }
         }
 
-        Scalar &f()
+	      constexpr Scalar &f()
         {
             return m_data[0];
         }
