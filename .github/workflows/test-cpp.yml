@@ -9,6 +9,7 @@ on:
 env:
   CTEST_OUTPUT_ON_FAILURE: 1
   CPM_SOURCE_CACHE: ${{ github.workspace }}/cpm_modules
+  CMAKE_POLICY_VERSION_MINIMUM: "3.5"
 
 jobs:
   test_cpp:
