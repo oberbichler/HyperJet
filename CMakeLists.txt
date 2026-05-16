@@ -23,7 +23,7 @@ include(cmake/CPM.cmake)
 
 # --- Add dependencies
 
-CPMAddPackage("gh:TheLartians/PackageProject.cmake@1.6.0")
+CPMAddPackage("gh:TheLartians/PackageProject.cmake@1.12.0")
 
 # --- Create library
 

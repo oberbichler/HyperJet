@@ -69,14 +69,14 @@ namespace hyperjet
 
             if constexpr (throw_exceptions())
             {
-                if (data_length_from_size(s) != n)
+                if (s < 0 || data_length_from_size(s) != n)
                 {
                     throw std::runtime_error("Invalid length");
                 }
             }
             else
             {
-                assert(data_length_from_size(s) == n == 0 && "Invalid length");
+                assert(s >= 0 && data_length_from_size(s) == n && "Invalid length");
             }
 
             return s;
