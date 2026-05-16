@@ -49,6 +49,7 @@ class CMakeBuild(build_ext):
             "-DPYTHON_EXECUTABLE={}".format(sys.executable),
             "-DHYPERJET_VERSION={}".format(self.distribution.get_version()),
             "-DCMAKE_BUILD_TYPE={}".format(cfg),  # not used on MSVC, but no harm
+            "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
         ]
         build_args = []
 
