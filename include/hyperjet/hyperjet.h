@@ -2271,7 +2271,7 @@ namespace hyperjet
             m_f *= b;
 
             for (auto &d : m_d)
-                m_d[d.first] *= b;
+                d.second *= b;
 
             return *this;
         }
