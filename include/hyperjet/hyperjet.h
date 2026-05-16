@@ -2083,7 +2083,7 @@ namespace hyperjet
             return it->second;
         }
 
-        Scalar eval(const Data d) const
+        Scalar eval(const Data& d) const
         {
             Scalar r(0);
 
