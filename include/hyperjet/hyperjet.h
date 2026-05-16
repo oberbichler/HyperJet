@@ -2091,7 +2091,7 @@ namespace hyperjet
             {
                 const auto it = d.find(coef.first);
 
-                if (it == m_d.end())
+                if (it == d.end())
                     continue;
 
                 r += coef.second * it->second;
