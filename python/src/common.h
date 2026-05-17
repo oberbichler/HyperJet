@@ -36,7 +36,9 @@ template <typename T> auto bind(py::module &m, const std::string &name) {
   }
 
   // properties
-  cls.def_property("f", py::overload_cast<>(&T::f, py::const_), &T::set_f);
+  cls.def_property(
+      "f", [](const T &self) -> typename T::Scalar { return self.f(); },
+      &T::set_f);
 
   // static read-only properties
   cls.def_property_readonly_static("is_dynamic",
@@ -91,8 +93,11 @@ template <typename T> auto bind(py::module &m, const std::string &name) {
       .def("__repr__", &T::to_string)
       .def("abs", &T::abs)
       .def("eval", &T::eval, "d"_a)
-      .def("h", py::overload_cast<hj::index, hj::index>(&T::h), "row"_a,
-           "col"_a)
+      .def(
+          "h",
+          [](const T &self, hj::index row, hj::index col) ->
+          typename T::Scalar { return self.h(row, col); },
+          "row"_a, "col"_a)
       .def("set_h",
            py::overload_cast<hj::index, hj::index, typename T::Scalar>(
                &T::set_h),

@@ -131,11 +131,16 @@ private:
     static HYPERJET_INLINE Scalar operator()(const Scalar b) { return b; }
   };
 
+  template <typename T>
+  static constexpr bool is_tag_v =
+      std::is_same_v<T, Zero> || std::is_same_v<T, One> ||
+      std::is_same_v<T, MinusOne>;
+
   template <typename TCoeff>
   HYPERJET_INLINE static auto mul(const TCoeff &coeff,
                                   const Scalar &val) noexcept {
-    if constexpr (requires { coeff(val); }) {
-      return coeff(val);
+    if constexpr (is_tag_v<TCoeff>) {
+      return TCoeff{}(val);
     } else {
       return coeff * val;
     }
