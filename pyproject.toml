@@ -48,3 +48,14 @@ testpaths = ["python/tests"]
 
 [tool.uv]
 default-groups = ["test"]
+
+[tool.cibuildwheel]
+skip = "pp*"
+test-extras = "test"
+test-command = "pytest {project}"
+
+[tool.cibuildwheel.macos]
+archs = ["auto", "universal2"]
+
+[tool.cibuildwheel.macos.test]
+skip = ["*universal2:arm64"]
