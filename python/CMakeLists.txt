@@ -39,7 +39,7 @@ target_compile_definitions(HyperJetPython PRIVATE
   -DHYPERJET_EXCEPTIONS
 )
 
-set_target_properties(HyperJetPython PROPERTIES CXX_STANDARD 17)
+set_target_properties(HyperJetPython PROPERTIES CXX_STANDARD 23)
 
 set_target_properties(HyperJetPython PROPERTIES OUTPUT_NAME hyperjet)
 
