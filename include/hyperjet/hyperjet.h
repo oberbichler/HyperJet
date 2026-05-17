@@ -109,7 +109,7 @@ private:
   }
 
   struct Zero {
-    HYPERJET_INLINE Zero operator*(const Scalar) const { return Zero(); }
+    static HYPERJET_INLINE Zero operator()(const Scalar) { return Zero(); }
 
     template <typename T> HYPERJET_INLINE T operator+(const T b) const {
       return b;
@@ -122,14 +122,24 @@ private:
   };
 
   struct MinusOne {
-    HYPERJET_INLINE Scalar operator*(const Scalar b) const { return -b; }
+    static HYPERJET_INLINE Scalar operator()(const Scalar b) { return -b; }
   };
 
   struct One {
     HYPERJET_INLINE MinusOne operator-() const { return MinusOne(); }
 
-    HYPERJET_INLINE Scalar operator*(const Scalar b) const { return b; }
+    static HYPERJET_INLINE Scalar operator()(const Scalar b) { return b; }
   };
+
+  template <typename TCoeff>
+  HYPERJET_INLINE static auto mul(const TCoeff &coeff,
+                                  const Scalar &val) noexcept {
+    if constexpr (requires { coeff(val); }) {
+      return coeff(val);
+    } else {
+      return coeff * val;
+    }
+  }
 
   template <bool TIncrement, typename TDa, typename TDaa>
   HYPERJET_INLINE void unary(const Data &a, const Scalar f, const TDa da,
@@ -144,9 +154,9 @@ private:
 
     for (index i = 1; i < n; i++) {
       if constexpr (TIncrement) {
-        r[i] += da * a[i];
+        r[i] += mul(da, a[i]);
       } else {
-        r[i] = da * a[i];
+        r[i] = mul(da, a[i]);
       }
     }
 
@@ -157,7 +167,7 @@ private:
     index k = 1 + size();
 
     for (index i = 0; i < size(); i++) {
-      const auto ca = daa * a[1 + i];
+      const auto ca = mul(daa, a[1 + i]);
 
       for (index j = i; j < size(); j++) {
         r[k++] += ca * a[1 + j];
@@ -181,9 +191,9 @@ private:
     } else {
       for (index i = 1; i < n; i++) {
         if constexpr (TIncrement) {
-          r[i] += da * a[i] + db * b[i];
+          r[i] += mul(da, a[i]) + mul(db, b[i]);
         } else {
-          r[i] = da * a[i] + db * b[i];
+          r[i] = mul(da, a[i]) + mul(db, b[i]);
         }
       }
     }
@@ -196,8 +206,8 @@ private:
       index k = 1 + size();
 
       for (index i = 0; i < size(); i++) {
-        const auto ca = daa * a[1 + i] + dab * b[1 + i];
-        const auto cb = dab * a[1 + i] + dbb * b[1 + i];
+        const auto ca = mul(daa, a[1 + i]) + mul(dab, b[1 + i]);
+        const auto cb = mul(dab, a[1 + i]) + mul(dbb, b[1 + i]);
 
         for (index j = i; j < size(); j++) {
           r[k++] += ca * a[1 + j] + cb * b[1 + j];
@@ -225,9 +235,9 @@ private:
     } else {
       for (index i = 1; i < n; i++) {
         if constexpr (TIncrement) {
-          r[i] += da * a[i] + db * b[i] + dc * c[i];
+          r[i] += mul(da, a[i]) + mul(db, b[i]) + mul(dc, c[i]);
         } else {
-          r[i] = da * a[i] + db * b[i] + dc * c[i];
+          r[i] = mul(da, a[i]) + mul(db, b[i]) + mul(dc, c[i]);
         }
       }
     }
@@ -241,9 +251,9 @@ private:
       index k = 1 + size();
 
       for (index i = 0; i < size(); i++) {
-        const auto ca = daa * a[1 + i] + dab * b[1 + i] + dac * c[1 + i];
-        const auto cb = dab * a[1 + i] + dbb * b[1 + i] + dbc * c[1 + i];
-        const auto cc = dac * a[1 + i] + dbc * b[1 + i] + dcc * c[1 + i];
+        const auto ca = mul(daa, a[1 + i]) + mul(dab, b[1 + i]) + mul(dac, c[1 + i]);
+        const auto cb = mul(dab, a[1 + i]) + mul(dbb, b[1 + i]) + mul(dbc, c[1 + i]);
+        const auto cc = mul(dac, a[1 + i]) + mul(dbc, b[1 + i]) + mul(dcc, c[1 + i]);
 
         for (index j = i; j < size(); j++) {
           r[k++] += ca * a[1 + j] + cb * b[1 + j] + cc * c[1 + j];
