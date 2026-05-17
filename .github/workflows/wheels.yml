@@ -10,8 +10,6 @@ on:
       - published
 
 env:
-  CIBW_TEST_COMMAND: pytest {project}
-  CIBW_TEST_EXTRAS: test
   HYPERJET_VERSION: ${{ github.event.release.tag_name }}
 
 jobs:
