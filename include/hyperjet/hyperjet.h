@@ -69,14 +69,14 @@ namespace hyperjet
 
             if constexpr (throw_exceptions())
             {
-                if (data_length_from_size(s) != n)
+                if (s < 0 || data_length_from_size(s) != n)
                 {
                     throw std::runtime_error("Invalid length");
                 }
             }
             else
             {
-                assert(data_length_from_size(s) == n == 0 && "Invalid length");
+                assert(s >= 0 && data_length_from_size(s) == n && "Invalid length");
             }
 
             return s;
@@ -2085,13 +2085,13 @@ namespace hyperjet
 
         Scalar eval(const Data& d) const
         {
-            Scalar r(0);
+            Scalar r(m_f);
 
             for (const auto coef : m_d)
             {
                 const auto it = d.find(coef.first);
 
-                if (it == m_d.end())
+                if (it == d.end())
                     continue;
 
                 r += coef.second * it->second;

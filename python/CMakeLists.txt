@@ -18,7 +18,7 @@ if(Eigen_ADDED)
   target_include_directories(Eigen INTERFACE ${Eigen_SOURCE_DIR})
 endif()
 
-CPMAddPackage("gh:/pybind/pybind11@2.11.1")
+CPMAddPackage("gh:/pybind/pybind11@2.13.6")
 
 if(TEST_INSTALLED_VERSION)
   find_package(HyperJet REQUIRED)
