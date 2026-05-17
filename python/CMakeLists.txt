@@ -18,7 +18,8 @@ if(Eigen_ADDED)
   target_include_directories(Eigen INTERFACE ${Eigen_SOURCE_DIR})
 endif()
 
-CPMAddPackage("gh:/pybind/pybind11@2.13.6")
+# pybind11 is provided by scikit-build-core build requirements
+find_package(pybind11 CONFIG REQUIRED)
 
 if(TEST_INSTALLED_VERSION)
   find_package(HyperJet REQUIRED)
@@ -28,18 +29,18 @@ endif()
 
 # --- Create binary
 
-include_directories("external_libraries")
-
 file(GLOB sources CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 pybind11_add_module(HyperJetPython ${sources})
 
 target_link_libraries(HyperJetPython PRIVATE hyperjet::hyperjet Eigen)
 
 target_compile_definitions(HyperJetPython PRIVATE
-  -DHYPERJET_VERSION="${PROJECT_VERSION}"
+  -DHYPERJET_VERSION="${HYPERJET_VERSION}"
   -DHYPERJET_EXCEPTIONS
 )
 
 set_target_properties(HyperJetPython PROPERTIES CXX_STANDARD 17)
 
 set_target_properties(HyperJetPython PROPERTIES OUTPUT_NAME hyperjet)
+
+install(TARGETS HyperJetPython DESTINATION .)

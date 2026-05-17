@@ -2,51 +2,54 @@ name: Wheels
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-     - main
   release:
     types:
       - published
 
-env:
-  CIBW_TEST_COMMAND: pytest {project}
-  CIBW_TEST_EXTRAS: test
-  HYPERJET_VERSION: ${{ github.event.release.tag_name }}
-  CMAKE_POLICY_VERSION_MINIMUM: "3.5"
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
+env:
+  HYPERJET_VERSION: ${{ github.event.release.tag_name }}
 
 jobs:
   build_sdist:
     name: Build SDist
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-      with:
-        submodules: true
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
 
-    - name: Patch version
-      run: |
-        import os
-        with open('setup.py', 'r') as f:
-            content = f.read()
-        version = os.getenv('HYPERJET_VERSION', 'v0.0.0')[1:]
-        print(version)
-        content = content.replace('0.0.0', version)
-        with open('setup.py', 'w') as f:
-            f.write(content)
-      shell: python
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
 
-    - name: Build SDist
-      run: pipx run build --sdist
+      - name: Set up Python
+        run: uv python install 3.12
 
-    - name: Check metadata
-      run: pipx run twine check dist/*
+      - name: Patch version
+        run: |
+          import os, re
+          version = os.getenv('HYPERJET_VERSION', 'v0.0.0').lstrip('v')
+          print(f"Setting version to {version}")
+          with open('pyproject.toml', 'r') as f:
+              content = f.read()
+          content = re.sub(r'^version = ".*"', f'version = "{version}"', content, flags=re.MULTILINE)
+          with open('pyproject.toml', 'w') as f:
+              f.write(content)
+        shell: python
 
-    - uses: actions/upload-artifact@v4
-      with:
-        path: dist/*.tar.gz
+      - name: Build SDist
+        run: uv build --sdist
 
+      - name: Check metadata
+        run: uvx twine check dist/*
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdist
+          path: dist/*.tar.gz
 
   build_wheels:
     name: Wheels on ${{ matrix.os }}
@@ -57,50 +60,48 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        submodules: true
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
 
-    - name: Patch version
-      run: |
-        import os
-        with open('setup.py', 'r') as f:
-            content = f.read()
-        version = os.getenv('HYPERJET_VERSION', 'v0.0.0')[1:]
-        print(version)
-        content = content.replace('0.0.0', version)
-        with open('setup.py', 'w') as f:
-            f.write(content)
-      shell: python
+      - name: Patch version
+        run: |
+          import os, re
+          version = os.getenv('HYPERJET_VERSION', 'v0.0.0').lstrip('v')
+          print(f"Setting version to {version}")
+          with open('pyproject.toml', 'r') as f:
+              content = f.read()
+          content = re.sub(r'^version = ".*"', f'version = "{version}"', content, flags=re.MULTILINE)
+          with open('pyproject.toml', 'w') as f:
+              f.write(content)
+        shell: python
 
-    - uses: pypa/cibuildwheel@v2.22.0
-      env:
-        CIBW_ARCHS_MACOS: auto universal2
-        CIBW_TEST_EXTRAS: test
-        CIBW_TEST_COMMAND: pytest {project}
-        CIBW_SKIP: pp*
+      - uses: pypa/cibuildwheel@v2.22.0
+        env:
+          CIBW_ENVIRONMENT_PASS_LINUX: HYPERJET_VERSION
 
-    - name: Upload wheels
-      uses: actions/upload-artifact@v4
-      with:
-        path: wheelhouse/*.whl
-
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.os }}
+          path: wheelhouse/*.whl
 
   upload_all:
     name: Upload if release
     needs: [build_wheels, build_sdist]
     runs-on: ubuntu-latest
     if: github.event_name == 'release' && github.event.action == 'published'
+    environment: pypi
+    permissions:
+      id-token: write
+      attestations: write
 
     steps:
-    - uses: actions/setup-python@v5
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
 
-    - uses: actions/download-artifact@v4
-      with:
-        name: artifact
-        path: dist
-
-    - uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        user: ${{ secrets.PYPI_USERNAME }}
-        password: ${{ secrets.PYPI_PASSWORD }}
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          attestations: true
