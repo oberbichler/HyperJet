@@ -29,7 +29,7 @@ CPMAddPackage("gh:TheLartians/PackageProject.cmake@1.12.0")
 
 add_library(${PROJECT_NAME} INTERFACE)
 
-target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
+target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_23)
 
 target_include_directories(
   ${PROJECT_NAME} INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>

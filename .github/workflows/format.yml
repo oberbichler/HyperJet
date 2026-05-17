@@ -21,7 +21,7 @@ jobs:
       - uses: astral-sh/setup-uv@v6
 
       - name: Check C++ formatting
-        run: uv run --group dev clang-format --dry-run --Werror include/hyperjet/*.h python/src/*.h python/src/*.cpp test/src/*.cpp benchmark/src/*.cpp
+        run: uv run --only-group dev clang-format --dry-run --Werror include/hyperjet/*.h python/src/*.h python/src/*.cpp test/src/*.cpp benchmark/src/*.cpp
 
       - name: Check Python formatting
-        run: uv run --group dev ruff format --check python/tests/
+        run: uv run --only-group dev ruff format --check python/tests/

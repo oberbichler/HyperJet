@@ -109,7 +109,7 @@ private:
   }
 
   struct Zero {
-    HYPERJET_INLINE Zero operator*(const Scalar) const { return Zero(); }
+    static HYPERJET_INLINE Zero operator()(const Scalar) { return Zero(); }
 
     template <typename T> HYPERJET_INLINE T operator+(const T b) const {
       return b;
@@ -122,14 +122,29 @@ private:
   };
 
   struct MinusOne {
-    HYPERJET_INLINE Scalar operator*(const Scalar b) const { return -b; }
+    static HYPERJET_INLINE Scalar operator()(const Scalar b) { return -b; }
   };
 
   struct One {
     HYPERJET_INLINE MinusOne operator-() const { return MinusOne(); }
 
-    HYPERJET_INLINE Scalar operator*(const Scalar b) const { return b; }
+    static HYPERJET_INLINE Scalar operator()(const Scalar b) { return b; }
   };
+
+  template <typename T>
+  static constexpr bool is_tag_v =
+      std::is_same_v<T, Zero> || std::is_same_v<T, One> ||
+      std::is_same_v<T, MinusOne>;
+
+  template <typename TCoeff>
+  HYPERJET_INLINE static auto mul(const TCoeff &coeff,
+                                  const Scalar &val) noexcept {
+    if constexpr (is_tag_v<TCoeff>) {
+      return TCoeff{}(val);
+    } else {
+      return coeff * val;
+    }
+  }
 
   template <bool TIncrement, typename TDa, typename TDaa>
   HYPERJET_INLINE void unary(const Data &a, const Scalar f, const TDa da,
@@ -144,9 +159,9 @@ private:
 
     for (index i = 1; i < n; i++) {
       if constexpr (TIncrement) {
-        r[i] += da * a[i];
+        r[i] += mul(da, a[i]);
       } else {
-        r[i] = da * a[i];
+        r[i] = mul(da, a[i]);
       }
     }
 
@@ -157,7 +172,7 @@ private:
     index k = 1 + size();
 
     for (index i = 0; i < size(); i++) {
-      const auto ca = daa * a[1 + i];
+      const auto ca = mul(daa, a[1 + i]);
 
       for (index j = i; j < size(); j++) {
         r[k++] += ca * a[1 + j];
@@ -181,9 +196,9 @@ private:
     } else {
       for (index i = 1; i < n; i++) {
         if constexpr (TIncrement) {
-          r[i] += da * a[i] + db * b[i];
+          r[i] += mul(da, a[i]) + mul(db, b[i]);
         } else {
-          r[i] = da * a[i] + db * b[i];
+          r[i] = mul(da, a[i]) + mul(db, b[i]);
         }
       }
     }
@@ -196,8 +211,8 @@ private:
       index k = 1 + size();
 
       for (index i = 0; i < size(); i++) {
-        const auto ca = daa * a[1 + i] + dab * b[1 + i];
-        const auto cb = dab * a[1 + i] + dbb * b[1 + i];
+        const auto ca = mul(daa, a[1 + i]) + mul(dab, b[1 + i]);
+        const auto cb = mul(dab, a[1 + i]) + mul(dbb, b[1 + i]);
 
         for (index j = i; j < size(); j++) {
           r[k++] += ca * a[1 + j] + cb * b[1 + j];
@@ -225,9 +240,9 @@ private:
     } else {
       for (index i = 1; i < n; i++) {
         if constexpr (TIncrement) {
-          r[i] += da * a[i] + db * b[i] + dc * c[i];
+          r[i] += mul(da, a[i]) + mul(db, b[i]) + mul(dc, c[i]);
         } else {
-          r[i] = da * a[i] + db * b[i] + dc * c[i];
+          r[i] = mul(da, a[i]) + mul(db, b[i]) + mul(dc, c[i]);
         }
       }
     }
@@ -241,9 +256,12 @@ private:
       index k = 1 + size();
 
       for (index i = 0; i < size(); i++) {
-        const auto ca = daa * a[1 + i] + dab * b[1 + i] + dac * c[1 + i];
-        const auto cb = dab * a[1 + i] + dbb * b[1 + i] + dbc * c[1 + i];
-        const auto cc = dac * a[1 + i] + dbc * b[1 + i] + dcc * c[1 + i];
+        const auto ca =
+            mul(daa, a[1 + i]) + mul(dab, b[1 + i]) + mul(dac, c[1 + i]);
+        const auto cb =
+            mul(dab, a[1 + i]) + mul(dbb, b[1 + i]) + mul(dbc, c[1 + i]);
+        const auto cc =
+            mul(dac, a[1 + i]) + mul(dbc, b[1 + i]) + mul(dcc, c[1 + i]);
 
         for (index j = i; j < size(); j++) {
           r[k++] += ca * a[1 + j] + cb * b[1 + j] + cc * c[1 + j];
@@ -298,13 +316,9 @@ public:
 
   static constexpr index order() { return TOrder; }
 
-  Data &data() { return m_data; }
+  auto &data(this auto &self) { return self.m_data; }
 
-  Scalar const *ptr() const { return m_data.data(); }
-
-  Scalar *ptr() { return m_data.data(); }
-
-  const Data &data() const { return m_data; }
+  auto ptr(this auto &self) { return self.m_data.data(); }
 
   static constexpr index static_size() { return TSize; }
 
@@ -550,59 +564,36 @@ public:
     }
   }
 
-  Scalar &f() { return m_data[0]; }
-
-  Scalar f() const { return m_data[0]; }
+  auto &f(this auto &self) { return self.m_data[0]; }
 
   void set_f(const Scalar value) { m_data[0] = value; }
 
-  Scalar &g(const index i) {
-    assert(i < size());
+  auto &g(this auto &self, const index i) {
+    assert(0 <= i && i < self.size());
 
-    return m_data[1 + i];
-  }
-
-  Scalar g(const index i) const {
-    assert(0 <= i && i < size());
-
-    return m_data[1 + i];
+    return self.m_data[1 + i];
   }
 
   void set_g(const index i, const Scalar value) { g(i) = value; }
 
-  Scalar &h(const index i) {
-    assert(0 <= i && i < size() * (size() + 1) / 2);
+  auto &h(this auto &self, const index i) {
+    assert(0 <= i && i < self.size() * (self.size() + 1) / 2);
 
-    return m_data[1 + size() + i];
-  }
-
-  Scalar h(const index i) const {
-    assert(0 <= i && i < size() * (size() + 1) / 2);
-
-    return m_data[1 + size() + i];
+    return self.m_data[1 + self.size() + i];
   }
 
   void set_h(const index i, const Scalar value) { h(i) = value; }
 
-  Scalar &h(const index i, const index j) {
-    assert(0 <= i && i < size());
-    assert(0 <= j && j < size());
+  auto &h(this auto &self, const index i, const index j) {
+    assert(0 <= i && i < self.size());
+    assert(0 <= j && j < self.size());
 
     if (i < j) {
-      return m_data[1 + size() + (2 * size() - 1 - i) * i / 2 + j];
+      return self
+          .m_data[1 + self.size() + (2 * self.size() - 1 - i) * i / 2 + j];
     } else {
-      return m_data[1 + size() + (2 * size() - 1 - j) * j / 2 + i];
-    }
-  }
-
-  Scalar h(const index i, const index j) const {
-    assert(0 <= i && i < size());
-    assert(0 <= j && j < size());
-
-    if (i < j) {
-      return m_data[1 + size() + (2 * size() - 1 - i) * i / 2 + j];
-    } else {
-      return m_data[1 + size() + (2 * size() - 1 - j) * j / 2 + i];
+      return self
+          .m_data[1 + self.size() + (2 * self.size() - 1 - j) * j / 2 + i];
     }
   }
 

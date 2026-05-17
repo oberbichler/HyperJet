@@ -31,7 +31,7 @@ endif()
 file(GLOB sources CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 add_executable(HyperJetTest ${sources})
 target_link_libraries(HyperJetTest doctest::doctest hyperjet::hyperjet Eigen)
-set_target_properties(HyperJetTest PROPERTIES CXX_STANDARD 17)
+set_target_properties(HyperJetTest PROPERTIES CXX_STANDARD 23)
 
 # --- Add HyperJetTest
 

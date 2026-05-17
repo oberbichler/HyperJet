@@ -35,8 +35,16 @@ jobs:
           path: "**/cpm_modules"
           key: ${{ github.workflow }}-cpm-modules-${{ matrix.os }}-${{ hashFiles('**/CMakeLists.txt', '**/*.cmake') }}
 
+      - name: Install GCC 14
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-14 g++-14
+
       - name: Configure
         run: cmake -Stest -Bbuild -DCMAKE_BUILD_TYPE=${{ matrix.build-type }}
+        env:
+          CXX: ${{ runner.os == 'Linux' && 'g++-14' || '' }}
 
       - name: Build
         run: cmake --build build --config ${{ matrix.build-type }} -j4

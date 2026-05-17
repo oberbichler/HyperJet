@@ -15,7 +15,7 @@ CPMAddPackage(
 )
 
 if (benchmark_ADDED)
-  set_target_properties(benchmark PROPERTIES CXX_STANDARD 17)
+  set_target_properties(benchmark PROPERTIES CXX_STANDARD 23)
 endif()
 
 CPMAddPackage(
@@ -50,4 +50,4 @@ target_compile_definitions(Benchmark PRIVATE
   -DHYPERJET_EXCEPTIONS
 )
 
-set_target_properties(Benchmark PROPERTIES CXX_STANDARD 17)
+set_target_properties(Benchmark PROPERTIES CXX_STANDARD 23)
