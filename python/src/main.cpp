@@ -194,8 +194,7 @@ PYBIND11_MODULE(hyperjet, m)
                     }
                     break;
                 }
-                return results;
-            },
+                return results; },
             "values"_a, "order"_a = 2);
     }
 }
