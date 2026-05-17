@@ -1,0 +1,51 @@
+[build-system]
+requires = ["scikit-build-core>=0.10", "pybind11>=2.13"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "hyperjet"
+version = "0.0.0"
+description = "Automatic differentiation with dual numbers"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+authors = [
+    { name = "Thomas Oberbichler", email = "thomas.oberbichler@gmail.com" },
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "numpy>=2.0",
+    "msvc-runtime; platform_system == 'Windows'",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8.0"]
+
+[project.urls]
+Homepage = "https://github.com/oberbichler/HyperJet"
+Repository = "https://github.com/oberbichler/HyperJet"
+
+[dependency-groups]
+test = ["pytest>=8.0"]
+
+[tool.scikit-build]
+minimum-version = "0.10"
+cmake.source-dir = "python"
+cmake.build-type = "Release"
+cmake.minimum-version = "3.14"
+
+[tool.scikit-build.cmake.define]
+HYPERJET_VERSION = {env = "HYPERJET_VERSION", default = "0.0.0"}
+
+[tool.pytest.ini_options]
+testpaths = ["python/tests"]
+
+[tool.uv]
+default-groups = ["test"]
