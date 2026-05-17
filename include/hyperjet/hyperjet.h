@@ -298,13 +298,9 @@ public:
 
   static constexpr index order() { return TOrder; }
 
-  Data &data() { return m_data; }
+  auto &data(this auto &self) { return self.m_data; }
 
-  Scalar const *ptr() const { return m_data.data(); }
-
-  Scalar *ptr() { return m_data.data(); }
-
-  const Data &data() const { return m_data; }
+  auto ptr(this auto &self) { return self.m_data.data(); }
 
   static constexpr index static_size() { return TSize; }
 
@@ -550,59 +546,34 @@ public:
     }
   }
 
-  Scalar &f() { return m_data[0]; }
-
-  Scalar f() const { return m_data[0]; }
+  auto &f(this auto &self) { return self.m_data[0]; }
 
   void set_f(const Scalar value) { m_data[0] = value; }
 
-  Scalar &g(const index i) {
-    assert(i < size());
+  auto &g(this auto &self, const index i) {
+    assert(0 <= i && i < self.size());
 
-    return m_data[1 + i];
-  }
-
-  Scalar g(const index i) const {
-    assert(0 <= i && i < size());
-
-    return m_data[1 + i];
+    return self.m_data[1 + i];
   }
 
   void set_g(const index i, const Scalar value) { g(i) = value; }
 
-  Scalar &h(const index i) {
-    assert(0 <= i && i < size() * (size() + 1) / 2);
+  auto &h(this auto &self, const index i) {
+    assert(0 <= i && i < self.size() * (self.size() + 1) / 2);
 
-    return m_data[1 + size() + i];
-  }
-
-  Scalar h(const index i) const {
-    assert(0 <= i && i < size() * (size() + 1) / 2);
-
-    return m_data[1 + size() + i];
+    return self.m_data[1 + self.size() + i];
   }
 
   void set_h(const index i, const Scalar value) { h(i) = value; }
 
-  Scalar &h(const index i, const index j) {
-    assert(0 <= i && i < size());
-    assert(0 <= j && j < size());
+  auto &h(this auto &self, const index i, const index j) {
+    assert(0 <= i && i < self.size());
+    assert(0 <= j && j < self.size());
 
     if (i < j) {
-      return m_data[1 + size() + (2 * size() - 1 - i) * i / 2 + j];
+      return self.m_data[1 + self.size() + (2 * self.size() - 1 - i) * i / 2 + j];
     } else {
-      return m_data[1 + size() + (2 * size() - 1 - j) * j / 2 + i];
-    }
-  }
-
-  Scalar h(const index i, const index j) const {
-    assert(0 <= i && i < size());
-    assert(0 <= j && j < size());
-
-    if (i < j) {
-      return m_data[1 + size() + (2 * size() - 1 - i) * i / 2 + j];
-    } else {
-      return m_data[1 + size() + (2 * size() - 1 - j) * j / 2 + i];
+      return self.m_data[1 + self.size() + (2 * self.size() - 1 - j) * j / 2 + i];
     }
   }
 
