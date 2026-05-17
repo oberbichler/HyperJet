@@ -256,9 +256,12 @@ private:
       index k = 1 + size();
 
       for (index i = 0; i < size(); i++) {
-        const auto ca = mul(daa, a[1 + i]) + mul(dab, b[1 + i]) + mul(dac, c[1 + i]);
-        const auto cb = mul(dab, a[1 + i]) + mul(dbb, b[1 + i]) + mul(dbc, c[1 + i]);
-        const auto cc = mul(dac, a[1 + i]) + mul(dbc, b[1 + i]) + mul(dcc, c[1 + i]);
+        const auto ca =
+            mul(daa, a[1 + i]) + mul(dab, b[1 + i]) + mul(dac, c[1 + i]);
+        const auto cb =
+            mul(dab, a[1 + i]) + mul(dbb, b[1 + i]) + mul(dbc, c[1 + i]);
+        const auto cc =
+            mul(dac, a[1 + i]) + mul(dbc, b[1 + i]) + mul(dcc, c[1 + i]);
 
         for (index j = i; j < size(); j++) {
           r[k++] += ca * a[1 + j] + cb * b[1 + j] + cc * c[1 + j];
@@ -586,9 +589,11 @@ public:
     assert(0 <= j && j < self.size());
 
     if (i < j) {
-      return self.m_data[1 + self.size() + (2 * self.size() - 1 - i) * i / 2 + j];
+      return self
+          .m_data[1 + self.size() + (2 * self.size() - 1 - i) * i / 2 + j];
     } else {
-      return self.m_data[1 + self.size() + (2 * self.size() - 1 - j) * j / 2 + i];
+      return self
+          .m_data[1 + self.size() + (2 * self.size() - 1 - j) * j / 2 + i];
     }
   }
 
