@@ -56,6 +56,3 @@ test-command = "pytest {project}"
 
 [tool.cibuildwheel.macos]
 archs = ["auto", "universal2"]
-
-[tool.cibuildwheel.macos.test]
-skip = ["*universal2:arm64"]
