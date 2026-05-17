@@ -11,8 +11,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  clang-format:
-    name: clang-format
+  format:
+    name: format
     runs-on: ubuntu-latest
 
     steps:
@@ -20,5 +20,8 @@ jobs:
 
       - uses: astral-sh/setup-uv@v6
 
-      - name: Check formatting
+      - name: Check C++ formatting
         run: uv run --group dev clang-format --dry-run --Werror include/hyperjet/*.h python/src/*.h python/src/*.cpp test/src/*.cpp benchmark/src/*.cpp
+
+      - name: Check Python formatting
+        run: uv run --group dev ruff format --check python/tests/
