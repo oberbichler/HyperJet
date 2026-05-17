@@ -2085,7 +2085,7 @@ namespace hyperjet
 
         Scalar eval(const Data d) const
         {
-            Scalar r(0);
+            Scalar r(m_f);
 
             for (const auto coef : m_d)
             {
