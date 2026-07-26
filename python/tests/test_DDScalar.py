@@ -711,6 +711,25 @@ def test_pad_left(ctx):
             u.pad_left(new_size=5)
 
 
+@pytest.mark.parametrize("ctx", **test_data)
+def test_self_multiplication(ctx):
+    r = ctx.u1
+    r *= r
+
+    assert_allclose(r.data, (ctx.u1 * ctx.u1).data, atol=1e-16)
+
+
+@pytest.mark.parametrize("ctx", **test_data)
+def test_self_division(ctx):
+    r = ctx.u1
+    r /= r
+
+    expected = np.zeros(len(r.data))
+    expected[0] = 1
+
+    assert_allclose(r.data, expected, atol=1e-15)
+
+
 # serialization
 
 

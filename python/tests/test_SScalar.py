@@ -40,3 +40,28 @@ def test_mul():
     assert_allclose(r.d("x"), 1)
     assert_allclose(r.d("y"), 2)
     assert_allclose(r.d("z"), 0)
+
+
+def test_self_multiplication():
+    r = hj.SScalar(f=3, d={"x": 1, "y": 6})
+    r *= r
+
+    u = hj.SScalar(f=3, d={"x": 1, "y": 6})
+    e = u * hj.SScalar(f=3, d={"x": 1, "y": 6})
+
+    assert_allclose(r.f, e.f)
+    assert_allclose(r.d("x"), e.d("x"))
+    assert_allclose(r.d("y"), e.d("y"))
+
+    assert_allclose(r.f, 9)
+    assert_allclose(r.d("x"), 6)
+    assert_allclose(r.d("y"), 36)
+
+
+def test_self_division():
+    r = hj.SScalar(f=3, d={"x": 1, "y": 6})
+    r /= r
+
+    assert_allclose(r.f, 1)
+    assert_allclose(r.d("x"), 0, atol=1e-15)
+    assert_allclose(r.d("y"), 0, atol=1e-15)

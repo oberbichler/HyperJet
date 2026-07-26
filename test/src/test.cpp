@@ -287,6 +287,49 @@ TEST_CASE("IncDiv") {
   REQUIRE(r1.h(2, 2) == doctest::Approx(1.43750));
 }
 
+// An in-place operator has to give the same result as its binary counterpart,
+// including when both operands are the same object.
+
+TEST_CASE("Self multiplication") {
+  auto r1 = dd1;
+  r1 *= r1;
+
+  const auto r2 = dd1 * dd1;
+
+  REQUIRE(r1.f() == doctest::Approx(r2.f()));
+  REQUIRE(r1.g(0) == doctest::Approx(r2.g(0)));
+  REQUIRE(r1.g(1) == doctest::Approx(r2.g(1)));
+  REQUIRE(r1.g(2) == doctest::Approx(r2.g(2)));
+  REQUIRE(r1.h(0, 0) == doctest::Approx(r2.h(0, 0)));
+  REQUIRE(r1.h(0, 1) == doctest::Approx(r2.h(0, 1)));
+  REQUIRE(r1.h(0, 2) == doctest::Approx(r2.h(0, 2)));
+  REQUIRE(r1.h(1, 1) == doctest::Approx(r2.h(1, 1)));
+  REQUIRE(r1.h(1, 2) == doctest::Approx(r2.h(1, 2)));
+  REQUIRE(r1.h(2, 2) == doctest::Approx(r2.h(2, 2)));
+
+  // dd1 is 3 with g0 = 1 and h00 = 0, so x^2 gives 9, 2*x*g0 and 2*g0^2
+  REQUIRE(r1.f() == doctest::Approx(9.0));
+  REQUIRE(r1.g(0) == doctest::Approx(6.0));
+  REQUIRE(r1.h(0, 0) == doctest::Approx(2.0));
+}
+
+TEST_CASE("Self division") {
+  auto r1 = dd1;
+  r1 /= r1;
+
+  // x / x is 1 and all of its derivatives vanish
+  REQUIRE(r1.f() == doctest::Approx(1.0));
+  REQUIRE(r1.g(0) == doctest::Approx(0.0));
+  REQUIRE(r1.g(1) == doctest::Approx(0.0));
+  REQUIRE(r1.g(2) == doctest::Approx(0.0));
+  REQUIRE(r1.h(0, 0) == doctest::Approx(0.0));
+  REQUIRE(r1.h(0, 1) == doctest::Approx(0.0));
+  REQUIRE(r1.h(0, 2) == doctest::Approx(0.0));
+  REQUIRE(r1.h(1, 1) == doctest::Approx(0.0));
+  REQUIRE(r1.h(1, 2) == doctest::Approx(0.0));
+  REQUIRE(r1.h(2, 2) == doctest::Approx(0.0));
+}
+
 TEST_CASE("Pow") {
   using std::pow;
 
@@ -755,6 +798,34 @@ TEST_CASE("SScalar IncDiv") {
   REQUIRE(r1.d("x") == doctest::Approx(-1.06250));
   REQUIRE(r1.d("y") == doctest::Approx(1.31250));
   REQUIRE(r1.d("z") == doctest::Approx(1.00000));
+}
+
+TEST_CASE("SScalar Self multiplication") {
+  auto r1 = s1;
+  r1 *= r1;
+
+  const auto r2 = s1 * s1;
+
+  REQUIRE(r1.f() == doctest::Approx(r2.f()));
+  REQUIRE(r1.d("x") == doctest::Approx(r2.d("x")));
+  REQUIRE(r1.d("y") == doctest::Approx(r2.d("y")));
+  REQUIRE(r1.d("z") == doctest::Approx(r2.d("z")));
+
+  // s1 is 3 with dx = 1, dy = 6 and dz = 4
+  REQUIRE(r1.f() == doctest::Approx(9.0));
+  REQUIRE(r1.d("x") == doctest::Approx(6.0));
+  REQUIRE(r1.d("y") == doctest::Approx(36.0));
+  REQUIRE(r1.d("z") == doctest::Approx(24.0));
+}
+
+TEST_CASE("SScalar Self division") {
+  auto r1 = s1;
+  r1 /= r1;
+
+  REQUIRE(r1.f() == doctest::Approx(1.0));
+  REQUIRE(r1.d("x") == doctest::Approx(0.0));
+  REQUIRE(r1.d("y") == doctest::Approx(0.0));
+  REQUIRE(r1.d("z") == doctest::Approx(0.0));
 }
 
 TEST_CASE("SScalar Pow") {
