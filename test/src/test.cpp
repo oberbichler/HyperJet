@@ -747,3 +747,22 @@ TEST_CASE("SScalar Tan") {
   REQUIRE(r1.d("y") == doctest::Approx(6.12191710165456100));
   REQUIRE(r1.d("z") == doctest::Approx(4.08127806776970700));
 }
+TEST_CASE("SScalar Hypot") {
+  using std::hypot;
+
+  const auto r1 = hypot(s1, s2);
+
+  REQUIRE(r1.size() == 3);
+  REQUIRE(r1.f() == doctest::Approx(5.0));
+  REQUIRE(r1.d("x") == doctest::Approx(6.2000000000000000));
+  REQUIRE(r1.d("y") == doctest::Approx(4.4000000000000000));
+  REQUIRE(r1.d("z") == doctest::Approx(2.4000000000000000));
+
+  const auto r2 = hypot(s1, s2, s3);
+
+  REQUIRE(r2.size() == 3);
+  REQUIRE(r2.f() == doctest::Approx(5.0089919145472770));
+  REQUIRE(r2.d("x") == doctest::Approx(6.1948592709606240));
+  REQUIRE(r2.d("y") == doctest::Approx(4.4400151526317840));
+  REQUIRE(r2.d("z") == doctest::Approx(2.4076700872634590));
+}

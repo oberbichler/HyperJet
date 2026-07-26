@@ -10,6 +10,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 env:
   CTEST_OUTPUT_ON_FAILURE: 1
   CPM_SOURCE_CACHE: ${{ github.workspace }}/cpm_modules
@@ -53,3 +56,37 @@ jobs:
         run: |
           cd build
           ctest --build-config ${{ matrix.build-type }}
+
+  sanitizers:
+    name: sanitizers (clang, asan+ubsan)
+
+    runs-on: ubuntu-latest
+
+    env:
+      UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+      ASAN_OPTIONS: detect_stack_use_after_return=1
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/cache@v4
+        with:
+          path: "**/cpm_modules"
+          key: ${{ github.workflow }}-cpm-modules-sanitizers-${{ hashFiles('**/CMakeLists.txt', '**/*.cmake') }}
+
+      # clang doubles as a second front-end next to GCC 14 and MSVC, so this
+      # job is also where -Werror is enforced.
+      - name: Configure
+        run: >
+          cmake -Stest -Bbuild -DCMAKE_BUILD_TYPE=Debug
+          -DHYPERJET_SANITIZE=ON -DHYPERJET_WERROR=ON
+        env:
+          CXX: clang++
+
+      - name: Build
+        run: cmake --build build -j4
+
+      - name: Test
+        run: |
+          cd build
+          ctest
