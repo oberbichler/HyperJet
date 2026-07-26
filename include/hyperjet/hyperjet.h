@@ -1,12 +1,14 @@
 #pragma once
 
-#include <array>    // array
-#include <assert.h> // assert
+#include <algorithm> // copy, fill
+#include <array>     // array
+#include <assert.h>  // assert
 #include <cmath> // acos, acosh, asin, asinh, atan, atanh, atan2, cbrt, cos, cosh, exp, hypot, log, log2, log10, pow, sin, sinh, sqrt, tan, tanh
 #include <cstddef>          // ptrdiff_t
 #include <initializer_list> // initializer_list
 #include <ostream>          // ostream
 #include <sstream>          // stringstream
+#include <stdexcept>        // runtime_error
 #include <string>           // string
 #include <type_traits>      // conditional
 #include <unordered_map>    // unordered_map
@@ -323,7 +325,7 @@ public:
     static_assert(!is_dynamic());
   }
 
-  DDScalar(const Data &data, const index size) : m_data(data), m_size(size) {
+  DDScalar(const Data &data, const index size) : m_size(size), m_data(data) {
     static_assert(0 < order() && order() <= 2);
 
     static_assert(is_dynamic());
@@ -2134,7 +2136,6 @@ public: // methods
     using std::hypot;
 
     const auto f = hypot(a.m_f, b.m_f);
-    const auto f3 = f * f * f;
     const auto da = a.m_f / f;
     const auto db = b.m_f / f;
 
@@ -2145,11 +2146,6 @@ public: // methods
     using std::hypot;
 
     const auto f = hypot(a.m_f, b.m_f, c.m_f);
-
-    const auto f3 = f * f * f;
-    const auto a2 = a.m_f * a.m_f;
-    const auto b2 = b.m_f * b.m_f;
-    const auto c2 = c.m_f * c.m_f;
 
     const auto da = a.m_f / f;
     const auto db = b.m_f / f;
