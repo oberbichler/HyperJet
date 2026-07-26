@@ -17,6 +17,18 @@ namespace hj = hyperjet;
 namespace py = pybind11;
 using namespace py::literals;
 
+// The accessors in the C++ header treat their indices as a precondition and
+// only check them via assert, which is compiled out in release builds. Python
+// callers are untrusted, so the indices have to be validated here.
+template <typename T>
+void check_index(const T &self, const hj::index row, const hj::index col) {
+  if (row < 0 || self.size() <= row || col < 0 || self.size() <= col) {
+    throw py::index_error("index (" + std::to_string(row) + ", " +
+                          std::to_string(col) + ") is out of range for size " +
+                          std::to_string(self.size()));
+  }
+}
+
 template <typename T> auto bind(py::module &m, const std::string &name) {
   py::class_<T> cls(m, name.c_str());
 
@@ -99,12 +111,21 @@ template <typename T> auto bind(py::module &m, const std::string &name) {
     cls.def(
            "h",
            [](const T &self, hj::index row, hj::index col) ->
-           typename T::Scalar { return self.h(row, col); },
+           typename T::Scalar {
+             check_index(self, row, col);
+
+             return self.h(row, col);
+           },
            "row"_a, "col"_a)
-        .def("set_h",
-             py::overload_cast<hj::index, hj::index, typename T::Scalar>(
-                 &T::set_h),
-             "row"_a, "col"_a, "value"_a)
+        .def(
+            "set_h",
+            [](T &self, hj::index row, hj::index col,
+               typename T::Scalar value) {
+              check_index(self, row, col);
+
+              self.set_h(row, col, value);
+            },
+            "row"_a, "col"_a, "value"_a)
         .def("hm", py::overload_cast<std::string>(&T::hm, py::const_),
              "mode"_a = "full")
         .def("set_hm", &T::set_hm, "value"_a);

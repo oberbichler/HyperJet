@@ -95,6 +95,28 @@ private:
     }
   }
 
+  HYPERJET_INLINE static void check_valid_index(const index i,
+                                                const index size) {
+    if constexpr (throw_exceptions()) {
+      if (i < 0 || size <= i) {
+        throw std::runtime_error("Invalid index");
+      }
+    } else {
+      assert(0 <= i && i < size && "Invalid index");
+    }
+  }
+
+  HYPERJET_INLINE static void check_pad_size(const index size,
+                                             const index new_size) {
+    if constexpr (throw_exceptions()) {
+      if (new_size < size) {
+        throw std::runtime_error("Invalid new size");
+      }
+    } else {
+      assert(new_size >= size && "Invalid new size");
+    }
+  }
+
   HYPERJET_INLINE static void check_equal_size(const index size_a,
                                                const index size_b) {
     if constexpr (TSize == Dynamic) {
@@ -340,6 +362,7 @@ public:
 
   void resize(const index size) {
     static_assert(is_dynamic());
+    check_valid_size(size);
     m_size = size;
     const index n = data_length_from_size(size);
     m_data.resize(n);
@@ -347,6 +370,8 @@ public:
 
   Type pad_left(const index new_size) const {
     static_assert(is_dynamic());
+
+    check_pad_size(size(), new_size);
 
     Type result = empty(new_size);
 
@@ -386,6 +411,8 @@ public:
 
   Type pad_right(const index new_size) const {
     static_assert(is_dynamic());
+
+    check_pad_size(size(), new_size);
 
     Type result = empty(new_size);
 
@@ -454,6 +481,7 @@ public:
 
   static Type empty(const index size) {
     if constexpr (is_dynamic()) {
+      check_valid_size(size);
       const index n = data_length_from_size(size);
       const Data data(n);
       Type result(data, size);
@@ -479,6 +507,7 @@ public:
 
   static Type zero(const index size) {
     if constexpr (is_dynamic()) {
+      check_valid_size(size);
       const Data data(data_length_from_size(size), 0);
       Type result(data, size);
       return result;
@@ -507,6 +536,7 @@ public:
 
   static Type variable(const index i, const Scalar f) {
     static_assert(!is_dynamic());
+    check_valid_index(i, TSize);
     Type result = zero();
     result.f() = f;
     result.g(i) = 1;
@@ -516,6 +546,7 @@ public:
   static Type variable(const index i, const Scalar f, const index size) {
     if constexpr (is_dynamic()) {
       Type result = zero(size);
+      check_valid_index(i, size);
       result.f() = f;
       result.g(i) = 1;
       return result;
@@ -635,6 +666,9 @@ public:
   void hm(const std::string mode, Eigen::Ref<Matrix> out) const
     requires(order() == 2)
   {
+    check_equal_size(size(), out.rows());
+    check_equal_size(size(), out.cols());
+
     index it = 0;
 
     for (index i = 0; i < size(); i++) {
@@ -663,6 +697,9 @@ public:
   void set_hm(const Eigen::Ref<const Matrix> &value)
     requires(order() == 2)
   {
+    check_equal_size(size(), value.rows());
+    check_equal_size(size(), value.cols());
+
     index it = 0;
 
     for (index i = 0; i < size(); i++) {
@@ -709,6 +746,8 @@ public:
 
   Scalar eval(typename std::conditional < TSize == Dynamic, std::vector<Scalar>,
               std::array<Scalar, TSize<0 ? 0 : TSize>>::type d) const {
+    check_equal_size(size(), length(d));
+
     Scalar result = f();
 
     for (index i = 0; i < size(); i++) {

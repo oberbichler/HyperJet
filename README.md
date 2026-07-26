@@ -124,6 +124,12 @@ f.d("y")   # df/dy
 >>> 1.0
 ```
 
+## Validation
+
+Arguments coming from Python are validated. Out-of-range Hessian indices raise `IndexError`; inconsistent sizes raise `RuntimeError` — `eval` with the wrong number of values, `set_hm` with a mismatched shape, a negative size, a variable index outside the gradient, or padding below the current size.
+
+In C++ the element accessors `g(i)`, `h(i)` and `h(i, j)` treat their indices as a precondition: like `std::vector::operator[]` they are only checked via `assert` in debug builds, so they stay free of branches in hot loops. Everything that creates, resizes or evaluates a scalar validates its arguments and throws `std::runtime_error`. Define `HYPERJET_NO_EXCEPTIONS` to fall back to `assert` throughout.
+
 ## NumPy Integration
 
 HyperJet scalars work with NumPy for vector and matrix operations.

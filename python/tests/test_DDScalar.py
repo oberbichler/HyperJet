@@ -565,6 +565,79 @@ def test_hessian_access(ctx):
         u.set_hm([[1, 0], [0, 1]])
 
 
+@pytest.mark.parametrize("ctx", **test_data)
+def test_variable_with_index_out_of_range(ctx):
+    for i in [2, -1]:
+        if ctx.dtype.is_dynamic:
+            with pytest.raises(RuntimeError):
+                ctx.dtype.variable(i=i, f=1, size=2)
+        else:
+            with pytest.raises(RuntimeError):
+                ctx.dtype.variable(i=i, f=1)
+
+
+@pytest.mark.parametrize("ctx", **test_data)
+def test_negative_size(ctx):
+    if not ctx.dtype.is_dynamic:
+        return
+
+    with pytest.raises(RuntimeError):
+        ctx.dtype.empty(size=-1)
+
+    with pytest.raises(RuntimeError):
+        ctx.dtype.zero(size=-1)
+
+    with pytest.raises(RuntimeError):
+        ctx.dtype.constant(f=1, size=-1)
+
+    with pytest.raises(RuntimeError):
+        ctx.dtype.constant(f=1, size=2).resize(-1)
+
+
+@pytest.mark.parametrize("ctx", **test_data)
+def test_pad_below_current_size(ctx):
+    if not ctx.dtype.is_dynamic:
+        return
+
+    u = ctx.dtype.constant(f=1, size=3)
+
+    with pytest.raises(RuntimeError):
+        u.pad_right(new_size=2)
+
+    with pytest.raises(RuntimeError):
+        u.pad_left(new_size=2)
+
+
+@pytest.mark.parametrize("ctx", **test_data)
+def test_hessian_index_out_of_range(ctx):
+    if ctx.dtype.order == 1:
+        return
+
+    u = ctx.from_data([1, 2, 3, 4, 5, 6])
+
+    for row, col in [(2, 0), (0, 2), (-1, 0), (0, -1)]:
+        with pytest.raises(IndexError):
+            u.h(row, col)
+
+        with pytest.raises(IndexError):
+            u.set_h(row, col, 1)
+
+
+def test_set_hm_with_wrong_shape():
+    u = hj.DDScalar([1, 2, 3, 4, 5, 6])
+
+    with pytest.raises(RuntimeError):
+        u.set_hm(np.ones((3, 3)))
+
+    with pytest.raises(RuntimeError):
+        u.set_hm(np.ones((1, 1)))
+
+
+def test_init_by_array_with_inconsistent_shape():
+    with pytest.raises(RuntimeError):
+        hj.DDScalar(f=1, g=[1, 2, 3], hm=np.ones((2, 2)))
+
+
 def test_is_dynamic():
     assert_equal(static_set_2.u1.is_dynamic, False)
     assert_equal(dynamic_set_2.u1.is_dynamic, True)
@@ -594,6 +667,24 @@ def test_resize(ctx):
 def test_eval():
     u = hj.DDScalar([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
     assert_equal(u.eval([11, 12, 13]), 5031.5)
+
+
+def test_eval_with_wrong_number_of_values():
+    u = hj.DDScalar([1, 2, 3, 4, 5, 6])
+
+    with pytest.raises(RuntimeError):
+        u.eval([])
+
+    with pytest.raises(RuntimeError):
+        u.eval([1])
+
+    with pytest.raises(RuntimeError):
+        u.eval([1, 2, 3])
+
+    v = hj.DScalar([1, 2, 3])
+
+    with pytest.raises(RuntimeError):
+        v.eval([1])
 
 
 @pytest.mark.parametrize("ctx", **test_data)
