@@ -311,7 +311,13 @@ public:
       : m_size(size_from_data_length(length(data))) {
     static_assert(0 < order() && order() <= 2);
 
-    std::copy(data.begin(), data.end(), m_data.begin());
+    check_valid_size(m_size);
+
+    if constexpr (is_dynamic()) {
+      m_data.assign(data.begin(), data.end());
+    } else {
+      std::copy(data.begin(), data.end(), m_data.begin());
+    }
   }
 
   static constexpr index order() { return TOrder; }

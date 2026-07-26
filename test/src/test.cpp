@@ -22,6 +22,44 @@ const DDScalar<2, double, 3> dd3{0.3, 0.1, 0.8, 0.2, 0.5,
 const Eigen::Matrix<DDScalar<2, double, 3>, 1, 3> ddv1{dd1, dd2, dd3};
 const Eigen::Matrix<DDScalar<2, double, 3>, 1, 3> ddv2{dd3, dd1, dd2};
 
+// The size of a scalar follows from the length of its data. For static types
+// that length is fixed by the type, so a mismatch has to be rejected.
+
+TEST_CASE("Initializer list construction") {
+  const DDScalar<2, double, Dynamic> a{1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+
+  CHECK(a.size() == 2);
+  CHECK(a.data_length() == 6);
+  CHECK(a.f() == doctest::Approx(1.0));
+  CHECK(a.g(0) == doctest::Approx(2.0));
+  CHECK(a.g(1) == doctest::Approx(3.0));
+  CHECK(a.h(0, 0) == doctest::Approx(4.0));
+  CHECK(a.h(0, 1) == doctest::Approx(5.0));
+  CHECK(a.h(1, 1) == doctest::Approx(6.0));
+
+  const DDScalar<1, double, Dynamic> b{1.0, 2.0, 3.0};
+
+  CHECK(b.size() == 2);
+  CHECK(b.data_length() == 3);
+  CHECK(b.g(1) == doctest::Approx(3.0));
+
+  CHECK_NOTHROW((DDScalar<2, double, 3>{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0,
+                                        9.0, 10.0}));
+
+  // a shorter triangular length leaves the data partially uninitialized
+  CHECK_THROWS_AS((DDScalar<2, double, 3>{1.0, 2.0, 3.0}), std::runtime_error);
+
+  // a longer one writes past the end of the array
+  CHECK_THROWS_AS(
+      (DDScalar<2, double, 3>{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0,
+                              11.0, 12.0, 13.0, 14.0, 15.0}),
+      std::runtime_error);
+
+  // a length that is not triangular at all was already rejected
+  CHECK_THROWS_AS((DDScalar<2, double, 3>{1.0, 2.0, 3.0, 4.0, 5.0}),
+                  std::runtime_error);
+}
+
 TEST_CASE("<< DD") {
   std::stringstream output;
 
