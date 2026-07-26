@@ -951,6 +951,11 @@ public:
   Type &operator*=(const Type &b) {
     check_equal_size(size(), b.size());
 
+    // aliased operands would be read again after being overwritten below
+    if (this == &b) {
+      return *this = *this * b;
+    }
+
     const Data a_m_data = m_data;
 
     const Scalar da = b.f();
@@ -1028,6 +1033,11 @@ public:
     using std::pow;
 
     check_equal_size(size(), b.size());
+
+    // aliased operands would be read again after being overwritten below
+    if (this == &b) {
+      return *this = *this / b;
+    }
 
     const Data a_m_data = m_data;
 
@@ -1947,6 +1957,11 @@ public: // methods
   friend Type operator*(const Scalar a, const Type &b) { return b * a; }
 
   Type &operator*=(const Type &b) {
+    // aliased operands would be read again after being overwritten below
+    if (this == &b) {
+      return *this = *this * b;
+    }
+
     const Scalar da = b.m_f;
     const Scalar db = m_f;
 
@@ -1997,6 +2012,11 @@ public: // methods
 
   Type &operator/=(const Type &b) {
     using std::pow;
+
+    // aliased operands would be read again after being overwritten below
+    if (this == &b) {
+      return *this = *this / b;
+    }
 
     const auto da = 1 / b.m_f;
     const auto db = -m_f / pow(b.m_f, 2);
