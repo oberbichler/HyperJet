@@ -105,6 +105,8 @@ Static variants (`D1Scalar`–`D15Scalar`, `DD1Scalar`–`DD15Scalar`) avoid hea
 
 The convenience function `hj.variables(values, order=2)` automatically selects the appropriate static type when the number of variables is ≤ 15, and falls back to the dynamic variant otherwise.
 
+To change the number of variables of a dynamic scalar, use `pad_left(new_size)` or `pad_right(new_size)`. They insert the new variables before or after the existing ones and remap the gradient and Hessian accordingly. To start from scratch instead, create a new instance with `empty(size)` or `zero(size)`.
+
 First-order types store only a value and a gradient. The Hessian accessors (`h`, `set_h`, `hm`, `set_hm`) therefore exist on second-order types only — in C++ they are constrained via `requires (order() == 2)`, and in Python they are absent from first-order classes.
 
 ### `SScalar` — Sparse dual numbers with named variables

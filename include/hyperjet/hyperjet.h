@@ -368,14 +368,6 @@ public:
     }
   }
 
-  void resize(const index size) {
-    static_assert(is_dynamic());
-    check_valid_size(size);
-    m_size = size;
-    const index n = data_length_from_size(size);
-    m_data.resize(n);
-  }
-
   Type pad_left(const index new_size) const {
     static_assert(is_dynamic());
 
