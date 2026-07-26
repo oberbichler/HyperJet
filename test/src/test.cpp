@@ -901,3 +901,43 @@ TEST_CASE("SScalar Hypot") {
   REQUIRE(r2.d("y") == doctest::Approx(4.4400151526317840));
   REQUIRE(r2.d("z") == doctest::Approx(2.4076700872634590));
 }
+
+// The C++ usage example from the README. Its values are pinned here so the
+// example cannot silently stop compiling or start lying.
+
+TEST_CASE("README example") {
+  auto [x, y] = DDScalar<2, double, 2>::variables(std::array{3.0, 6.0});
+
+  const auto f = (x * y) / (x - y);
+
+  REQUIRE(f.f() == doctest::Approx(-6.0));
+  REQUIRE(f.g(0) == doctest::Approx(-4.0));
+  REQUIRE(f.g(1) == doctest::Approx(1.0));
+
+  // the same computation as the Python quickstart, whose output the README
+  // shows as well
+  REQUIRE(f.h(0, 0) == doctest::Approx(-2.6666666666666667));
+  REQUIRE(f.h(0, 1) == doctest::Approx(1.3333333333333333));
+  REQUIRE(f.h(1, 1) == doctest::Approx(-0.6666666666666666));
+}
+
+TEST_CASE("Variables from an array") {
+  const auto s = DDScalar<2, double, 2>::variables(std::array{3.0, 6.0});
+
+  REQUIRE(s.size() == 2);
+  REQUIRE(s[0].f() == doctest::Approx(3.0));
+  REQUIRE(s[0].g(0) == doctest::Approx(1.0));
+  REQUIRE(s[0].g(1) == doctest::Approx(0.0));
+  REQUIRE(s[1].f() == doctest::Approx(6.0));
+  REQUIRE(s[1].g(0) == doctest::Approx(0.0));
+  REQUIRE(s[1].g(1) == doctest::Approx(1.0));
+
+  // the dynamic variant returns a vector, sized from the array
+  const auto d = DDScalar<2, double, Dynamic>::variables(std::array{3.0, 6.0});
+
+  REQUIRE(d.size() == 2);
+  REQUIRE(d[0].size() == 2);
+  REQUIRE(d[0].f() == doctest::Approx(3.0));
+  REQUIRE(d[0].g(0) == doctest::Approx(1.0));
+  REQUIRE(d[1].g(1) == doctest::Approx(1.0));
+}

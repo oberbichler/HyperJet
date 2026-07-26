@@ -93,7 +93,7 @@ template <typename T> auto bind(py::module &m, const std::string &name) {
         .def_static(
             "variables",
             [](const std::array<typename T::Scalar, T::static_size()> &values) {
-              return T::template variables<T::static_size()>(values);
+              return T::variables(values);
             },
             "values"_a);
   }
