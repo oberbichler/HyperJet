@@ -473,6 +473,53 @@ TEST_CASE("Norm") {
   REQUIRE(r.h(2, 2) == doctest::Approx(9.2320222391647280));
 }
 
+// The Hessian accessors index into m_data behind the gradient. First-order
+// scalars have no such storage, so the accessors must not exist for them.
+
+template <typename T>
+concept HasHessianEntry = requires(T a) { a.h(hyperjet::index(0)); };
+
+template <typename T>
+concept HasHessianElement =
+    requires(T a) { a.h(hyperjet::index(0), hyperjet::index(0)); };
+
+template <typename T>
+concept HasSetHessianEntry =
+    requires(T a) { a.set_h(hyperjet::index(0), typename T::Scalar(0)); };
+
+template <typename T>
+concept HasSetHessianElement = requires(T a) {
+  a.set_h(hyperjet::index(0), hyperjet::index(0), typename T::Scalar(0));
+};
+
+template <typename T>
+concept HasHessianMatrix = requires(const T a) { a.hm(std::string("full")); };
+
+template <typename T>
+concept HasSetHessianMatrix = requires(T a) { a.set_hm(typename T::Matrix()); };
+
+TEST_CASE("Hessian access is restricted to second order") {
+  CHECK(HasHessianEntry<DDScalar<2, double, 3>>);
+  CHECK(HasHessianElement<DDScalar<2, double, 3>>);
+  CHECK(HasSetHessianEntry<DDScalar<2, double, 3>>);
+  CHECK(HasSetHessianElement<DDScalar<2, double, 3>>);
+  CHECK(HasHessianMatrix<DDScalar<2, double, 3>>);
+  CHECK(HasSetHessianMatrix<DDScalar<2, double, 3>>);
+
+  CHECK(HasHessianElement<DDScalar<2, double, Dynamic>>);
+  CHECK(HasHessianMatrix<DDScalar<2, double, Dynamic>>);
+
+  CHECK_FALSE(HasHessianEntry<DDScalar<1, double, 3>>);
+  CHECK_FALSE(HasHessianElement<DDScalar<1, double, 3>>);
+  CHECK_FALSE(HasSetHessianEntry<DDScalar<1, double, 3>>);
+  CHECK_FALSE(HasSetHessianElement<DDScalar<1, double, 3>>);
+  CHECK_FALSE(HasHessianMatrix<DDScalar<1, double, 3>>);
+  CHECK_FALSE(HasSetHessianMatrix<DDScalar<1, double, 3>>);
+
+  CHECK_FALSE(HasHessianElement<DDScalar<1, double, Dynamic>>);
+  CHECK_FALSE(HasHessianMatrix<DDScalar<1, double, Dynamic>>);
+}
+
 const SScalar<double> s1(3.0, {{"x", 1.0}, {"y", 6.0}, {"z", 4.0}});
 const SScalar<double> s2(4.0, {{"x", 7.0}, {"y", 1.0}});
 const SScalar<double> s3(0.3, {{"x", 0.1}, {"y", 0.8}, {"z", 0.2}});

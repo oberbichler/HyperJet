@@ -543,6 +543,28 @@ def test_ndarray(ctx):
     ctx.check(u, [3, 4, 5, 6, 7, 8])
 
 
+@pytest.mark.parametrize("ctx", **test_data)
+def test_hessian_access(ctx):
+    u = ctx.from_data([1, 2, 3, 4, 5, 6])
+
+    if ctx.dtype.order == 2:
+        assert_equal(u.h(0, 0), 4)
+        assert_equal(u.hm(), [[4, 5], [5, 6]])
+        return
+
+    with pytest.raises(AttributeError):
+        u.h(0, 0)
+
+    with pytest.raises(AttributeError):
+        u.set_h(0, 0, 1)
+
+    with pytest.raises(AttributeError):
+        u.hm()
+
+    with pytest.raises(AttributeError):
+        u.set_hm([[1, 0], [0, 1]])
+
+
 def test_is_dynamic():
     assert_equal(static_set_2.u1.is_dynamic, False)
     assert_equal(dynamic_set_2.u1.is_dynamic, True)
@@ -1218,6 +1240,16 @@ def test_dd(ctx):
     dd = hj.dd(v)
 
     assert_equal(dd, v.hm())
+
+
+@pytest.mark.parametrize("ctx", **test_data)
+def test_dd_of_first_order(ctx):
+    if ctx.dtype.order == 2:
+        return
+
+    u = [ctx.u1, ctx.u2]
+
+    assert_equal(hj.dd(u), np.empty((2, 0, 0)))
 
 
 def test_f_of_scalar():

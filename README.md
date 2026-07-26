@@ -105,6 +105,8 @@ Static variants (`D1Scalar`–`D15Scalar`, `DD1Scalar`–`DD15Scalar`) avoid hea
 
 The convenience function `hj.variables(values, order=2)` automatically selects the appropriate static type when the number of variables is ≤ 15, and falls back to the dynamic variant otherwise.
 
+First-order types store only a value and a gradient. The Hessian accessors (`h`, `set_h`, `hm`, `set_hm`) therefore exist on second-order types only — in C++ they are constrained via `requires (order() == 2)`, and in Python they are absent from first-order classes.
+
 ### `SScalar` — Sparse dual numbers with named variables
 
 Stores first-order derivatives in a sparse map keyed by variable name (string). Useful when variables are identified by name rather than index, or when only a small subset of derivatives is non-zero.
