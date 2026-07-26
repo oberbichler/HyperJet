@@ -33,6 +33,9 @@ Repository = "https://github.com/oberbichler/HyperJet"
 
 [dependency-groups]
 dev = ["clang-format>=19.0", "ruff>=0.11"]
+# Separate group: the clang-tidy wheel is ~44 MB against ~2 MB for
+# clang-format, and the format CI job has no use for it.
+tidy = ["clang-tidy>=19.0"]
 test = ["pytest>=8.0"]
 
 [tool.scikit-build]
