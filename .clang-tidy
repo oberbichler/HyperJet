@@ -1,0 +1,44 @@
+---
+# Broad families, minus the checks that fight the domain rather than help it.
+# Each exclusion is deliberate:
+#
+#   bugprone-branch-clone                  false positive on `if constexpr`
+#   bugprone-easily-swappable-parameters   h(i, j), check_equal_size(a, b)
+#   bugprone-throwing-static-init*         only fires on the test fixtures,
+#                                          the header itself has no globals
+#   misc-include-cleaner                   noisy for a single umbrella header
+#   modernize-use-nodiscard                57 sites; annotating the API with
+#                                          [[nodiscard]] is a decision to make
+#                                          on purpose, not a lint fix
+#   modernize-use-trailing-return-type     style the project does not use
+#   portability-avoid-pragma-once          #pragma once is a deliberate choice
+#   readability-function-cognitive-*       binary()/ternary() are inherently so
+#   readability-identifier-length          i, j, f, g, da, daa are the notation
+#   readability-magic-numbers              the constants are the formulas
+#   readability-math-missing-parentheses   precedence is the notation as well
+#   readability-named-parameter            unused parameters in tag types
+Checks: >
+  bugprone-*,
+  clang-analyzer-*,
+  misc-*,
+  modernize-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  -bugprone-branch-clone,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-throwing-static-initialization,
+  -misc-include-cleaner,
+  -modernize-use-nodiscard,
+  -modernize-use-trailing-return-type,
+  -portability-avoid-pragma-once,
+  -readability-function-cognitive-complexity,
+  -readability-identifier-length,
+  -readability-magic-numbers,
+  -readability-math-missing-parentheses,
+  -readability-named-parameter
+
+# Only our own headers. Eigen, doctest and pybind11 are not ours to fix.
+HeaderFilterRegex: 'include/hyperjet/.*\.h$'
+
+FormatStyle: file
