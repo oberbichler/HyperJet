@@ -578,12 +578,14 @@ public:
     return vars;
   }
 
-  template <index T>
+  // std::array is sized by std::size_t, so T has to be as well or the size
+  // can never be deduced from the argument.
+  template <std::size_t T>
   static std::conditional_t<TSize == Dynamic, std::vector<Type>,
                             std::array<Type, T>>
   variables(const std::array<Scalar, T> &values) {
     if constexpr (!is_dynamic()) {
-      static_assert(T == TSize);
+      static_assert(index(T) == TSize);
     }
 
     const index s = length(values);
@@ -595,7 +597,7 @@ public:
       }
       return vars;
     } else {
-      std::array<Type, TSize> vars;
+      std::array<Type, T> vars;
       for (index i = 0; i < s; i++) {
         vars[i] = variable(i, values[i], s);
       }
