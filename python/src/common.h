@@ -92,19 +92,23 @@ template <typename T> auto bind(py::module &m, const std::string &name) {
       .def("__pow__", &T::pow)
       .def("__repr__", &T::to_string)
       .def("abs", &T::abs)
-      .def("eval", &T::eval, "d"_a)
-      .def(
-          "h",
-          [](const T &self, hj::index row, hj::index col) ->
-          typename T::Scalar { return self.h(row, col); },
-          "row"_a, "col"_a)
-      .def("set_h",
-           py::overload_cast<hj::index, hj::index, typename T::Scalar>(
-               &T::set_h),
-           "row"_a, "col"_a, "value"_a)
-      .def("hm", py::overload_cast<std::string>(&T::hm, py::const_),
-           "mode"_a = "full")
-      .def("set_hm", &T::set_hm, "value"_a);
+      .def("eval", &T::eval, "d"_a);
+
+  // methods: Hessian (second order only)
+  if constexpr (T::order() == 2) {
+    cls.def(
+           "h",
+           [](const T &self, hj::index row, hj::index col) ->
+           typename T::Scalar { return self.h(row, col); },
+           "row"_a, "col"_a)
+        .def("set_h",
+             py::overload_cast<hj::index, hj::index, typename T::Scalar>(
+                 &T::set_h),
+             "row"_a, "col"_a, "value"_a)
+        .def("hm", py::overload_cast<std::string>(&T::hm, py::const_),
+             "mode"_a = "full")
+        .def("set_hm", &T::set_hm, "value"_a);
+  }
 
   if constexpr (T::is_dynamic()) {
     cls.def("resize", &T::resize, "size"_a)

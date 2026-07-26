@@ -576,15 +576,23 @@ public:
 
   void set_g(const index i, const Scalar value) { g(i) = value; }
 
-  auto &h(this auto &self, const index i) {
+  auto &h(this auto &self, const index i)
+    requires(order() == 2)
+  {
     assert(0 <= i && i < self.size() * (self.size() + 1) / 2);
 
     return self.m_data[1 + self.size() + i];
   }
 
-  void set_h(const index i, const Scalar value) { h(i) = value; }
+  void set_h(const index i, const Scalar value)
+    requires(order() == 2)
+  {
+    h(i) = value;
+  }
 
-  auto &h(this auto &self, const index i, const index j) {
+  auto &h(this auto &self, const index i, const index j)
+    requires(order() == 2)
+  {
     assert(0 <= i && i < self.size());
     assert(0 <= j && j < self.size());
 
@@ -597,7 +605,9 @@ public:
     }
   }
 
-  void set_h(const index i, const index j, const Scalar value) {
+  void set_h(const index i, const index j, const Scalar value)
+    requires(order() == 2)
+  {
     h(i, j) = value;
   }
 
@@ -612,7 +622,9 @@ public:
 
   Eigen::Ref<Vector> ag() { return Eigen::Map<Vector>(ptr() + 1, size()); }
 
-  Matrix hm(const std::string mode) const {
+  Matrix hm(const std::string mode) const
+    requires(order() == 2)
+  {
     Matrix result(size(), size());
 
     hm(mode, result);
@@ -620,7 +632,9 @@ public:
     return result;
   }
 
-  void hm(const std::string mode, Eigen::Ref<Matrix> out) const {
+  void hm(const std::string mode, Eigen::Ref<Matrix> out) const
+    requires(order() == 2)
+  {
     index it = 0;
 
     for (index i = 0; i < size(); i++) {
@@ -646,7 +660,9 @@ public:
     }
   }
 
-  void set_hm(const Eigen::Ref<const Matrix> &value) {
+  void set_hm(const Eigen::Ref<const Matrix> &value)
+    requires(order() == 2)
+  {
     index it = 0;
 
     for (index i = 0; i < size(); i++) {
