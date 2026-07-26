@@ -520,6 +520,32 @@ TEST_CASE("Hessian access is restricted to second order") {
   CHECK_FALSE(HasHessianMatrix<DDScalar<1, double, Dynamic>>);
 }
 
+// For dynamic scalars the sizes of the arguments are only known at runtime, so
+// they have to be validated instead of relying on the type system.
+
+TEST_CASE("Dynamic size checks") {
+  using D = DDScalar<2, double, Dynamic>;
+
+  const auto a = D::constant(1.0, 2);
+
+  CHECK_THROWS_AS(a.eval(std::vector<double>{1.0}), std::runtime_error);
+  CHECK_THROWS_AS(a.eval(std::vector<double>{1.0, 2.0, 3.0}),
+                  std::runtime_error);
+  CHECK_NOTHROW(a.eval(std::vector<double>{1.0, 2.0}));
+
+  auto b = D::constant(1.0, 2);
+
+  Eigen::MatrixXd too_large = Eigen::MatrixXd::Ones(3, 3);
+  Eigen::MatrixXd matching = Eigen::MatrixXd::Ones(2, 2);
+
+  CHECK_THROWS_AS(b.set_hm(too_large), std::runtime_error);
+  CHECK_NOTHROW(b.set_hm(matching));
+
+  Eigen::MatrixXd out_too_small = Eigen::MatrixXd::Zero(1, 1);
+
+  CHECK_THROWS_AS(b.hm("full", out_too_small), std::runtime_error);
+}
+
 const SScalar<double> s1(3.0, {{"x", 1.0}, {"y", 6.0}, {"z", 4.0}});
 const SScalar<double> s2(4.0, {{"x", 7.0}, {"y", 1.0}});
 const SScalar<double> s3(0.3, {{"x", 0.1}, {"y", 0.8}, {"z", 0.2}});
