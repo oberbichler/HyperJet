@@ -132,8 +132,7 @@ template <typename T> auto bind(py::module &m, const std::string &name) {
   }
 
   if constexpr (T::is_dynamic()) {
-    cls.def("resize", &T::resize, "size"_a)
-        .def("pad_right", &T::pad_right, "new_size"_a)
+    cls.def("pad_right", &T::pad_right, "new_size"_a)
         .def("pad_left", &T::pad_left, "new_size"_a);
   }
 

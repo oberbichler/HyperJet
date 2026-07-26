@@ -590,9 +590,6 @@ def test_negative_size(ctx):
     with pytest.raises(RuntimeError):
         ctx.dtype.constant(f=1, size=-1)
 
-    with pytest.raises(RuntimeError):
-        ctx.dtype.constant(f=1, size=2).resize(-1)
-
 
 @pytest.mark.parametrize("ctx", **test_data)
 def test_pad_below_current_size(ctx):
@@ -649,21 +646,6 @@ def test_size(ctx):
     assert_equal(u.size, 2)
 
 
-# resizing
-
-
-@pytest.mark.parametrize("ctx", **test_data)
-def test_resize(ctx):
-    u = ctx.u9
-
-    if u.is_dynamic:
-        r = u.pad_right(5)
-        assert_equal(r.size, 5)
-    else:
-        with pytest.raises(AttributeError):
-            u.pad_right(5)
-
-
 def test_eval():
     u = hj.DDScalar([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
     assert_equal(u.eval([11, 12, 13]), 5031.5)
@@ -687,12 +669,16 @@ def test_eval_with_wrong_number_of_values():
         v.eval([1])
 
 
+# resizing
+
+
 @pytest.mark.parametrize("ctx", **test_data)
 def test_pad_right(ctx):
     u = ctx.u9
 
     if u.is_dynamic:
         r = u.pad_right(new_size=5)
+        assert_equal(r.size, 5)
         ctx.check(r, [1, 2, 3, 0, 0, 0, 4, 5, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0])
     else:
         with pytest.raises(AttributeError):
@@ -705,6 +691,7 @@ def test_pad_left(ctx):
 
     if u.is_dynamic:
         r = u.pad_left(new_size=5)
+        assert_equal(r.size, 5)
         ctx.check(r, [1, 0, 0, 0, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 5, 6])
     else:
         with pytest.raises(AttributeError):
