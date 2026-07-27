@@ -18,8 +18,10 @@ namespace hyperjet {
 
 #if defined(_MSC_VER)
 #define HYPERJET_INLINE __forceinline
+#define HYPERJET_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
 #else
 #define HYPERJET_INLINE __attribute__((always_inline)) inline
+#define HYPERJET_NO_UNIQUE_ADDRESS [[no_unique_address]]
 #endif
 
 using index = std::ptrdiff_t;
@@ -47,13 +49,19 @@ class DDScalar {
   using DynamicStorage = std::vector<TScalar>;
   using StaticStorage = std::array<TScalar, StaticDataSize>;
 
+  // A statically sized scalar knows its size from TSize, so it carries no
+  // field for it. The empty stand-in keeps m_size spellable in both variants.
+  struct NoSize {};
+
 public:
   using Type = DDScalar<TOrder, TScalar, TSize>;
   using Scalar = TScalar;
   using Data = typename std::conditional<TSize == Dynamic, DynamicStorage,
                                          StaticStorage>::type;
 
-  index m_size;
+  using SizeStorage = std::conditional_t<TSize == Dynamic, index, NoSize>;
+
+  HYPERJET_NO_UNIQUE_ADDRESS SizeStorage m_size;
   Data m_data;
 
 public:
@@ -331,13 +339,15 @@ public:
     static_assert(is_dynamic());
   }
 
-  DDScalar(std::initializer_list<TScalar> data)
-      : m_size(size_from_data_length(length(data))) {
+  DDScalar(std::initializer_list<TScalar> data) {
     static_assert(0 < order() && order() <= 2);
 
-    check_valid_size(m_size);
+    const index s = size_from_data_length(length(data));
+
+    check_valid_size(s);
 
     if constexpr (is_dynamic()) {
+      m_size = s;
       m_data.assign(data.begin(), data.end());
     } else {
       std::copy(data.begin(), data.end(), m_data.begin());

@@ -4,8 +4,9 @@
 
 #include <hyperjet/hyperjet.h>
 
-#include <array>  // array
-#include <vector> // vector
+#include <array>       // array
+#include <type_traits> // is_trivially_copyable
+#include <vector>      // vector
 
 // Coverage across all four combinations of order and sizing.
 //
@@ -104,6 +105,23 @@ void check(const T &actual, const std::vector<double> &expected) {
   for (index i = 0; i < n; i++) {
     CHECK(actual.data()[i] == doctest::Approx(expected[i]));
   }
+}
+
+// A statically sized scalar is exactly its data. The runtime size is only
+// meaningful for the dynamic variant, where it also rules out trivial copying.
+// Both properties are what an element type has to offer a NumPy dtype.
+
+TEST_CASE("Static scalars are exactly their data") {
+  CHECK(sizeof(DDScalar<1, double, 0>) == sizeof(DDScalar<1, double, 0>::Data));
+  CHECK(sizeof(DDScalar<1, double, 3>) == sizeof(DDScalar<1, double, 3>::Data));
+  CHECK(sizeof(DDScalar<2, double, 3>) == sizeof(DDScalar<2, double, 3>::Data));
+  CHECK(sizeof(DDScalar<2, double, 8>) == sizeof(DDScalar<2, double, 8>::Data));
+
+  CHECK(std::is_trivially_copyable_v<DDScalar<1, double, 3>>);
+  CHECK(std::is_trivially_copyable_v<DDScalar<2, double, 3>>);
+  CHECK(std::is_standard_layout_v<DDScalar<2, double, 3>>);
+
+  CHECK_FALSE(std::is_trivially_copyable_v<DDScalar<2, double, Dynamic>>);
 }
 
 TEST_CASE_TEMPLATE("variants: values", T, D1, X1, D2, X2) {
