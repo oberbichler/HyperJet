@@ -627,12 +627,12 @@ TEST_CASE("Dynamic size checks") {
   CHECK_THROWS_AS(b.hm("full", out_too_small), std::runtime_error);
 }
 
-const SScalar<double> s1(3.0, {{"x", 1.0}, {"y", 6.0}, {"z", 4.0}});
-const SScalar<double> s2(4.0, {{"x", 7.0}, {"y", 1.0}});
-const SScalar<double> s3(0.3, {{"x", 0.1}, {"y", 0.8}, {"z", 0.2}});
+const SScalar<1, double> s1(3.0, {{"x", 1.0}, {"y", 6.0}, {"z", 4.0}});
+const SScalar<1, double> s2(4.0, {{"x", 7.0}, {"y", 1.0}});
+const SScalar<1, double> s3(0.3, {{"x", 0.1}, {"y", 0.8}, {"z", 0.2}});
 
 TEST_CASE("SScalar init") {
-  using Dual = SScalar<double>;
+  using Dual = SScalar<1, double>;
 
   const auto x = Dual(1.5, {{"x", 2.0}, {"y", 1.0}});
 
@@ -646,7 +646,7 @@ TEST_CASE("SScalar init") {
 }
 
 TEST_CASE("SScalar constant") {
-  using Dual = SScalar<double>;
+  using Dual = SScalar<1, double>;
 
   const auto x = Dual::constant(1.5);
 
@@ -659,7 +659,7 @@ TEST_CASE("SScalar constant") {
 }
 
 TEST_CASE("SScalar variable") {
-  using Dual = SScalar<double>;
+  using Dual = SScalar<1, double>;
 
   const auto x = Dual::variable("x", 1.5);
 
