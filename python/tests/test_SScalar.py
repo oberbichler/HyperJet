@@ -1,6 +1,5 @@
 import pytest
 import hyperjet as hj
-import numpy as np
 from numpy.testing import assert_equal, assert_allclose
 from copy import copy
 import pickle
@@ -212,3 +211,137 @@ def test_no_serialization():
 
     with pytest.raises(TypeError):
         pickle.dumps(u)
+
+
+# second order
+#
+# SSScalar carries a Hessian over the names it has picked up, keyed by name
+# just as the gradient is. The expected values below were generated
+# symbolically (sympy), so they share no formulas with the header.
+
+
+def variables():
+    return hj.SSScalar.variable("x", 0.5), hj.SSScalar.variable("y", 0.4)
+
+
+def test_order():
+    assert_equal(hj.SScalar.order, 1)
+    assert_equal(hj.SSScalar.order, 2)
+
+
+def test_only_the_second_order_type_has_a_hessian():
+    assert not hasattr(hj.SScalar, "dd")
+    assert hasattr(hj.SSScalar, "dd")
+
+
+def test_variable_has_no_curvature():
+    x = hj.SSScalar.variable("x", 0.5)
+
+    assert_allclose(x.f, 0.5)
+    assert_allclose(x.d("x"), 1)
+    assert_allclose(x.dd("x", "x"), 0)
+
+    # a name the value does not carry reads as zero rather than raising
+    assert_allclose(x.d("y"), 0)
+    assert_allclose(x.dd("x", "y"), 0)
+
+
+def test_names_grow_with_the_computation():
+    x, y = variables()
+
+    assert_equal(x.names(), ["x"])
+    assert_equal((x * y).names(), ["x", "y"])
+
+    # sorted, so the order does not depend on how the value was built
+    assert_equal((y * x).names(), ["x", "y"])
+
+    assert_equal(hj.SSScalar.constant(1.0).names(), [])
+
+
+@pytest.mark.parametrize(
+    "f, expected",
+    [
+        (
+            lambda x, y: (x * y).sqrt(),
+            [
+                0.447213595499958,
+                0.447213595499958,
+                0.5590169943749475,
+                -0.447213595499958,
+                0.5590169943749475,
+                -0.6987712429686842,
+            ],
+        ),
+        (
+            lambda x, y: x.exp() * y.sin(),
+            [
+                0.6420423041650558,
+                0.6420423041650558,
+                1.51857285242476,
+                0.6420423041650558,
+                1.51857285242476,
+                -0.6420423041650558,
+            ],
+        ),
+        (
+            lambda x, y: x.atan2(y),
+            [
+                0.8960553845713439,
+                0.975609756097561,
+                -1.2195121951219512,
+                -2.379535990481856,
+                0.5353955978584173,
+                2.379535990481856,
+            ],
+        ),
+        (
+            lambda x, y: (x - 2.0 * y).reciprocal(),
+            [
+                -3.333333333333333,
+                -11.111111111111107,
+                22.222222222222214,
+                -74.07407407407405,
+                148.1481481481481,
+                -296.2962962962962,
+            ],
+        ),
+        (
+            lambda x, y: (x + y * y).log(),
+            [
+                -0.4155154439616658,
+                1.5151515151515151,
+                1.2121212121212122,
+                -2.295684113865932,
+                -1.8365472910927456,
+                1.5610651974288337,
+            ],
+        ),
+        (
+            lambda x, y: (x + y) ** 3.0,
+            [0.729, 2.43, 2.43, 5.4, 5.4, 5.4],
+        ),
+    ],
+)
+def test_second_order(f, expected):
+    r = f(*variables())
+
+    value, dx, dy, dxx, dxy, dyy = expected
+
+    assert_allclose(r.f, value)
+    assert_allclose(r.d("x"), dx)
+    assert_allclose(r.d("y"), dy)
+    assert_allclose(r.dd("x", "x"), dxx)
+    assert_allclose(r.dd("x", "y"), dxy)
+    assert_allclose(r.dd("y", "y"), dyy)
+
+    # the Hessian is symmetric
+    assert_allclose(r.dd("y", "x"), dxy)
+
+
+def test_hessian_of_an_unknown_name_is_zero():
+    x, y = variables()
+
+    r = x * y
+
+    assert_allclose(r.dd("x", "z"), 0)
+    assert_allclose(r.dd("z", "z"), 0)

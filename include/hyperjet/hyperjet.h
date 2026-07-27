@@ -1750,7 +1750,7 @@ log10(const DDScalar<TOrder, TScalar, TSize> &a) {
 // have to be known in advance: an operation takes the union of the names of its
 // operands. Second order is not implemented yet, hence the constraint.
 template <index TOrder, typename TScalar = double>
-  requires(TOrder == 1)
+  requires(0 < TOrder && TOrder <= 2)
 class SScalar {
 public: // types
   using Type = SScalar<TOrder, TScalar>;
@@ -1760,74 +1760,194 @@ public: // types
   // in particular a Python dict, naturally provide.
   using Data = std::unordered_map<std::string, TScalar>;
 
+  static constexpr index order() { return TOrder; }
+
 private: // types
   // The storage. Sorted by name, so a combination of two values is a linear
   // merge rather than a sequence of hash lookups, and the position of a name is
   // its index -- which is what a second-order Hessian would be laid out over.
   using Terms = std::vector<std::pair<std::string, TScalar>>;
 
+  // The Hessian is dense over the names the value carries, laid out as the
+  // upper triangle in the same packing DDScalar uses. It is not sparse within
+  // that set: any nonlinear function contributes the full outer product of its
+  // own gradient, so the triangle fills up after a couple of operations. What
+  // stays sparse is the set of names itself.
+  using Hessian = std::vector<TScalar>;
+
+  struct NoHessian {};
+
+  using HessianStorage = std::conditional_t<TOrder == 2, Hessian, NoHessian>;
+
 private: // variables
   // The default constructor is defaulted, so without an initializer m_f would
   // be indeterminate and reading it undefined.
   Scalar m_f{};
   Terms m_d;
+  HYPERJET_NO_UNIQUE_ADDRESS HessianStorage m_h;
 
 private: // methods
+  HYPERJET_INLINE static index hessian_length(const index k) {
+    return k * (k + 1) / 2;
+  }
+
+  // Position of (i, j) in the upper triangle over k names.
+  HYPERJET_INLINE static index at(const index k, index i, index j) {
+    if (j < i) {
+      std::swap(i, j);
+    }
+
+    return (2 * k - 1 - i) * i / 2 + j;
+  }
+
   HYPERJET_INLINE static bool before(const std::pair<std::string, TScalar> &e,
                                      const std::string &name) {
     return e.first < name;
   }
 
-  template <typename TDa>
-  HYPERJET_INLINE static Terms unary(const Terms &a, const TDa &da) {
-    Terms r{a};
+  // r = phi(f): g_r = da * g, H_r = da * H + daa * g (x) g. The names do not
+  // change, so nothing has to be merged.
+  template <typename TDa, typename TDaa>
+  HYPERJET_INLINE SScalar apply(const Scalar f, const TDa &da,
+                                const TDaa &daa) const {
+    SScalar r;
+    r.m_f = f;
+    r.m_d = m_d;
 
-    // scaling the derivatives leaves the order intact
-    for (auto &d : r)
-      d.second *= da;
+    for (auto &d : r.m_d) {
+      d.second = da * d.second;
+    }
+
+    if constexpr (TOrder == 2) {
+      const index k = length(m_d);
+      r.m_h.resize(hessian_length(k));
+
+      index p = 0;
+
+      for (index i = 0; i < k; i++) {
+        const TScalar ca = daa * m_d[i].second;
+
+        for (index j = i; j < k; j++) {
+          r.m_h[p] = da * m_h[p] + ca * m_d[j].second;
+          p++;
+        }
+      }
+    }
 
     return r;
   }
 
-  // da * a + db * b over the union of the names, in one pass
-  template <typename TDa, typename TDb>
-  HYPERJET_INLINE static Terms binary(const Terms &a, const Terms &b,
-                                      const TDa &da, const TDb &db) {
-    Terms r;
-    r.reserve(a.size() + b.size());
+  // Merges the names of a and b in one pass, leaving the derivatives at zero.
+  // At second order it also records where each operand's names land in the
+  // union, which is what its Hessian has to be scattered along.
+  HYPERJET_INLINE static void merge_names(const Terms &a, const Terms &b,
+                                          Terms &out, std::vector<index> &pa,
+                                          std::vector<index> &pb) {
+    const index ka = length(a);
+    const index kb = length(b);
 
-    std::size_t i = 0;
-    std::size_t j = 0;
+    out.reserve(ka + kb);
+    pa.reserve(ka);
+    pb.reserve(kb);
 
-    while (i < a.size() && j < b.size()) {
+    index i = 0;
+    index j = 0;
+
+    while (i < ka && j < kb) {
       if (a[i].first < b[j].first) {
-        r.emplace_back(a[i].first, da * a[i].second);
+        pa.push_back(length(out));
+        out.emplace_back(a[i].first, TScalar(0));
         i++;
       } else if (b[j].first < a[i].first) {
-        r.emplace_back(b[j].first, db * b[j].second);
+        pb.push_back(length(out));
+        out.emplace_back(b[j].first, TScalar(0));
         j++;
       } else {
-        r.emplace_back(a[i].first, da * a[i].second + db * b[j].second);
+        pa.push_back(length(out));
+        pb.push_back(length(out));
+        out.emplace_back(a[i].first, TScalar(0));
         i++;
         j++;
       }
     }
 
-    for (; i < a.size(); i++)
-      r.emplace_back(a[i].first, da * a[i].second);
+    for (; i < ka; i++) {
+      pa.push_back(length(out));
+      out.emplace_back(a[i].first, TScalar(0));
+    }
 
-    for (; j < b.size(); j++)
-      r.emplace_back(b[j].first, db * b[j].second);
-
-    return r;
+    for (; j < kb; j++) {
+      pb.push_back(length(out));
+      out.emplace_back(b[j].first, TScalar(0));
+    }
   }
 
-  template <typename TDa, typename TDb, typename TDc>
-  HYPERJET_INLINE static Terms ternary(const Terms &a, const Terms &b,
-                                       const Terms &c, const TDa &da,
-                                       const TDb &db, const TDc &dc) {
-    // two merges rather than a three-way one; only hypot of three uses this
-    return binary(binary(a, b, da, db), c, Scalar(1), dc);
+  // Scatters da * h, which is laid out over p.size() names, into the union.
+  template <typename TDa>
+  HYPERJET_INLINE static void
+  scatter(Hessian &out, const index k, const Hessian &h,
+          const std::vector<index> &p, const TDa &da) {
+    const index n = length(p);
+
+    for (index i = 0; i < n; i++) {
+      for (index j = i; j < n; j++) {
+        out[at(k, p[i], p[j])] += da * h[at(n, i, j)];
+      }
+    }
+  }
+
+  // r = phi(a, b) over the union of their names. The second-order part has the
+  // same shape as in DDScalar::binary.
+  template <typename TDa, typename TDb, typename TDaa, typename TDab,
+            typename TDbb>
+  HYPERJET_INLINE static SScalar
+  combine(const Scalar f, const SScalar &a, const SScalar &b, const TDa &da,
+          const TDb &db, const TDaa &daa, const TDab &dab, const TDbb &dbb) {
+    SScalar r;
+    r.m_f = f;
+
+    std::vector<index> pa;
+    std::vector<index> pb;
+
+    merge_names(a.m_d, b.m_d, r.m_d, pa, pb);
+
+    const index k = length(r.m_d);
+
+    // both gradients in the union index space
+    std::vector<TScalar> ga(k, TScalar(0));
+    std::vector<TScalar> gb(k, TScalar(0));
+
+    for (index i = 0; i < length(a.m_d); i++) {
+      ga[pa[i]] = a.m_d[i].second;
+    }
+
+    for (index i = 0; i < length(b.m_d); i++) {
+      gb[pb[i]] = b.m_d[i].second;
+    }
+
+    for (index i = 0; i < k; i++) {
+      r.m_d[i].second = da * ga[i] + db * gb[i];
+    }
+
+    if constexpr (TOrder == 2) {
+      r.m_h.assign(hessian_length(k), TScalar(0));
+
+      scatter(r.m_h, k, a.m_h, pa, da);
+      scatter(r.m_h, k, b.m_h, pb, db);
+
+      index p = 0;
+
+      for (index i = 0; i < k; i++) {
+        const TScalar ca = daa * ga[i] + dab * gb[i];
+        const TScalar cb = dab * ga[i] + dbb * gb[i];
+
+        for (index j = i; j < k; j++) {
+          r.m_h[p++] += ca * ga[j] + cb * gb[j];
+        }
+      }
+    }
+
+    return r;
   }
 
 public: // constructors
@@ -1835,9 +1955,15 @@ public: // constructors
 
   SScalar(const Scalar f) : m_f(f), m_d() {}
 
+  // The Hessian of a value built from a gradient is zero, as it is for a
+  // variable and for a constant.
   SScalar(const Scalar f, const Data &d) : m_f(f), m_d(d.begin(), d.end()) {
     std::sort(m_d.begin(), m_d.end(),
               [](const auto &a, const auto &b) { return a.first < b.first; });
+
+    if constexpr (TOrder == 2) {
+      m_h.assign(hessian_length(length(m_d)), TScalar(0));
+    }
   }
 
   static SScalar constant(const Scalar value) { return SScalar(value, Data()); }
@@ -1853,6 +1979,11 @@ private: // methods
     SScalar r;
     r.m_f = f;
     r.m_d = std::move(d);
+
+    if constexpr (TOrder == 2) {
+      r.m_h.assign(hessian_length(length(r.m_d)), TScalar(0));
+    }
+
     return r;
   }
 
@@ -1869,6 +2000,32 @@ public: // methods
       return Scalar(0);
 
     return it->second;
+  }
+
+  // The names this value carries, in the order the Hessian is laid out over.
+  std::vector<std::string> names() const {
+    std::vector<std::string> r;
+    r.reserve(m_d.size());
+
+    for (const auto &[name, derivative] : m_d) {
+      r.push_back(name);
+    }
+
+    return r;
+  }
+
+  Scalar dd(const std::string &a, const std::string &b) const
+    requires(TOrder == 2)
+  {
+    const auto ia = std::lower_bound(m_d.begin(), m_d.end(), a, before);
+    const auto ib = std::lower_bound(m_d.begin(), m_d.end(), b, before);
+
+    if (ia == m_d.end() || ia->first != a || ib == m_d.end() ||
+        ib->first != b) {
+      return Scalar(0);
+    }
+
+    return m_h[at(length(m_d), ia - m_d.begin(), ib - m_d.begin())];
   }
 
   Scalar eval(const Data &d) const {
@@ -1909,16 +2066,7 @@ public: // methods
 
   // operators: negate
 
-  Type operator-() const {
-    Type result = *this;
-
-    result.m_f = -m_f;
-
-    for (auto &d : result.m_d)
-      d.second = -d.second;
-
-    return result;
-  }
+  Type operator-() const { return apply(-m_f, Scalar(-1), Scalar(0)); }
 
   // operators: add
 
@@ -1926,8 +2074,11 @@ public: // methods
     const auto f = m_f + b.f();
     const auto da = Scalar(1);
     const auto db = Scalar(1);
+    const auto daa = Scalar(0);
+    const auto dab = Scalar(0);
+    const auto dbb = Scalar(0);
 
-    return from_terms(f, binary(m_d, b.m_d, da, db));
+    return combine(f, *this, b, da, db, daa, dab, dbb);
   }
 
   Type operator+(const Scalar b) const {
@@ -1956,8 +2107,11 @@ public: // methods
     const auto f = m_f - b.f();
     const auto da = Scalar(1);
     const auto db = Scalar(-1);
+    const auto daa = Scalar(0);
+    const auto dab = Scalar(0);
+    const auto dbb = Scalar(0);
 
-    return from_terms(f, binary(m_d, b.m_d, da, db));
+    return combine(f, *this, b, da, db, daa, dab, dbb);
   }
 
   Type operator-(const Scalar b) const { return -b + *this; }
@@ -1984,33 +2138,20 @@ public: // methods
     const auto f = m_f * b.f();
     const auto da = b.f();
     const auto db = m_f;
+    const auto daa = Scalar(0);
+    const auto dab = Scalar(1);
+    const auto dbb = Scalar(0);
 
-    return from_terms(f, binary(m_d, b.m_d, da, db));
+    return combine(f, *this, b, da, db, daa, dab, dbb);
   }
 
-  Type operator*(const Scalar b) const {
-    Type result = *this;
-
-    result.m_f *= b;
-
-    for (auto &d : result.m_d)
-      d.second *= b;
-
-    return result;
-  }
+  Type operator*(const Scalar b) const { return apply(m_f * b, b, Scalar(0)); }
 
   friend Type operator*(const Scalar a, const Type &b) { return b * a; }
 
   Type &operator*=(const Type &b) { return *this = *this * b; }
 
-  Type &operator*=(const Scalar &b) {
-    m_f *= b;
-
-    for (auto &d : m_d)
-      d.second *= b;
-
-    return *this;
-  }
+  Type &operator*=(const Scalar &b) { return *this = *this * b; }
 
   // operators: div
 
@@ -2022,8 +2163,11 @@ public: // methods
     const auto f = m_f * tmp;
     const auto da = tmp;
     const auto db = -m_f / pow(b.f(), 2);
+    const auto daa = Scalar(0);
+    const auto dab = -Scalar(1) / pow(b.f(), 2);
+    const auto dbb = 2 * m_f / pow(b.f(), 3);
 
-    return from_terms(f, binary(m_d, b.m_d, da, db));
+    return combine(f, *this, b, da, db, daa, dab, dbb);
   }
 
   Type operator/(const Scalar b) const { return Scalar(1) / b * (*this); }
@@ -2033,8 +2177,9 @@ public: // methods
 
     const auto f = a / b.f();
     const auto db = -a / pow(b.f(), 2);
+    const auto dbb = 2 * a / pow(b.f(), 3);
 
-    return from_terms(f, unary(b.m_d, db));
+    return b.apply(f, db, dbb);
   }
 
   Type &operator/=(const Type &b) { return *this = *this / b; }
@@ -2052,8 +2197,9 @@ public: // methods
 
     const auto f = pow(m_f, b);
     const auto da = b * pow(m_f, b - Scalar(1));
+    const auto daa = (b - 1) * b * pow(m_f, b - 2);
 
-    return from_terms(f, unary(m_d, da));
+    return apply(f, da, daa);
   }
 
   Type sqrt() const {
@@ -2061,8 +2207,9 @@ public: // methods
 
     const auto f = sqrt(m_f);
     const auto da = Scalar(1) / (Scalar(2) * f);
+    const auto daa = -da / (2 * m_f);
 
-    return from_terms(f, unary(m_d, da));
+    return apply(f, da, daa);
   }
 
   Type cbrt() const {
@@ -2070,15 +2217,17 @@ public: // methods
 
     const auto f = cbrt(m_f);
     const auto da = Scalar(1) / (Scalar(3) * f * f);
+    const auto daa = -da * 2 / (3 * m_f);
 
-    return from_terms(f, unary(m_d, da));
+    return apply(f, da, daa);
   }
 
   Type reciprocal() const {
     const auto f = Scalar(1) / m_f;
     const auto da = -f * f;
+    const auto daa = -2 * f * da;
 
-    return from_terms(f, unary(m_d, da));
+    return apply(f, da, daa);
   }
 
   // trigonometric
@@ -2089,8 +2238,9 @@ public: // methods
 
     const auto f = cos(m_f);
     const auto da = -sin(m_f);
+    const auto daa = -cos(m_f);
 
-    return from_terms(f, unary(m_d, da));
+    return apply(f, da, daa);
   }
 
   Type sin() const {
@@ -2099,8 +2249,9 @@ public: // methods
 
     const auto f = sin(m_f);
     const auto da = cos(m_f);
+    const auto daa = -sin(m_f);
 
-    return from_terms(f, unary(m_d, da));
+    return apply(f, da, daa);
   }
 
   Type tan() const {
@@ -2108,8 +2259,9 @@ public: // methods
 
     const auto f = tan(m_f);
     const auto da = f * f + Scalar(1);
+    const auto daa = da * 2 * f;
 
-    return from_terms(f, unary(m_d, da));
+    return apply(f, da, daa);
   }
 
   Type acos() const {
@@ -2120,8 +2272,9 @@ public: // methods
 
     const auto f = acos(m_f);
     const auto da = -Scalar(1) / sqrt(tmp);
+    const auto daa = da * m_f / tmp;
 
-    return from_terms(f, unary(m_d, da));
+    return apply(f, da, daa);
   }
 
   Type asin() const {
@@ -2132,8 +2285,9 @@ public: // methods
 
     const auto f = asin(m_f);
     const auto da = Scalar(1) / sqrt(tmp);
+    const auto daa = da * m_f / tmp;
 
-    return from_terms(f, unary(m_d, da));
+    return apply(f, da, daa);
   }
 
   Type atan() const {
@@ -2141,8 +2295,9 @@ public: // methods
 
     const auto f = atan(m_f);
     const auto da = Scalar(1) / (m_f * m_f + Scalar(1));
+    const auto daa = -da * da * 2 * m_f;
 
-    return from_terms(f, unary(m_d, da));
+    return apply(f, da, daa);
   }
 
   Type atan2(const Type &b) const {
@@ -2153,30 +2308,32 @@ public: // methods
     const auto f = atan2(m_f, b.m_f);
     const auto da = b.m_f / tmp;
     const auto db = -m_f / tmp;
+    const auto daa = db * da * 2;
+    const auto dab = db * db - da * da;
+    const auto dbb = -daa;
 
-    return from_terms(f, binary(m_d, b.m_d, da, db));
+    return combine(f, *this, b, da, db, daa, dab, dbb);
   }
 
   static Type hypot(const Type &a, const Type &b) {
     using std::hypot;
 
     const auto f = hypot(a.m_f, b.m_f);
+    const auto f3 = f * f * f;
     const auto da = a.m_f / f;
     const auto db = b.m_f / f;
+    const auto daa = b.m_f * b.m_f / f3;
+    const auto dab = -a.m_f * b.m_f / f3;
+    const auto dbb = a.m_f * a.m_f / f3;
 
-    return from_terms(f, binary(a.m_d, b.m_d, da, db));
+    return combine(f, a, b, da, db, daa, dab, dbb);
   }
 
+  // hypot(a, b, c) == hypot(hypot(a, b), c), so the two-argument form carries
+  // it and the chain rule takes care of the derivatives. That is exact, and it
+  // saves a three-operand merge that nothing else would need.
   static Type hypot(const Type &a, const Type &b, const Type &c) {
-    using std::hypot;
-
-    const auto f = hypot(a.m_f, b.m_f, c.m_f);
-
-    const auto da = a.m_f / f;
-    const auto db = b.m_f / f;
-    const auto dc = c.m_f / f;
-
-    return from_terms(f, ternary(a.m_d, b.m_d, c.m_d, da, db, dc));
+    return hypot(hypot(a, b), c);
   }
 
   // hyperbolic
@@ -2187,8 +2344,9 @@ public: // methods
 
     const auto f = cosh(m_f);
     const auto da = sinh(m_f);
+    const auto daa = f;
 
-    return from_terms(f, unary(m_d, da));
+    return apply(f, da, daa);
   }
 
   Type sinh() const {
@@ -2197,8 +2355,9 @@ public: // methods
 
     const auto f = sinh(m_f);
     const auto da = cosh(m_f);
+    const auto daa = f;
 
-    return from_terms(f, unary(m_d, da));
+    return apply(f, da, daa);
   }
 
   Type tanh() const {
@@ -2206,8 +2365,9 @@ public: // methods
 
     const auto f = tanh(m_f);
     const auto da = 1 - f * f;
+    const auto daa = -2 * f * da;
 
-    return from_terms(f, unary(m_d, da));
+    return apply(f, da, daa);
   }
 
   Type acosh() const {
@@ -2216,8 +2376,9 @@ public: // methods
 
     const auto f = acosh(m_f);
     const auto da = 1 / (sqrt(m_f - 1) * sqrt(m_f + 1));
+    const auto daa = -da * m_f / ((m_f - 1) * (m_f + 1));
 
-    return from_terms(f, unary(m_d, da));
+    return apply(f, da, daa);
   }
 
   Type asinh() const {
@@ -2226,8 +2387,9 @@ public: // methods
 
     const auto f = asinh(m_f);
     const auto da = 1 / sqrt(1 + m_f * m_f);
+    const auto daa = -da * m_f / (1 + m_f * m_f);
 
-    return from_terms(f, unary(m_d, da));
+    return apply(f, da, daa);
   }
 
   Type atanh() const {
@@ -2236,8 +2398,9 @@ public: // methods
 
     const auto f = atanh(m_f);
     const auto da = 1 / (1 - m_f * m_f);
+    const auto daa = 2 * m_f / pow(m_f * m_f - 1, 2);
 
-    return from_terms(f, unary(m_d, da));
+    return apply(f, da, daa);
   }
 
   // exponents and logarithms
@@ -2247,8 +2410,9 @@ public: // methods
 
     const auto f = exp(m_f);
     const auto da = f;
+    const auto daa = f;
 
-    return from_terms(f, unary(m_d, da));
+    return apply(f, da, daa);
   }
 
   Type log() const {
@@ -2256,8 +2420,9 @@ public: // methods
 
     const auto f = log(m_f);
     const auto da = 1 / m_f;
+    const auto daa = -da * da;
 
-    return from_terms(f, unary(m_d, da));
+    return apply(f, da, daa);
   }
 
   Type log(const TScalar base) const {
@@ -2265,8 +2430,9 @@ public: // methods
 
     const auto f = log(m_f) / log(base);
     const auto da = 1 / (m_f * log(base));
+    const auto daa = -da / m_f;
 
-    return from_terms(f, unary(m_d, da));
+    return apply(f, da, daa);
   }
 
   Type log2() const {
@@ -2275,8 +2441,9 @@ public: // methods
 
     const auto f = log2(m_f);
     const auto da = 1 / (m_f * log(2));
+    const auto daa = -da / m_f;
 
-    return from_terms(f, unary(m_d, da));
+    return apply(f, da, daa);
   }
 
   Type log10() const {
@@ -2285,8 +2452,9 @@ public: // methods
 
     const auto f = log10(m_f);
     const auto da = 1 / (m_f * log(10));
+    const auto daa = -da / m_f;
 
-    return from_terms(f, unary(m_d, da));
+    return apply(f, da, daa);
   }
 
   // abs
