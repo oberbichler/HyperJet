@@ -10,6 +10,9 @@
 #   modernize-use-nodiscard                57 sites; annotating the API with
 #                                          [[nodiscard]] is a decision to make
 #                                          on purpose, not a lint fix
+#   modernize-use-std-numbers              cannot tell an expected test value
+#                                          that happens to sit near a constant
+#                                          from a constant written out by hand
 #   modernize-use-trailing-return-type     style the project does not use
 #   portability-avoid-pragma-once          #pragma once is a deliberate choice
 #   readability-function-cognitive-*       binary()/ternary() are inherently so
@@ -30,6 +33,7 @@ Checks: >
   -bugprone-throwing-static-initialization,
   -misc-include-cleaner,
   -modernize-use-nodiscard,
+  -modernize-use-std-numbers,
   -modernize-use-trailing-return-type,
   -portability-avoid-pragma-once,
   -readability-function-cognitive-complexity,

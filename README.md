@@ -126,6 +126,38 @@ f.d("y")   # df/dy
 >>> 1.0
 ```
 
+`SScalar` is **first order only** — there is no Hessian. Where `DDScalar` offers `h`, `hm` and the second-order factories, `SScalar` has a value and a gradient keyed by name. The variable set does not have to be known in advance: an operation takes the union of the names of its operands, and `d` returns zero for a name the scalar has never seen.
+
+```python
+u = hj.SScalar.variable("x", 2.0)
+v = hj.SScalar.variable("y", 3.0)
+
+len(u * v)          # the product knows both names
+>>> 2
+(u * v).d("z")      # an unknown name is zero, not an error
+>>> 0.0
+(u - u).size        # names survive even where the derivative cancels
+>>> 1
+```
+
+Two further differences from `DDScalar` worth knowing:
+
+- **No serialization.** `copy`, `deepcopy` and `pickle` raise `TypeError`; the `DDScalar` types support all three.
+- **The order of terms in `repr` is unspecified**, because the derivatives live in an unordered map. Only the value comes first.
+
+`eval(d)` contracts the gradient with a displacement given per name. Names missing from the displacement contribute nothing, and names the scalar does not know are ignored:
+
+```python
+u = hj.SScalar(f=3, d={"x": 1, "y": 6})
+
+u.eval({"x": 0.5, "y": -0.25})
+>>> 2.0
+u.eval({"x": 0.5})          # y contributes nothing
+>>> 3.5
+u.eval({"w": 100.0})        # w is unknown and ignored
+>>> 3.0
+```
+
 ## Validation
 
 Arguments coming from Python are validated. Out-of-range Hessian indices raise `IndexError`; inconsistent sizes raise `RuntimeError` — `eval` with the wrong number of values, `set_hm` with a mismatched shape, a negative size, a variable index outside the gradient, or padding below the current size.
