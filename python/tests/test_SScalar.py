@@ -345,3 +345,127 @@ def test_hessian_of_an_unknown_name_is_zero():
 
     assert_allclose(r.dd("x", "z"), 0)
     assert_allclose(r.dd("z", "z"), 0)
+
+
+# projection onto an explicit list of names
+#
+# Named derivatives are only useful if they reach code that wants arrays. The
+# caller supplies the order, which is what lets values carrying different names
+# project onto one shared layout -- an assembly step, for instance.
+
+
+def test_variables_builds_a_set_in_dict_order():
+    x, y, z = hj.SSScalar.variables({"x": 0.5, "y": 0.4, "z": 0.3})
+
+    assert_allclose([x.f, y.f, z.f], [0.5, 0.4, 0.3])
+
+    # each carries only its own name
+    assert_equal([x.names(), y.names(), z.names()], [["x"], ["y"], ["z"]])
+    assert_allclose(x.d("x"), 1)
+    assert_allclose(x.d("y"), 0)
+
+
+def test_g_uses_the_given_order():
+    x, y, z = hj.SSScalar.variables({"x": 0.5, "y": 0.4, "z": 0.3})
+
+    r = x * y + z
+
+    assert_allclose(r.g(["x", "y", "z"]), [r.d("x"), r.d("y"), r.d("z")])
+
+    # the caller's order, not the storage order
+    assert_allclose(r.g(["z", "y", "x"]), [r.d("z"), r.d("y"), r.d("x")])
+
+    # a name the value does not carry reads as zero, as with d
+    assert_allclose(r.g(["w", "x"]), [0.0, r.d("x")])
+
+    assert_equal(r.g([]).shape, (0,))
+
+
+def test_hm_is_square_and_symmetric():
+    x, y, z = hj.SSScalar.variables({"x": 0.5, "y": 0.4, "z": 0.3})
+    names = ["x", "y", "z"]
+
+    h = (x * y + z * z).sqrt().hm(names)
+
+    assert_equal(h.shape, (3, 3))
+    assert_allclose(h, h.T)
+
+    r = (x * y + z * z).sqrt()
+
+    for i, a in enumerate(names):
+        for j, b in enumerate(names):
+            assert_allclose(h[i, j], r.dd(a, b))
+
+
+def test_hm_zeroes_unknown_names():
+    x, y = hj.SSScalar.variables({"x": 0.5, "y": 0.4})
+
+    h = (x * y).hm(["x", "w", "y"])
+
+    assert_allclose(h[1, :], 0)
+    assert_allclose(h[:, 1], 0)
+    assert_allclose(h[0, 2], (x * y).dd("x", "y"))
+
+
+def test_projection_returns_a_copy():
+    x, y = hj.SSScalar.variables({"x": 0.5, "y": 0.4})
+
+    r = x * y
+    g = r.g(["x", "y"])
+
+    g[0] = 100.0
+
+    # writing to the result does not touch the scalar
+    assert_allclose(r.d("x"), 0.4)
+    assert_allclose(r.g(["x", "y"]), [0.4, 0.5])
+
+
+def test_first_order_has_no_hm():
+    assert hasattr(hj.SScalar, "g")
+    assert not hasattr(hj.SScalar, "hm")
+    assert hasattr(hj.SSScalar, "hm")
+
+
+def test_utilities_need_an_order_for_named_scalars():
+    x, y = hj.SSScalar.variables({"x": 0.5, "y": 0.4})
+
+    values = [x * y, x + y]
+
+    # the value is unambiguous, so f needs nothing
+    assert_allclose(hj.f(values), [0.2, 0.9])
+
+    # a gradient does not exist without an order -- silently returning an empty
+    # array would be the wrong answer, not a missing feature
+    with pytest.raises(TypeError, match="names"):
+        hj.d(values)
+
+    with pytest.raises(TypeError, match="names"):
+        hj.dd(values)
+
+
+def test_utilities_project_a_set_onto_one_layout():
+    x, y, z = hj.SSScalar.variables({"x": 0.5, "y": 0.4, "z": 0.3})
+    names = ["x", "y", "z"]
+
+    # the two values carry different names
+    values = [x * y, y * z]
+
+    g = hj.d(values, names=names)
+
+    assert_equal(g.shape, (2, 3))
+    assert_allclose(g[0], [0.4, 0.5, 0.0])
+    assert_allclose(g[1], [0.0, 0.3, 0.4])
+
+    h = hj.dd(values, names=names)
+
+    assert_equal(h.shape, (2, 3, 3))
+    assert_allclose(h[0], (x * y).hm(names))
+    assert_allclose(h[1], (y * z).hm(names))
+
+
+def test_utilities_still_work_for_indexed_scalars():
+    values = [v**2 for v in hj.variables([1.0, 2.0, 3.0])]
+
+    assert_allclose(hj.f(values), [1.0, 4.0, 9.0])
+    assert_equal(hj.d(values).shape, (3, 3))
+    assert_equal(hj.dd(values).shape, (3, 3, 3))

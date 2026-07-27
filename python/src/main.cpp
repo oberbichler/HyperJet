@@ -37,14 +37,55 @@ PYBIND11_MODULE(hyperjet, m) {
     auto global = py::dict();
     global["np"] = numpy;
 
-    m.attr("f") = py::eval(
-        "np.vectorize(lambda v: v.f if hasattr(v, 'f') else v)", global);
-    m.attr("d") = py::eval("np.vectorize(lambda v: v.g if hasattr(v, 'g') else "
-                           "np.zeros((0)), signature='()->(n)')",
-                           global);
-    m.attr("dd") = py::eval("np.vectorize(lambda v: v.hm() if hasattr(v, 'hm') "
-                            "else np.zeros((0, 0)), signature='()->(n,m)')",
-                            global);
+    // Indexed scalars carry their own order, so d() and dd() can read the
+    // gradient and Hessian directly. Named scalars have no canonical order --
+    // each value carries whichever names it picked up -- so the caller has to
+    // supply one via names=, which is also what makes a set of values with
+    // differing names project onto a single shared layout.
+    py::exec(R"PY(
+def _indexed_g(v):
+    if hasattr(v, "names"):
+        raise TypeError(
+            "hj.d needs an order for named scalars: pass names=[...]"
+        )
+    return v.g if hasattr(v, "g") else np.zeros(0)
+
+
+def _indexed_hm(v):
+    if hasattr(v, "names"):
+        raise TypeError(
+            "hj.dd needs an order for named scalars: pass names=[...]"
+        )
+    return v.hm() if hasattr(v, "hm") else np.zeros((0, 0))
+
+
+_f = np.vectorize(lambda v: v.f if hasattr(v, "f") else v)
+_g = np.vectorize(_indexed_g, signature="()->(n)")
+_hm = np.vectorize(_indexed_hm, signature="()->(n,m)")
+_named_g = np.vectorize(lambda v, n: v.g(n), signature="()->(n)", excluded={1})
+_named_hm = np.vectorize(lambda v, n: v.hm(n), signature="()->(n,m)", excluded={1})
+
+
+def f(values):
+    return _f(values)
+
+
+def d(values, names=None):
+    if names is None:
+        return _g(values)
+    return _named_g(values, list(names))
+
+
+def dd(values, names=None):
+    if names is None:
+        return _hm(values)
+    return _named_hm(values, list(names))
+)PY",
+             global);
+
+    m.attr("f") = global["f"];
+    m.attr("d") = global["d"];
+    m.attr("dd") = global["dd"];
 
     m.def(
         "variables",

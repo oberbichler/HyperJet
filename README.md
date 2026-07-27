@@ -165,6 +165,37 @@ The naming follows `DScalar`/`DDScalar`: one letter per order, so `SScalar` carr
 
 The Hessian is **dense over the names the value carries** — it is not sparse within that set. Any nonlinear function contributes the full outer product of its own gradient, so the triangle fills up after a couple of operations; what stays sparse is the set of names itself. It is stored as the upper triangle in the same packing `DDScalar` uses, and a first-order `SScalar` pays nothing for it: `sizeof` is unchanged at 32 bytes against 56 for `SSScalar`.
 
+#### Getting back to arrays
+
+Named derivatives are only useful if they reach code that wants arrays. `g(names)` and `hm(names)` project onto an explicit, ordered list of names — the caller fixes the order, and a name the value does not carry reads as zero, just as `d` and `dd` do:
+
+```python
+x, y, z = hj.SSScalar.variables({"x": 0.5, "y": 0.4, "z": 0.3})
+
+f = x * y
+
+f.g(["x", "y", "z"])    # z is not in f, so it is zero
+>>> array([0.4, 0.5, 0. ])
+f.hm(["x", "y", "z"]).shape
+>>> (3, 3)
+```
+
+That the order comes from the caller is the point: values carrying *different* names project onto one shared layout, without any of them being padded or remapped first. This is what an assembly step needs, and it is where named variables beat indexed ones — no index bookkeeping between the local computation and the global system.
+
+The module-level `hj.d` and `hj.dd` take the same list:
+
+```python
+values = [x * y, y * z]     # the two carry different names
+
+hj.d(values, names=["x", "y", "z"])
+>>> array([[0.4, 0.5, 0. ],
+           [0. , 0.3, 0.4]])
+hj.dd(values, names=["x", "y", "z"]).shape
+>>> (2, 3, 3)
+```
+
+Without `names`, `hj.d` and `hj.dd` raise `TypeError` for named scalars: a gradient does not exist until an order is chosen, and returning an empty array would be a wrong answer rather than a missing feature.
+
 Two further differences from `DDScalar` worth knowing:
 
 - **No serialization.** `copy`, `deepcopy` and `pickle` raise `TypeError`; the `DDScalar` types support all three.
