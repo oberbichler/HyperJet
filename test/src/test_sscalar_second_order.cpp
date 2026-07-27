@@ -281,4 +281,99 @@ TEST_CASE("SScalar second order: a variable has no curvature") {
   CHECK(u().dd("x", "q") == doctest::Approx(0.0));
 }
 
+// Projection onto an explicit list of names -- the bridge to code that wants
+// arrays. The values come from d() and dd(), pinned symbolically above; what
+// is new here is the layout and the zero-for-unknown rule.
+
+TEST_CASE("SScalar g projects onto the given order") {
+  const auto r = vx() * vy() + vz();
+
+  // the caller's order, not the storage order
+  const auto g = r.g({"z", "y", "x"});
+
+  CHECK(hyperjet::length(g) == 3);
+  CHECK(g[0] == doctest::Approx(r.d("z")));
+  CHECK(g[1] == doctest::Approx(r.d("y")));
+  CHECK(g[2] == doctest::Approx(r.d("x")));
+
+  // a name the value does not carry reads as zero
+  const auto padded = r.g({"w", "x"});
+
+  CHECK(padded[0] == doctest::Approx(0.0));
+  CHECK(padded[1] == doctest::Approx(r.d("x")));
+
+  // an empty list is empty, not an error
+  CHECK(hyperjet::length(r.g({})) == 0);
+}
+
+TEST_CASE("SScalar hm is row-major and symmetric") {
+  using std::sqrt;
+
+  const auto r = sqrt(vx() * vy() + vz() * vz());
+  const std::vector<std::string> names{"x", "y", "z"};
+
+  const auto h = r.hm(names);
+
+  CHECK(hyperjet::length(h) == 9);
+
+  for (hyperjet::index i = 0; i < 3; i++) {
+    for (hyperjet::index j = 0; j < 3; j++) {
+      CHECK(h[i * 3 + j] == doctest::Approx(r.dd(names[i], names[j])));
+      CHECK(h[i * 3 + j] == doctest::Approx(h[j * 3 + i]));
+    }
+  }
+}
+
+TEST_CASE("SScalar hm zeroes rows and columns of unknown names") {
+  const auto r = vx() * vy();
+  const std::vector<std::string> names{"x", "w", "y"};
+
+  const auto h = r.hm(names);
+
+  const auto entry = [&](const hyperjet::index i, const hyperjet::index j) {
+    return h[i * 3 + j];
+  };
+
+  // w is unknown, so its row and column are zero throughout
+  for (hyperjet::index i = 0; i < 3; i++) {
+    CHECK(entry(1, i) == doctest::Approx(0.0));
+    CHECK(entry(i, 1) == doctest::Approx(0.0));
+  }
+
+  // the remaining entries keep the positions the caller chose
+  CHECK(entry(0, 2) == doctest::Approx(r.dd("x", "y")));
+  CHECK(entry(2, 0) == doctest::Approx(r.dd("x", "y")));
+}
+
+TEST_CASE("SScalar projects a local value onto a larger set") {
+  // Two values carrying different names project onto one shared layout, which
+  // is what an assembly step needs.
+  const std::vector<std::string> global{"x", "y", "z"};
+
+  const auto a = vx() * vy();
+  const auto b = vy() * vz();
+
+  CHECK(a.g(global)[2] == doctest::Approx(0.0)); // a does not know z
+  CHECK(b.g(global)[0] == doctest::Approx(0.0)); // b does not know x
+
+  CHECK(hyperjet::length(a.hm(global)) == 9);
+  CHECK(hyperjet::length(b.hm(global)) == 9);
+}
+
+TEST_CASE("SScalar variables builds a set in the given order") {
+  const auto v = S::variables({{"a", 1.0}, {"b", 2.0}, {"c", 3.0}});
+
+  CHECK(hyperjet::length(v) == 3);
+
+  CHECK(v[0].f() == doctest::Approx(1.0));
+  CHECK(v[1].f() == doctest::Approx(2.0));
+  CHECK(v[2].f() == doctest::Approx(3.0));
+
+  CHECK(v[0].d("a") == doctest::Approx(1.0));
+  CHECK(v[0].d("b") == doctest::Approx(0.0));
+
+  // each carries only its own name
+  CHECK(v[1].names() == std::vector<std::string>{"b"});
+}
+
 } // namespace

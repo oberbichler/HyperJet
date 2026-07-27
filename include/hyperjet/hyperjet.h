@@ -1800,6 +1800,24 @@ private: // methods
     return (2 * k - 1 - i) * i / 2 + j;
   }
 
+  // Position of each requested name in the storage, or -1 where the value does
+  // not carry it. One lookup per name, so a projection costs k log n rather
+  // than a lookup per matrix entry.
+  std::vector<index> positions(const std::vector<std::string> &names) const {
+    std::vector<index> result;
+    result.reserve(names.size());
+
+    for (const auto &name : names) {
+      const auto it = std::lower_bound(m_d.begin(), m_d.end(), name, before);
+
+      result.push_back(it != m_d.end() && it->first == name
+                           ? static_cast<index>(it - m_d.begin())
+                           : -1);
+    }
+
+    return result;
+  }
+
   HYPERJET_INLINE static bool before(const std::pair<std::string, TScalar> &e,
                                      const std::string &name) {
     return e.first < name;
@@ -1972,6 +1990,21 @@ public: // constructors
     return from_terms(value, Terms{{name, Scalar(1)}});
   }
 
+  // Build a set of variables in one call. The order given here is the order
+  // g() and hm() project onto when handed the same names, so a caller can use
+  // one list for both.
+  static std::vector<SScalar>
+  variables(const std::vector<std::pair<std::string, Scalar>> &values) {
+    std::vector<SScalar> result;
+    result.reserve(values.size());
+
+    for (const auto &[name, value] : values) {
+      result.push_back(variable(name, value));
+    }
+
+    return result;
+  }
+
 private: // methods
   // Takes the storage as it is, already sorted. A second constructor would make
   // SScalar(f, {{"x", 1.0}}) ambiguous between Data and Terms.
@@ -2014,6 +2047,26 @@ public: // methods
     return r;
   }
 
+  // Projection onto an explicit, ordered list of names -- the bridge from
+  // named derivatives to code that wants arrays, an assembly step for
+  // instance. A name the value does not carry reads as zero, exactly as d()
+  // and dd() do, so a local value projects onto a larger global set without
+  // having to be padded first. The caller fixes the order, which is what makes
+  // the result composable: two values with different name sets project onto
+  // the same layout.
+  std::vector<Scalar> g(const std::vector<std::string> &names) const {
+    const auto p = positions(names);
+
+    std::vector<Scalar> result;
+    result.reserve(names.size());
+
+    for (const auto i : p) {
+      result.push_back(i < 0 ? Scalar(0) : m_d[i].second);
+    }
+
+    return result;
+  }
+
   Scalar dd(const std::string &a, const std::string &b) const
     requires(TOrder == 2)
   {
@@ -2026,6 +2079,33 @@ public: // methods
     }
 
     return m_h[at(length(m_d), ia - m_d.begin(), ib - m_d.begin())];
+  }
+  // The Hessian over an explicit, ordered list of names, row-major and
+  // symmetric. Same zero-for-unknown rule as g().
+  std::vector<Scalar> hm(const std::vector<std::string> &names) const
+    requires(TOrder == 2)
+  {
+    const auto p = positions(names);
+    const index n = length(names);
+    const index k = length(m_d);
+
+    std::vector<Scalar> result(static_cast<std::size_t>(n * n), Scalar(0));
+
+    for (index i = 0; i < n; i++) {
+      if (p[i] < 0) {
+        continue;
+      }
+
+      for (index j = 0; j < n; j++) {
+        if (p[j] < 0) {
+          continue;
+        }
+
+        result[i * n + j] = m_h[at(k, p[i], p[j])];
+      }
+    }
+
+    return result;
   }
 
   Scalar eval(const Data &d) const {

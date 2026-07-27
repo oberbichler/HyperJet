@@ -29,10 +29,55 @@ template <typename T> void bind_sscalar(pybind11::module &m, const char *name) {
       .def("abs", &T::abs)
       .def("d", &T::d, "variable"_a)
       .def("eval", &T::eval, "d"_a)
-      .def("names", &T::names);
+      .def("names", &T::names)
+      .def(
+          // Projection onto an explicit, ordered list of names. Returns an
+          // array so the result drops straight into array-consuming code; a
+          // name the value does not carry reads as zero.
+          "g",
+          [](const T &self, const std::vector<std::string> &names) {
+            const auto g = self.g(names);
+
+            return py::array_t<typename T::Scalar>(
+                {hj::length(g)}, {sizeof(typename T::Scalar)}, g.data());
+          },
+          "names"_a);
+
+  // static methods
+  cls.def_static(
+      "variables",
+      [](const py::dict &values) {
+        // A dict keeps insertion order, and that order is what g() and hm()
+        // project onto when handed the same names.
+        std::vector<std::pair<std::string, typename T::Scalar>> terms;
+        terms.reserve(values.size());
+
+        for (const auto &[name, value] : values) {
+          terms.emplace_back(name.template cast<std::string>(),
+                             value.template cast<typename T::Scalar>());
+        }
+
+        return T::variables(terms);
+      },
+      "values"_a);
 
   if constexpr (T::order() == 2) {
-    cls.def("dd", &T::dd, "a"_a, "b"_a);
+    cls.def("dd", &T::dd, "a"_a, "b"_a)
+        .def(
+            // The Hessian over an explicit, ordered list of names, as an
+            // n-by-n array.
+            "hm",
+            [](const T &self, const std::vector<std::string> &names) {
+              const auto h = self.hm(names);
+              const auto n = hj::length(names);
+
+              py::array_t<typename T::Scalar> result({n, n});
+
+              std::copy(h.begin(), h.end(), result.mutable_data());
+
+              return result;
+            },
+            "names"_a);
   }
 
   // methods: arithmetic operations
