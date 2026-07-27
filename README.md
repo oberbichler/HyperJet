@@ -4,7 +4,7 @@
 
 ---
 
-A header-only C++23 library for algorithmic differentiation with hyper-dual numbers. Supports first- and second-order derivatives with both dense indexed variables (`DDScalar`) and sparse named variables (`SScalar`). Includes an extensive Python interface via [pybind11](https://github.com/pybind/pybind11).
+A header-only C++23 library for algorithmic differentiation with hyper-dual numbers. Supports first- and second-order derivatives with both dense indexed variables (`DDScalar`) and sparse named variables (`SSScalar`). Includes an extensive Python interface via [pybind11](https://github.com/pybind/pybind11).
 
 [![PyPI](https://img.shields.io/pypi/v/hyperjet)](https://pypi.org/project/hyperjet)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/hyperjet)
@@ -126,7 +126,7 @@ f.d("y")   # df/dy
 >>> 1.0
 ```
 
-`SScalar` is **first order only** — there is no Hessian. Where `DDScalar` offers `h`, `hm` and the second-order factories, `SScalar` has a value and a gradient keyed by name. The variable set does not have to be known in advance: an operation takes the union of the names of its operands, and `d` returns zero for a name the scalar has never seen.
+The variable set does not have to be known in advance: an operation takes the union of the names of its operands, and `d` returns zero for a name the scalar has never seen.
 
 ```python
 u = hj.SScalar.variable("x", 2.0)
@@ -140,10 +140,35 @@ len(u * v)          # the product knows both names
 >>> 1
 ```
 
+`names()` reports which variables a value has picked up, in sorted order.
+
+#### `SSScalar` — second order by name
+
+`SSScalar` adds the Hessian, addressed by name pairs through `dd(a, b)`:
+
+```python
+x = hj.SSScalar.variable("x", 0.5)
+y = hj.SSScalar.variable("y", 0.4)
+
+f = (x * y).sqrt()
+f.d("x")          # df/dx
+>>> 0.4472135954999579
+f.dd("x", "y")    # d²f/dxdy
+>>> 0.5590169943749475
+f.dd("y", "x")    # symmetric
+>>> 0.5590169943749475
+f.dd("x", "z")    # an unknown name is zero, as with d
+>>> 0.0
+```
+
+The naming follows `DScalar`/`DDScalar`: one letter per order, so `SScalar` carries a gradient and `SSScalar` a gradient and a Hessian, both keyed by name. `order` reports which one you have, and `dd` is absent from `SScalar` rather than raising.
+
+The Hessian is **dense over the names the value carries** — it is not sparse within that set. Any nonlinear function contributes the full outer product of its own gradient, so the triangle fills up after a couple of operations; what stays sparse is the set of names itself. It is stored as the upper triangle in the same packing `DDScalar` uses, and a first-order `SScalar` pays nothing for it: `sizeof` is unchanged at 32 bytes against 56 for `SSScalar`.
+
 Two further differences from `DDScalar` worth knowing:
 
 - **No serialization.** `copy`, `deepcopy` and `pickle` raise `TypeError`; the `DDScalar` types support all three.
-- **The gradient is stored sorted by name**, so `repr` and iteration are deterministic, and combining two values is a linear merge rather than a sequence of hash lookups.
+- **The gradient is stored sorted by name**, so `repr` and iteration are deterministic, and combining two values is a linear merge rather than a sequence of hash lookups. The sort order is also what indexes the Hessian.
 
 `eval(d)` contracts the gradient with a displacement given per name. Names missing from the displacement contribute nothing, and names the scalar does not know are ignored:
 
@@ -273,7 +298,7 @@ The library requires a C++23-capable compiler (GCC ≥ 14, Clang ≥ 18, MSVC �
 
 ## Supported Functions
 
-Both `DDScalar` and `SScalar` support:
+All of the scalar types support:
 
 | Category | Functions |
 |----------|-----------|

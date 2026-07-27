@@ -1,14 +1,14 @@
 #include "common.h"
 
-void bind_sscalar(pybind11::module &m) {
-  using T = hj::SScalar<1, double>;
-
-  auto cls = py::class_<T>(m, "SScalar");
+// One letter per order, as with DScalar and DDScalar: SScalar carries a
+// gradient, SSScalar a gradient and a Hessian, both keyed by name.
+template <typename T> void bind_sscalar(pybind11::module &m, const char *name) {
+  auto cls = py::class_<T>(m, name);
 
   // constructor
   cls.def(py::init<>())
-      .def(py::init<T::Scalar>(), "f"_a = 0)
-      .def(py::init<T::Scalar, T::Data>(), "f"_a = 0, "d"_a);
+      .def(py::init<typename T::Scalar>(), "f"_a = 0)
+      .def(py::init<typename T::Scalar, typename T::Data>(), "f"_a = 0, "d"_a);
 
   // static methods
   cls.def_static("constant", &T::constant, "value"_a)
@@ -17,6 +17,10 @@ void bind_sscalar(pybind11::module &m) {
   // properties
   cls.def_property_readonly("f", &T::f).def_property_readonly("size", &T::size);
 
+  // static read-only properties
+  cls.def_property_readonly_static("order",
+                                   [](py::object) { return T::order(); });
+
   // methods
   cls.def("__abs__", &T::abs)
       .def("__len__", &T::size)
@@ -24,7 +28,12 @@ void bind_sscalar(pybind11::module &m) {
       .def("__repr__", &T::to_string)
       .def("abs", &T::abs)
       .def("d", &T::d, "variable"_a)
-      .def("eval", &T::eval, "d"_a);
+      .def("eval", &T::eval, "d"_a)
+      .def("names", &T::names);
+
+  if constexpr (T::order() == 2) {
+    cls.def("dd", &T::dd, "a"_a, "b"_a);
+  }
 
   // methods: arithmetic operations
   cls.def("reciprocal", &T::reciprocal)
@@ -102,4 +111,9 @@ void bind_sscalar(pybind11::module &m) {
       .def(double() - py::self)
       .def(double() * py::self)
       .def(double() / py::self);
+}
+
+void bind_sscalar(pybind11::module &m) {
+  bind_sscalar<hj::SScalar<1, double>>(m, "SScalar");
+  bind_sscalar<hj::SScalar<2, double>>(m, "SSScalar");
 }
