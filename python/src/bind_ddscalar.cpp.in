@@ -1,0 +1,28 @@
+// Generated from bind_ddscalar.cpp.in -- do not edit.
+//
+// One translation unit per size. The variables() helper lives here rather than
+// in main.cpp so that the templates for this size are instantiated once, in the
+// unit that already binds them.
+
+#include "common.h"
+
+void bind_ddscalar_@HJ_TAG@(pybind11::module &m) {
+  // A nested hj::DDScalar<..., hj::SScalar<double>, ...> would go here to
+  // combine indexed and named variables.
+  bind<hj::DDScalar<1, double, @HJ_SIZE@>>(m, "D@HJ_NAME@Scalar");
+  bind<hj::DDScalar<2, double, @HJ_SIZE@>>(m, "DD@HJ_NAME@Scalar");
+}
+
+// The signature is wrapped so that the layout does not depend on the length of
+// the substituted tag.
+void variables_@HJ_TAG@(
+    pybind11::list &result, const std::vector<double> &values,
+    const hj::index order) {
+  const auto extend = result.attr("extend");
+
+  if (order == 1) {
+    extend(hj::DDScalar<1, double, @HJ_SIZE@>::variables(values));
+  } else {
+    extend(hj::DDScalar<2, double, @HJ_SIZE@>::variables(values));
+  }
+}

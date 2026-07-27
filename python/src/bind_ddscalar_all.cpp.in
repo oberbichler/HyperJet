@@ -1,0 +1,20 @@
+// Generated from bind_ddscalar_all.cpp.in -- do not edit.
+//
+// Collects the per-size translation units, so the list of sizes exists only in
+// python/CMakeLists.txt and main.cpp does not have to repeat it.
+
+#include "common.h"
+
+@HJ_DECLS@
+void bind_ddscalar_all(pybind11::module &m) {
+@HJ_CALLS@}
+
+void variables_dispatch(pybind11::list &result,
+                        const std::vector<double> &values,
+                        const hj::index order) {
+  switch (hj::length(values)) {
+@HJ_CASES@  default:
+    variables_xd(result, values, order);
+    break;
+  }
+}
