@@ -357,9 +357,14 @@ public:
 
   static constexpr index order() { return TOrder; }
 
-  auto &data(this auto &self) { return self.m_data; }
+  // The object parameter is a forwarding reference so that a result can be
+  // read straight from the expression that produced it: an lvalue reference
+  // would not bind to a temporary, and (a * b).f() would not compile. As with
+  // std::vector::operator[], a reference obtained from a temporary is only
+  // valid within the full expression.
+  auto &data(this auto &&self) { return self.m_data; }
 
-  auto ptr(this auto &self) { return self.m_data.data(); }
+  auto ptr(this auto &&self) { return self.m_data.data(); }
 
   static constexpr index static_size() { return TSize; }
 
@@ -608,11 +613,11 @@ public:
     }
   }
 
-  auto &f(this auto &self) { return self.m_data[0]; }
+  auto &f(this auto &&self) { return self.m_data[0]; }
 
   void set_f(const Scalar value) { m_data[0] = value; }
 
-  auto &g(this auto &self, const index i) {
+  auto &g(this auto &&self, const index i) {
     assert(0 <= i && i < self.size());
 
     return self.m_data[1 + i];
@@ -620,7 +625,7 @@ public:
 
   void set_g(const index i, const Scalar value) { g(i) = value; }
 
-  auto &h(this auto &self, const index i)
+  auto &h(this auto &&self, const index i)
     requires(order() == 2)
   {
     assert(0 <= i && i < self.size() * (self.size() + 1) / 2);
@@ -634,7 +639,7 @@ public:
     h(i) = value;
   }
 
-  auto &h(this auto &self, const index i, const index j)
+  auto &h(this auto &&self, const index i, const index j)
     requires(order() == 2)
   {
     assert(0 <= i && i < self.size());
