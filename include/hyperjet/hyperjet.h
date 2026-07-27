@@ -1747,7 +1747,9 @@ public: // types
   using Data = std::unordered_map<std::string, TScalar>;
 
 private: // variables
-  Scalar m_f;
+  // The default constructor is defaulted, so without an initializer m_f would
+  // be indeterminate and reading it undefined.
+  Scalar m_f{};
   Data m_d;
 
 private: // methods
@@ -1823,13 +1825,13 @@ public: // methods
   Scalar eval(const Data &d) const {
     Scalar r(m_f);
 
-    for (const auto coef : m_d) {
-      const auto it = d.find(coef.first);
+    for (const auto &[name, derivative] : m_d) {
+      const auto it = d.find(name);
 
       if (it == d.end())
         continue;
 
-      r += coef.second * it->second;
+      r += derivative * it->second;
     }
 
     return r;
