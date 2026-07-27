@@ -1746,9 +1746,14 @@ log10(const DDScalar<TOrder, TScalar, TSize> &a) {
   return a.log10();
 }
 
-template <typename TScalar> class SScalar {
+// Derivatives keyed by name rather than by index. The variable set does not
+// have to be known in advance: an operation takes the union of the names of its
+// operands. Second order is not implemented yet, hence the constraint.
+template <index TOrder, typename TScalar = double>
+  requires(TOrder == 1)
+class SScalar {
 public: // types
-  using Type = SScalar<TScalar>;
+  using Type = SScalar<TOrder, TScalar>;
   using Scalar = TScalar;
 
   // The interface type for construction and eval. A map is what callers, and
@@ -2341,147 +2346,170 @@ public: // methods
 
 // std::abs
 
-template <typename TScalar> SScalar<TScalar> abs(const SScalar<TScalar> &a) {
+template <index TOrder, typename TScalar>
+SScalar<TOrder, TScalar> abs(const SScalar<TOrder, TScalar> &a) {
   return a.abs();
 }
 
 // std::pow
 
-template <typename TScalar>
-SScalar<TScalar> pow(const SScalar<TScalar> &a, const index b) {
+template <index TOrder, typename TScalar>
+SScalar<TOrder, TScalar> pow(const SScalar<TOrder, TScalar> &a, const index b) {
   return a.pow(b);
 }
 
-template <typename TScalar>
-SScalar<TScalar> pow(const SScalar<TScalar> &a, const TScalar b) {
+template <index TOrder, typename TScalar>
+SScalar<TOrder, TScalar> pow(const SScalar<TOrder, TScalar> &a,
+                             const TScalar b) {
   return a.pow(b);
 }
 
 // std::sqrt
 
-template <typename TScalar> SScalar<TScalar> sqrt(const SScalar<TScalar> &a) {
+template <index TOrder, typename TScalar>
+SScalar<TOrder, TScalar> sqrt(const SScalar<TOrder, TScalar> &a) {
   return a.sqrt();
 }
 
 // std::cbrt
 
-template <typename TScalar> SScalar<TScalar> cbrt(const SScalar<TScalar> &a) {
+template <index TOrder, typename TScalar>
+SScalar<TOrder, TScalar> cbrt(const SScalar<TOrder, TScalar> &a) {
   return a.cbrt();
 }
 
 // std::cos
 
-template <typename TScalar> SScalar<TScalar> cos(const SScalar<TScalar> &a) {
+template <index TOrder, typename TScalar>
+SScalar<TOrder, TScalar> cos(const SScalar<TOrder, TScalar> &a) {
   return a.cos();
 }
 
 // std::sin
 
-template <typename TScalar> SScalar<TScalar> sin(const SScalar<TScalar> &a) {
+template <index TOrder, typename TScalar>
+SScalar<TOrder, TScalar> sin(const SScalar<TOrder, TScalar> &a) {
   return a.sin();
 }
 
 // std::tan
 
-template <typename TScalar> SScalar<TScalar> tan(const SScalar<TScalar> &a) {
+template <index TOrder, typename TScalar>
+SScalar<TOrder, TScalar> tan(const SScalar<TOrder, TScalar> &a) {
   return a.tan();
 }
 
 // std::acos
 
-template <typename TScalar> SScalar<TScalar> acos(const SScalar<TScalar> &a) {
+template <index TOrder, typename TScalar>
+SScalar<TOrder, TScalar> acos(const SScalar<TOrder, TScalar> &a) {
   return a.acos();
 }
 
 // std::asin
 
-template <typename TScalar> SScalar<TScalar> asin(const SScalar<TScalar> &a) {
+template <index TOrder, typename TScalar>
+SScalar<TOrder, TScalar> asin(const SScalar<TOrder, TScalar> &a) {
   return a.asin();
 }
 
 // std::atan
 
-template <typename TScalar> SScalar<TScalar> atan(const SScalar<TScalar> &a) {
+template <index TOrder, typename TScalar>
+SScalar<TOrder, TScalar> atan(const SScalar<TOrder, TScalar> &a) {
   return a.atan();
 }
 
 // std::atan2
 
-template <typename TScalar>
-SScalar<TScalar> atan2(const SScalar<TScalar> &a, const SScalar<TScalar> &b) {
+template <index TOrder, typename TScalar>
+SScalar<TOrder, TScalar> atan2(const SScalar<TOrder, TScalar> &a,
+                               const SScalar<TOrder, TScalar> &b) {
   return a.atan2(b);
 }
 
 // std::hypot
 
-template <typename TScalar>
-SScalar<TScalar> hypot(const SScalar<TScalar> &a, const SScalar<TScalar> &b) {
-  return SScalar<TScalar>::hypot(a, b);
+template <index TOrder, typename TScalar>
+SScalar<TOrder, TScalar> hypot(const SScalar<TOrder, TScalar> &a,
+                               const SScalar<TOrder, TScalar> &b) {
+  return SScalar<TOrder, TScalar>::hypot(a, b);
 }
 
-template <typename TScalar>
-SScalar<TScalar> hypot(const SScalar<TScalar> &a, const SScalar<TScalar> &b,
-                       const SScalar<TScalar> &c) {
-  return SScalar<TScalar>::hypot(a, b, c);
+template <index TOrder, typename TScalar>
+SScalar<TOrder, TScalar> hypot(const SScalar<TOrder, TScalar> &a,
+                               const SScalar<TOrder, TScalar> &b,
+                               const SScalar<TOrder, TScalar> &c) {
+  return SScalar<TOrder, TScalar>::hypot(a, b, c);
 }
 
 // std::cosh
 
-template <typename TScalar> SScalar<TScalar> cosh(const SScalar<TScalar> &a) {
+template <index TOrder, typename TScalar>
+SScalar<TOrder, TScalar> cosh(const SScalar<TOrder, TScalar> &a) {
   return a.cosh();
 }
 
 // std::sinh
 
-template <typename TScalar> SScalar<TScalar> sinh(const SScalar<TScalar> &a) {
+template <index TOrder, typename TScalar>
+SScalar<TOrder, TScalar> sinh(const SScalar<TOrder, TScalar> &a) {
   return a.sinh();
 }
 
 // std::tanh
 
-template <typename TScalar> SScalar<TScalar> tanh(const SScalar<TScalar> &a) {
+template <index TOrder, typename TScalar>
+SScalar<TOrder, TScalar> tanh(const SScalar<TOrder, TScalar> &a) {
   return a.tanh();
 }
 
 // std::acosh
 
-template <typename TScalar> SScalar<TScalar> acosh(const SScalar<TScalar> &a) {
+template <index TOrder, typename TScalar>
+SScalar<TOrder, TScalar> acosh(const SScalar<TOrder, TScalar> &a) {
   return a.acosh();
 }
 
 // std::asin
 
-template <typename TScalar> SScalar<TScalar> asinh(const SScalar<TScalar> &a) {
+template <index TOrder, typename TScalar>
+SScalar<TOrder, TScalar> asinh(const SScalar<TOrder, TScalar> &a) {
   return a.asinh();
 }
 
 // std::atan
 
-template <typename TScalar> SScalar<TScalar> atanh(const SScalar<TScalar> &a) {
+template <index TOrder, typename TScalar>
+SScalar<TOrder, TScalar> atanh(const SScalar<TOrder, TScalar> &a) {
   return a.atanh();
 }
 
 // std::exp
 
-template <typename TScalar> SScalar<TScalar> exp(const SScalar<TScalar> &a) {
+template <index TOrder, typename TScalar>
+SScalar<TOrder, TScalar> exp(const SScalar<TOrder, TScalar> &a) {
   return a.exp();
 }
 
 // std::log
 
-template <typename TScalar> SScalar<TScalar> log(const SScalar<TScalar> &a) {
+template <index TOrder, typename TScalar>
+SScalar<TOrder, TScalar> log(const SScalar<TOrder, TScalar> &a) {
   return a.log();
 }
 
 // std::log2
 
-template <typename TScalar> SScalar<TScalar> log2(const SScalar<TScalar> &a) {
+template <index TOrder, typename TScalar>
+SScalar<TOrder, TScalar> log2(const SScalar<TOrder, TScalar> &a) {
   return a.log2();
 }
 
 // std::log10
 
-template <typename TScalar> SScalar<TScalar> log10(const SScalar<TScalar> &a) {
+template <index TOrder, typename TScalar>
+SScalar<TOrder, TScalar> log10(const SScalar<TOrder, TScalar> &a) {
   return a.log10();
 }
 

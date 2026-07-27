@@ -1,7 +1,7 @@
 #include "common.h"
 
 void bind_sscalar(pybind11::module &m) {
-  using T = hj::SScalar<double>;
+  using T = hj::SScalar<1, double>;
 
   auto cls = py::class_<T>(m, "SScalar");
 

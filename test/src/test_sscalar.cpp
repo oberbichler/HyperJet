@@ -17,7 +17,7 @@
 
 namespace {
 
-using S = hyperjet::SScalar<double>;
+using S = hyperjet::SScalar<1, double>;
 
 const S s1(3.0, {{"x", 1.0}, {"y", 6.0}, {"z", 4.0}});
 const S s2(4.0, {{"x", 7.0}, {"y", 1.0}});
