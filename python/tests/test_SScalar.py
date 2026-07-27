@@ -101,13 +101,8 @@ def test_properties():
 
 
 def test_repr():
-    # The derivatives live in an unordered map, so the order of the terms is
-    # unspecified. Only the value comes first and every term appears once.
-    text = repr(hj.SScalar(f=3, d={"x": 1, "y": 6}))
-
-    assert text.startswith("3")
-    assert "+1*dx" in text
-    assert "+6*dy" in text
+    # The derivatives are stored sorted by name, so the order is deterministic.
+    assert_equal(repr(hj.SScalar(f=3, d={"y": 6, "x": 1})), "3 +1*dx +6*dy")
 
     # negative derivatives are printed without a plus sign
     assert_equal(repr(hj.SScalar(f=1, d={"x": -2})), "1 -2*dx")
