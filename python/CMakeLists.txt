@@ -18,8 +18,16 @@ if(Eigen_ADDED)
   target_include_directories(Eigen INTERFACE ${Eigen_SOURCE_DIR})
 endif()
 
-# pybind11 is provided by scikit-build-core build requirements
+# pybind11 and numpy are provided by scikit-build-core build requirements
 find_package(pybind11 CONFIG REQUIRED)
+
+# the dtype is written against the numpy C API, so its headers are needed
+execute_process(
+  COMMAND "${Python_EXECUTABLE}" -c "import numpy; print(numpy.get_include())"
+  OUTPUT_VARIABLE numpy_include
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+  COMMAND_ERROR_IS_FATAL ANY
+)
 
 if(TEST_INSTALLED_VERSION)
   find_package(HyperJet REQUIRED)
@@ -81,7 +89,10 @@ file(GLOB sources CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 pybind11_add_module(HyperJetPython ${sources} ${generated_sources})
 
 # the generated units include "common.h" from src/
-target_include_directories(HyperJetPython PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(
+  HyperJetPython PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+target_include_directories(HyperJetPython SYSTEM PRIVATE ${numpy_include})
 
 target_link_libraries(HyperJetPython PRIVATE hyperjet::hyperjet Eigen)
 

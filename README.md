@@ -171,6 +171,40 @@ normal[0].hm()
            [-0.02335746,  0.04858632, -0.03690759, -0.01546811, -0.02868433,  0.03641839]])
 ```
 
+### A real dtype instead of `dtype=object`
+
+Statically sized scalars back a NumPy dtype, so an array of them stores its data contiguously rather than as pointers to Python objects. NumPy picks it up on its own:
+
+```python
+a = np.array(hj.variables([1.0, 2.0, 3.0]))
+a.dtype
+>>> DD3ScalarDType
+a.nbytes        # 3 x 80 bytes, contiguous
+>>> 240
+```
+
+Arithmetic and the mathematical functions then run as compiled loops instead of a Python object loop. Measured over 10 000 elements of `DD3Scalar`:
+
+| | `dtype=object` | dtype | |
+|---|---|---|---|
+| `a + b` | 349.5 ns | 2.5 ns | 138× |
+| `a * b` | 354.3 ns | 3.9 ns | 92× |
+| `np.sqrt(a)` | 349.2 ns | 2.8 ns | 123× |
+| `np.sin(a)` | 366.4 ns | 7.0 ns | 52× |
+| `np.sum(a)` | 353.1 ns | 3.8 ns | 94× |
+| `a @ b` | 673.0 ns | 2.7 ns | 246× |
+
+The **dynamic** variants (`DScalar`, `DDScalar`) hold a `std::vector`, so they have no fixed element size and stay object arrays.
+
+Two functions do not work on these arrays: `np.dot` and `np.linalg.norm`. `np.dot` is not a ufunc but an `__array_function__` dispatcher — it looks at the array type rather than at the dtype, and then rejects anything that is not a native or an old-style dtype. Use `@`, `np.matmul` or `np.vecdot` instead; they compute the same thing and work on object arrays too:
+
+```python
+a @ a                       # instead of np.dot(a, a)
+np.sqrt(np.vecdot(a, a))    # instead of np.linalg.norm(a)
+```
+
+`np.array(a, dtype=object)` converts back at any time, which restores the object behaviour including `np.dot`.
+
 ## C++ Usage
 
 HyperJet is a single header-only library. Add `include/` to your include path and use C++23:
