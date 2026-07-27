@@ -1391,6 +1391,25 @@ def test_dd_of_scalar():
     assert_equal(hj.dd(np.array([[1, 2], [3, 4]])), np.empty((2, 2, 0, 0)))
 
 
+def test_generate_variables_at_the_static_limit():
+    # 16 is the largest statically sized variant, 17 falls back to dynamic
+    for order, static, dynamic in [
+        (1, hj.D16Scalar, hj.DScalar),
+        (2, hj.DD16Scalar, hj.DDScalar),
+    ]:
+        variables = hj.variables([1.0] * 16, order=order)
+
+        assert_equal(len(variables), 16)
+        assert_equal(type(variables[0]), static)
+        assert_equal(variables[0].g, np.eye(16)[0])
+        assert_equal(variables[15].g, np.eye(16)[15])
+
+        variables = hj.variables([1.0] * 17, order=order)
+
+        assert_equal(len(variables), 17)
+        assert_equal(type(variables[0]), dynamic)
+
+
 def test_generate_variables():
     small = [1, 2, 3]
     large = [i + 1 for i in range(20)]

@@ -101,9 +101,9 @@ Stores derivatives in dense arrays. Supports first-order (gradient only) and sec
 | `D3Scalar` | 1 | 3 (static) | `DDScalar<1, double, 3>` |
 | `DD3Scalar` | 2 | 3 (static) | `DDScalar<2, double, 3>` |
 
-Static variants (`D1Scalar`–`D15Scalar`, `DD1Scalar`–`DD15Scalar`) avoid heap allocation and enable better compiler optimization. The dynamic variants (`DScalar`, `DDScalar`) accept any number of variables at runtime.
+Static variants (`D0Scalar`–`D16Scalar`, `DD0Scalar`–`DD16Scalar`) avoid heap allocation and enable better compiler optimization. The dynamic variants (`DScalar`, `DDScalar`) accept any number of variables at runtime.
 
-The convenience function `hj.variables(values, order=2)` automatically selects the appropriate static type when the number of variables is ≤ 15, and falls back to the dynamic variant otherwise.
+The convenience function `hj.variables(values, order=2)` automatically selects the appropriate static type when the number of variables is ≤ 16, and falls back to the dynamic variant otherwise.
 
 To change the number of variables of a dynamic scalar, use `pad_left(new_size)` or `pad_right(new_size)`. They insert the new variables before or after the existing ones and remap the gradient and Hessian accordingly. To start from scratch instead, create a new instance with `empty(size)` or `zero(size)`.
 
