@@ -185,17 +185,12 @@ TEST_CASE("SScalar size counts the stored derivatives") {
 }
 
 TEST_CASE("SScalar printing") {
-  // The derivatives live in an unordered_map, so the order of the terms is
-  // unspecified. Only the value comes first, and every term appears once.
+  // The derivatives are stored sorted by name, so the order of the terms is
+  // deterministic.
   std::stringstream out;
   out << s2;
-  const std::string text = out.str();
 
-  CHECK(text.starts_with("4"));
-  CHECK(text.find("*dx") != std::string::npos);
-  CHECK(text.find("*dy") != std::string::npos);
-  CHECK(text.find("+7") != std::string::npos);
-  CHECK(text.find("+1") != std::string::npos);
+  CHECK(out.str() == "4 +7*dx +1*dy");
 
   // negative derivatives are printed without a plus sign
   std::stringstream negative;

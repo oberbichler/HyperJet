@@ -143,7 +143,7 @@ len(u * v)          # the product knows both names
 Two further differences from `DDScalar` worth knowing:
 
 - **No serialization.** `copy`, `deepcopy` and `pickle` raise `TypeError`; the `DDScalar` types support all three.
-- **The order of terms in `repr` is unspecified**, because the derivatives live in an unordered map. Only the value comes first.
+- **The gradient is stored sorted by name**, so `repr` and iteration are deterministic, and combining two values is a linear merge rather than a sequence of hash lookups.
 
 `eval(d)` contracts the gradient with a displacement given per name. Names missing from the displacement contribute nothing, and names the scalar does not know are ignored:
 
