@@ -12,6 +12,8 @@
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
 
+#include "dtype.h"
+
 namespace hj = hyperjet;
 
 namespace py = pybind11;

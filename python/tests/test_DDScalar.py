@@ -1297,7 +1297,8 @@ def test_f(ctx):
     assert_equal(f[0], u[0].f)
     assert_equal(f[1], u[1].f)
 
-    v = np.dot(u, u)
+    a = np.asarray(u)
+    v = a @ a
 
     f = hj.f(v)
 
@@ -1313,7 +1314,8 @@ def test_d(ctx):
     assert_equal(d[0], u[0].g)
     assert_equal(d[1], u[1].g)
 
-    v = np.dot(u, u)
+    a = np.asarray(u)
+    v = a @ a
 
     d = hj.d(v)
 
@@ -1332,7 +1334,8 @@ def test_dd(ctx):
     assert_equal(dd[0], u[0].hm())
     assert_equal(dd[1], u[1].hm())
 
-    v = np.dot(u, u)
+    a = np.asarray(u)
+    v = a @ a
 
     dd = hj.dd(v)
 

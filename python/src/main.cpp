@@ -1,3 +1,6 @@
+// this unit imports the numpy C API tables that dtype.h shares
+#define HYPERJET_IMPORT_ARRAY
+
 #include "common.h"
 
 // generated, see python/CMakeLists.txt
@@ -12,6 +15,10 @@ PYBIND11_MODULE(hyperjet, m) {
 
   namespace py = pybind11;
   namespace hj = hyperjet;
+
+  if (_import_array() < 0 || _import_umath() < 0) {
+    throw py::error_already_set();
+  }
 
   m.doc() = "HyperJet by Thomas Oberbichler";
   m.attr("__author__") = "Thomas Oberbichler";

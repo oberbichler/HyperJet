@@ -9,8 +9,11 @@
 void bind_ddscalar_@HJ_TAG@(pybind11::module &m) {
   // A nested hj::DDScalar<..., hj::SScalar<double>, ...> would go here to
   // combine indexed and named variables.
-  bind<hj::DDScalar<1, double, @HJ_SIZE@>>(m, "D@HJ_NAME@Scalar");
-  bind<hj::DDScalar<2, double, @HJ_SIZE@>>(m, "DD@HJ_NAME@Scalar");
+  auto d = bind<hj::DDScalar<1, double, @HJ_SIZE@>>(m, "D@HJ_NAME@Scalar");
+  auto dd = bind<hj::DDScalar<2, double, @HJ_SIZE@>>(m, "DD@HJ_NAME@Scalar");
+
+  hyperjet_dtype::bind_dtype_if_static<hj::DDScalar<1, double, @HJ_SIZE@>>(m, d);
+  hyperjet_dtype::bind_dtype_if_static<hj::DDScalar<2, double, @HJ_SIZE@>>(m, dd);
 }
 
 // The signature is wrapped so that the layout does not depend on the length of
