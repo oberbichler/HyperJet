@@ -5,7 +5,9 @@
 #include <hyperjet/hyperjet.h>
 
 #include <array>       // array
+#include <cmath>       // exp, sin
 #include <type_traits> // is_trivially_copyable
+#include <utility>     // move
 #include <vector>      // vector
 
 // Coverage across all four combinations of order and sizing.
@@ -110,6 +112,57 @@ void check(const T &actual, const std::vector<double> &expected) {
 // A statically sized scalar is exactly its data. The runtime size is only
 // meaningful for the dynamic variant, where it also rules out trivial copying.
 // Both properties are what an element type has to offer a NumPy dtype.
+
+// A result has to be readable straight from the expression that produced it.
+// The accessors take their object by deducing this, and an lvalue reference
+// parameter cannot bind to a temporary.
+
+template <typename T>
+concept ReadsValue = requires(T a) { std::move(a).f(); };
+
+template <typename T>
+concept ReadsGradient = requires(T a) { std::move(a).g(index{0}); };
+
+template <typename T>
+concept ReadsHessian = requires(T a) { std::move(a).h(index{0}, index{0}); };
+
+template <typename T>
+concept ReadsData = requires(T a) { std::move(a).data(); };
+
+template <typename T>
+concept ReadsPointer = requires(T a) { std::move(a).ptr(); };
+
+TEST_CASE_TEMPLATE("variants: a temporary can be read from", T, D1, X1, D2,
+                   X2) {
+  CHECK(ReadsValue<T>);
+  CHECK(ReadsGradient<T>);
+  CHECK(ReadsData<T>);
+  CHECK(ReadsPointer<T>);
+
+  if constexpr (T::order() == 2) {
+    CHECK(ReadsHessian<T>);
+  }
+
+  // and the values read from a temporary are the right ones
+  const auto a = make<T>(A);
+  const auto b = make<T>(B);
+
+  CHECK((a * b).f() == doctest::Approx(MulAB[0]));
+  CHECK((a * b).g(0) == doctest::Approx(MulAB[1]));
+  CHECK((a * b).g(1) == doctest::Approx(MulAB[2]));
+  CHECK(sqrt(a).f() == doctest::Approx(SqrtA[0]));
+  CHECK(sqrt(a).data()[0] == doctest::Approx(SqrtA[0]));
+  CHECK(*(a + b).ptr() == doctest::Approx(AddAB[0]));
+
+  if constexpr (T::order() == 2) {
+    CHECK((a * b).h(0, 0) == doctest::Approx(MulAB[3]));
+    CHECK((a * b).h(0, 1) == doctest::Approx(MulAB[4]));
+    CHECK((a * b).h(0) == doctest::Approx(MulAB[3]));
+  }
+
+  // a chained read, which is what makes this worth fixing
+  CHECK(a.sin().exp().f() == doctest::Approx(std::exp(std::sin(A[0]))));
+}
 
 TEST_CASE("Static scalars are exactly their data") {
   CHECK(sizeof(DDScalar<1, double, 0>) == sizeof(DDScalar<1, double, 0>::Data));
