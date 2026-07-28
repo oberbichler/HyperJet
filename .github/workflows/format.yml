@@ -20,8 +20,13 @@ jobs:
 
       - uses: astral-sh/setup-uv@v6
 
+      # The file list is discovered rather than spelled out: a hand-maintained
+      # list silently stops covering a new directory, and an entry whose glob
+      # matches nothing makes clang-format fail on the literal pattern. The .in
+      # templates are excluded on purpose -- they hold CMake @SUBSTITUTIONS@ and
+      # are not valid C++ until configured.
       - name: Check C++ formatting
-        run: uv run --only-group dev clang-format --dry-run --Werror include/hyperjet/*.h python/src/*.h python/src/*.cpp test/src/*.cpp benchmark/src/*.cpp
+        run: uv run --only-group dev clang-format --dry-run --Werror $(git ls-files '*.h' '*.hpp' '*.cpp')
 
       - name: Check Python formatting
         run: uv run --only-group dev ruff format --check python/tests/
