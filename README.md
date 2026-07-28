@@ -94,12 +94,12 @@ HyperJet provides two families of scalar types:
 
 Stores derivatives in dense arrays. Supports first-order (gradient only) and second-order (gradient + Hessian) derivatives. Available in **static** variants with a compile-time-fixed number of variables, and a **dynamic** variant for arbitrary sizes.
 
-| Python type | Order | Variables | C++ type |
-|-------------|-------|-----------|----------|
-| `DScalar` | 1 | dynamic | `DDScalar<1, double>` |
-| `DDScalar` | 2 | dynamic | `DDScalar<2, double>` |
-| `D3Scalar` | 1 | 3 (static) | `DDScalar<1, double, 3>` |
-| `DD3Scalar` | 2 | 3 (static) | `DDScalar<2, double, 3>` |
+| Python type | Order | Variables  | C++ type                 |
+| ----------- | ----- | ---------- | ------------------------ |
+| `DScalar`   | 1     | dynamic    | `DDScalar<1, double>`    |
+| `DDScalar`  | 2     | dynamic    | `DDScalar<2, double>`    |
+| `D3Scalar`  | 1     | 3 (static) | `DDScalar<1, double, 3>` |
+| `DD3Scalar` | 2     | 3 (static) | `DDScalar<2, double, 3>` |
 
 Static variants (`D0Scalar`–`D16Scalar`, `DD0Scalar`–`DD16Scalar`) avoid heap allocation and enable better compiler optimization. The dynamic variants (`DScalar`, `DDScalar`) accept any number of variables at runtime.
 
@@ -180,7 +180,7 @@ f.hm(["x", "y", "z"]).shape
 >>> (3, 3)
 ```
 
-That the order comes from the caller is the point: values carrying *different* names project onto one shared layout, without any of them being padded or remapped first. This is what an assembly step needs, and it is where named variables beat indexed ones — no index bookkeeping between the local computation and the global system.
+That the order comes from the caller is the point: values carrying _different_ names project onto one shared layout, without any of them being padded or remapped first. This is what an assembly step needs, and it is where named variables beat indexed ones — no index bookkeeping between the local computation and the global system.
 
 The module-level `hj.d` and `hj.dd` take the same list:
 
@@ -213,6 +213,77 @@ u.eval({"x": 0.5})          # y contributes nothing
 u.eval({"w": 100.0})        # w is unknown and ignored
 >>> 3.0
 ```
+
+## Performance
+
+Derivatives of one function, computed every way a caller might reasonably choose. The function is the strain energy of a cable with unit-spaced nodes and transverse displacements `x_i`, so each term is the squared elongation of one segment:
+
+```
+E(x) = Σ_i ( sqrt(1 + (x_{i+1} - x_i)²) - 1 )²
+```
+
+Median nanoseconds per evaluation, seven repetitions. The spread within a run is under 1 %, and the AD libraries reproduce to about 1 % across independent runs and across a fresh build. Two kinds of figure are looser: those in the single digits sit at the timer's resolution, and the finite-difference rows vary by up to 5 % between process starts.
+
+### Second order — value, gradient and dense Hessian
+
+|                                | n=3    | n=6     | n=12    | n=24       |
+| ------------------------------ | ------ | ------- | ------- | ---------- |
+| **HyperJet, static size**      | **15** | **101** | **921** | **12_214** |
+| Eigen `AutoDiffScalar`, nested | 18     | 328     | 2_888   | 22_105     |
+| autodiff `dual2nd`             | 127    | 375     | 2_425   | 17_679     |
+| HyperJet, dynamic size         | 644    | 1928    | 6_296   | 22_777     |
+| central finite differences     | 513    | 2659    | 9_968   | 55_604     |
+
+HyperJet is fastest at every size, by **3.3× at n=6 and 2.6× at n=12** against whichever of the other two libraries is faster there, narrowing to 1.5× at n=24 and 1.2× at n=3.
+
+Finite differences are 4.6× to 34× slower _and_ approximate — the worst deviation from the exact Hessian rises to 8e-8 at n=24. HyperJet's own dynamic variant allocates per operation and costs 43× the static one at n=3, falling to 1.9× at n=24 where the arithmetic dominates the allocation.
+
+### First order — value and gradient
+
+Ceres joins here. `ceres::Jet` is first order only, which is not a limitation but what a solver needs: it wants Jacobians. Nesting `Jet` inside `Jet` to force it into the table above would benchmark a configuration no Ceres user writes.
+
+|                            | n=3 | n=6  | n=12 | n=24    |
+| -------------------------- | --- | ---- | ---- | ------- |
+| HyperJet, static size      | 4   | 12   | 59   | **244** |
+| Eigen `AutoDiffScalar`     | 3   | 10   | 57   | 245     |
+| `ceres::Jet`               | 3   | 11   | 81   | 304     |
+| autodiff `dual`            | 76  | 94   | 213  | 725     |
+| central finite differences | 173 | 397  | 819  | 1946    |
+| HyperJet, dynamic size     | 664 | 1614 | 3465 | 6889    |
+
+**Here there is no winner.** HyperJet and `AutoDiffScalar` are level from n=12 upward — 244 against 245 at n=24 — and both are ahead of `Jet`, which costs 1.25× as much at n=24. Below n=12 the three sit within a few nanoseconds of each other, which is the timer's resolution rather than a result.
+
+Gradients alone are not where a hyper-dual library can distinguish itself: every contender stores a value and one dense derivative vector and does the same arithmetic on it. The second-order table is where the designs diverge.
+
+One caveat about both tables, and it is not specific to HyperJet. Every one of these libraries carries its derivatives inside the scalar and returns a whole scalar by value from every operation — 200 bytes at n=24, first order — so a chained expression depends on the compiler keeping those temporaries in registers rather than spilling them. Whether it does is decided by an inlining threshold on the _enclosing_ expression, and falling on the wrong side of it costs all of them about the same:
+
+| first order, n=24      | inlined | not inlined | penalty |
+| ---------------------- | ------- | ----------- | ------- |
+| HyperJet               | 246     | 383         | 1.56×   |
+| Eigen `AutoDiffScalar` | 247     | 418         | 1.69×   |
+| `ceres::Jet`           | 307     | 500         | 1.63×   |
+
+The ordering survives either way. The benchmark forces the inlining uniformly, because otherwise the threshold rather than the library decides the comparison — the compiler happened to inline for some contenders and not others at the same call site.
+
+In a hot loop it is worth writing `acc += term` rather than `acc = acc + term`: the compound operators work in place, with no returned temporary at all. On the second-order n=24 case that alone is worth 8 %.
+
+### What follows from this
+
+- **Second order is where HyperJet earns its place.** That is what it was built for: one pass produces the full Hessian, where `Jet` and `AutoDiffScalar` need nesting and `dual2nd` re-evaluates the function n(n+1)/2 times.
+- **If you only need gradients, take whichever library you already have** — Eigen is level, Ceres is close, and Ceres brings a solver with it.
+- **Take the static types when the variable count is known at compile time.** The dynamic variant trades most of the performance away.
+
+The benchmark verifies that every contender produces the same value, gradient and Hessian before it times anything — a fast contender computing the wrong thing would otherwise read as a win. All the AD libraries agree bit-for-bit; only finite differences deviate.
+
+Reproduce with:
+
+```
+cmake -Sbenchmark -Bbuild/benchmark -DCMAKE_BUILD_TYPE=Release
+cmake --build build/benchmark --target Compare
+./build/benchmark/Compare --benchmark_repetitions=7 --benchmark_report_aggregates_only=true
+```
+
+Measured on an Apple M1 Pro, macOS 26.5, Apple clang 21.0.0, `-O3 -DNDEBUG`, against Eigen 3.4.0, autodiff v1.1.2 and Ceres 2.2.0. Absolute numbers will differ on other machines; the ratios are the point.
 
 ## Validation
 
@@ -273,14 +344,14 @@ a.nbytes        # 3 x 80 bytes, contiguous
 
 Arithmetic and the mathematical functions then run as compiled loops instead of a Python object loop. Measured over 10 000 elements of `DD3Scalar`:
 
-| | `dtype=object` | dtype | |
-|---|---|---|---|
-| `a + b` | 349.5 ns | 2.5 ns | 138× |
-| `a * b` | 354.3 ns | 3.9 ns | 92× |
-| `np.sqrt(a)` | 349.2 ns | 2.8 ns | 123× |
-| `np.sin(a)` | 366.4 ns | 7.0 ns | 52× |
-| `np.sum(a)` | 353.1 ns | 3.8 ns | 94× |
-| `a @ b` | 673.0 ns | 2.7 ns | 246× |
+|              | `dtype=object` | dtype  |      |
+| ------------ | -------------- | ------ | ---- |
+| `a + b`      | 349.5 ns       | 2.5 ns | 138× |
+| `a * b`      | 354.3 ns       | 3.9 ns | 92×  |
+| `np.sqrt(a)` | 349.2 ns       | 2.8 ns | 123× |
+| `np.sin(a)`  | 366.4 ns       | 7.0 ns | 52×  |
+| `np.sum(a)`  | 353.1 ns       | 3.8 ns | 94×  |
+| `a @ b`      | 673.0 ns       | 2.7 ns | 246× |
 
 The **dynamic** variants (`DScalar`, `DDScalar`) hold a `std::vector`, so they have no fixed element size and stay object arrays.
 
@@ -331,13 +402,13 @@ The library requires a C++23-capable compiler (GCC ≥ 14, Clang ≥ 18, MSVC �
 
 All of the scalar types support:
 
-| Category | Functions |
-|----------|-----------|
-| Arithmetic | `+`, `-`, `*`, `/`, `pow`, `abs`, `reciprocal` |
+| Category      | Functions                                            |
+| ------------- | ---------------------------------------------------- |
+| Arithmetic    | `+`, `-`, `*`, `/`, `pow`, `abs`, `reciprocal`       |
 | Trigonometric | `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `atan2` |
-| Hyperbolic | `sinh`, `cosh`, `tanh`, `asinh`, `acosh`, `atanh` |
-| Exponential | `exp`, `log`, `log2`, `log10` |
-| Other | `sqrt`, `cbrt`, `hypot` |
+| Hyperbolic    | `sinh`, `cosh`, `tanh`, `asinh`, `acosh`, `atanh`    |
+| Exponential   | `exp`, `log`, `log2`, `log10`                        |
+| Other         | `sqrt`, `cbrt`, `hypot`                              |
 
 ## Utility Functions
 

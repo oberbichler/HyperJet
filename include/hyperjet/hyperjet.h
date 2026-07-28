@@ -164,6 +164,16 @@ private:
     static HYPERJET_INLINE Scalar operator()(const Scalar b) { return b; }
   };
 
+  // Filling the Hessian triangle in one pass halves its memory traffic, but it
+  // also shortens the gradient pass to the gradient alone, and below a handful
+  // of variables that one long vectorised pass is worth more than the traffic
+  // saved. Measured crossover at second order, Apple M1 Pro, clang 21: n=6 is
+  // 14% slower fused, n=8 3% faster, n=16 35% faster.
+  //
+  // size() is a compile-time constant for the static variants, so the branch
+  // folds away there.
+  static constexpr index hessian_fusion_threshold = 8;
+
   template <typename T>
   static constexpr bool is_tag_v =
       std::is_same_v<T, Zero> || std::is_same_v<T, One> ||
@@ -179,68 +189,87 @@ private:
     }
   }
 
-  template <bool TIncrement, typename TDa, typename TDaa>
+  // The chain rule term da * H_a has the same shape as the gradient term, so
+  // one pass over the whole data array fills the Hessian slots as well. Only a
+  // curvature term makes the triangle need a loop of its own.
+  //
+  // r never aliases a: the in-place operators copy their operand first, which
+  // is what lets the triangle read a's gradient after r's has been written.
+  template <typename TDa, typename TDaa>
   HYPERJET_INLINE void unary(const Data &a, const Scalar f, const TDa da,
                              const TDaa daa, Data &r) const noexcept {
-    const index n = data_length();
-
     r[0] = f;
 
-    if constexpr (TOrder < 1 || std::is_same<TDa, Zero>()) {
+    if constexpr (TOrder < 1 || std::is_same_v<TDa, Zero>) {
       return;
-    }
+    } else if constexpr (TOrder < 2 || std::is_same_v<TDaa, Zero>) {
+      const index n = data_length();
 
-    for (index i = 1; i < n; i++) {
-      if constexpr (TIncrement) {
-        r[i] += mul(da, a[i]);
-      } else {
+      for (index i = 1; i < n; i++) {
         r[i] = mul(da, a[i]);
       }
-    }
+    } else if (size() < hessian_fusion_threshold) {
+      const index n = data_length();
 
-    if constexpr (TOrder < 2 || std::is_same<TDaa, Zero>()) {
-      return;
-    }
+      for (index i = 1; i < n; i++) {
+        r[i] = mul(da, a[i]);
+      }
 
-    index k = 1 + size();
+      index k = 1 + size();
 
-    for (index i = 0; i < size(); i++) {
-      const auto ca = mul(daa, a[1 + i]);
+      for (index i = 0; i < size(); i++) {
+        const auto ca = mul(daa, a[1 + i]);
 
-      for (index j = i; j < size(); j++) {
-        r[k++] += ca * a[1 + j];
+        for (index j = i; j < size(); j++) {
+          r[k++] += ca * a[1 + j];
+        }
+      }
+    } else {
+      for (index i = 1; i <= size(); i++) {
+        r[i] = mul(da, a[i]);
+      }
+
+      index k = 1 + size();
+
+      for (index i = 0; i < size(); i++) {
+        const auto ca = mul(daa, a[1 + i]);
+
+        for (index j = i; j < size(); j++) {
+          r[k] = mul(da, a[k]) + ca * a[1 + j];
+          k++;
+        }
       }
     }
   }
 
-  template <bool TIncrement, typename TDa, typename TDb, typename TDaa,
-            typename TDab, typename TDbb>
+  // See unary() for why the Hessian is one pass and why aliasing is not a
+  // concern here.
+  template <typename TDa, typename TDb, typename TDaa, typename TDab,
+            typename TDbb>
   HYPERJET_INLINE void binary(const Data &a, const Data &b, const Scalar f,
                               const TDa da, const TDb db, const TDaa daa,
                               const TDab dab, const TDbb dbb,
                               Data &r) const noexcept {
-    const index n = data_length();
-
     r[0] = f;
 
     if constexpr (TOrder < 1 ||
                   (std::is_same_v<TDa, Zero> && std::is_same_v<TDb, Zero>)) {
       return;
-    } else {
-      for (index i = 1; i < n; i++) {
-        if constexpr (TIncrement) {
-          r[i] += mul(da, a[i]) + mul(db, b[i]);
-        } else {
-          r[i] = mul(da, a[i]) + mul(db, b[i]);
-        }
-      }
-    }
+    } else if constexpr (TOrder < 2 || (std::is_same_v<TDaa, Zero> &&
+                                        std::is_same_v<TDab, Zero> &&
+                                        std::is_same_v<TDbb, Zero>)) {
+      const index n = data_length();
 
-    if constexpr (TOrder < 2 ||
-                  (std::is_same_v<TDaa, Zero> && std::is_same_v<TDab, Zero> &&
-                   std::is_same_v<TDbb, Zero>)) {
-      return;
-    } else {
+      for (index i = 1; i < n; i++) {
+        r[i] = mul(da, a[i]) + mul(db, b[i]);
+      }
+    } else if (size() < hessian_fusion_threshold) {
+      const index n = data_length();
+
+      for (index i = 1; i < n; i++) {
+        r[i] = mul(da, a[i]) + mul(db, b[i]);
+      }
+
       index k = 1 + size();
 
       for (index i = 0; i < size(); i++) {
@@ -251,41 +280,59 @@ private:
           r[k++] += ca * a[1 + j] + cb * b[1 + j];
         }
       }
+    } else {
+      for (index i = 1; i <= size(); i++) {
+        r[i] = mul(da, a[i]) + mul(db, b[i]);
+      }
+
+      index k = 1 + size();
+
+      for (index i = 0; i < size(); i++) {
+        const auto ca = mul(daa, a[1 + i]) + mul(dab, b[1 + i]);
+        const auto cb = mul(dab, a[1 + i]) + mul(dbb, b[1 + i]);
+
+        for (index j = i; j < size(); j++) {
+          r[k] = mul(da, a[k]) + mul(db, b[k]) + ca * a[1 + j] + cb * b[1 + j];
+          k++;
+        }
+      }
     }
   }
 
-  template <bool TIncrement, typename TDa, typename TDb, typename TDc,
-            typename TDaa, typename TDab, typename TDac, typename TDbb,
-            typename TDbc, typename TDcc>
+  // See unary() for why the Hessian is one pass and why aliasing is not a
+  // concern here.
+  template <typename TDa, typename TDb, typename TDc, typename TDaa,
+            typename TDab, typename TDac, typename TDbb, typename TDbc,
+            typename TDcc>
   HYPERJET_INLINE void ternary(const Data &a, const Data &b, const Data &c,
                                const Scalar f, const TDa da, const TDb db,
                                const TDc dc, const TDaa daa, const TDab dab,
                                const TDac dac, const TDbb dbb, const TDbc dbc,
                                const TDcc dcc, Data &r) const noexcept {
-    const index n = data_length();
-
     r[0] = f;
 
     if constexpr (TOrder < 1 ||
                   (std::is_same_v<TDa, Zero> && std::is_same_v<TDb, Zero> &&
                    std::is_same_v<TDc, Zero>)) {
       return;
-    } else {
-      for (index i = 1; i < n; i++) {
-        if constexpr (TIncrement) {
-          r[i] += mul(da, a[i]) + mul(db, b[i]) + mul(dc, c[i]);
-        } else {
-          r[i] = mul(da, a[i]) + mul(db, b[i]) + mul(dc, c[i]);
-        }
-      }
-    }
+    } else if constexpr (TOrder < 2 || (std::is_same_v<TDaa, Zero> &&
+                                        std::is_same_v<TDab, Zero> &&
+                                        std::is_same_v<TDac, Zero> &&
+                                        std::is_same_v<TDbb, Zero> &&
+                                        std::is_same_v<TDbc, Zero> &&
+                                        std::is_same_v<TDcc, Zero>)) {
+      const index n = data_length();
 
-    if constexpr (TOrder < 2 ||
-                  (std::is_same_v<TDaa, Zero> && std::is_same_v<TDab, Zero> &&
-                   std::is_same_v<TDac, Zero> && std::is_same_v<TDbb, Zero> &&
-                   std::is_same_v<TDbc, Zero> && std::is_same_v<TDcc, Zero>)) {
-      return;
-    } else {
+      for (index i = 1; i < n; i++) {
+        r[i] = mul(da, a[i]) + mul(db, b[i]) + mul(dc, c[i]);
+      }
+    } else if (size() < hessian_fusion_threshold) {
+      const index n = data_length();
+
+      for (index i = 1; i < n; i++) {
+        r[i] = mul(da, a[i]) + mul(db, b[i]) + mul(dc, c[i]);
+      }
+
       index k = 1 + size();
 
       for (index i = 0; i < size(); i++) {
@@ -298,6 +345,27 @@ private:
 
         for (index j = i; j < size(); j++) {
           r[k++] += ca * a[1 + j] + cb * b[1 + j] + cc * c[1 + j];
+        }
+      }
+    } else {
+      for (index i = 1; i <= size(); i++) {
+        r[i] = mul(da, a[i]) + mul(db, b[i]) + mul(dc, c[i]);
+      }
+
+      index k = 1 + size();
+
+      for (index i = 0; i < size(); i++) {
+        const auto ca =
+            mul(daa, a[1 + i]) + mul(dab, b[1 + i]) + mul(dac, c[1 + i]);
+        const auto cb =
+            mul(dab, a[1 + i]) + mul(dbb, b[1 + i]) + mul(dbc, c[1 + i]);
+        const auto cc =
+            mul(dac, a[1 + i]) + mul(dbc, b[1 + i]) + mul(dcc, c[1 + i]);
+
+        for (index j = i; j < size(); j++) {
+          r[k] = mul(da, a[k]) + mul(db, b[k]) + mul(dc, c[k]) + ca * a[1 + j] +
+                 cb * b[1 + j] + cc * c[1 + j];
+          k++;
         }
       }
     }
@@ -332,6 +400,16 @@ public:
     static_assert(0 < order() && order() <= 2);
 
     static_assert(!is_dynamic());
+  }
+
+  // Takes ownership instead of copying. The factories build their data as a
+  // temporary, and for the dynamic variant copying it in meant a second
+  // allocation and a second pass over the whole array.
+  DDScalar(Data &&data, const index size)
+      : m_size(size), m_data(std::move(data)) {
+    static_assert(0 < order() && order() <= 2);
+
+    static_assert(is_dynamic());
   }
 
   DDScalar(const Data &data, const index size) : m_size(size), m_data(data) {
@@ -483,40 +561,38 @@ public:
     }
   }
 
-  static Type empty() {
+  HYPERJET_INLINE static Type empty() {
     if constexpr (is_dynamic()) {
-      Data data(1);
-      Type result(data, 0);
-      return result;
+      // Size zero, not the default constructor's size one.
+      return Type(Data(1), 0);
     } else {
-      Data data;
-      Type result(data);
-      return result;
+      // The default constructor already leaves m_data indeterminate, which is
+      // what empty() means. Building a local Data and copying it in was both a
+      // wasted pass over the whole array -- 2.6 kB at order 2 with 24
+      // variables -- and a read of indeterminate doubles, which is undefined.
+      return Type();
     }
   }
 
   static Type empty(const index size) {
     if constexpr (is_dynamic()) {
       check_valid_size(size);
-      const index n = data_length_from_size(size);
-      const Data data(n);
-      Type result(data, size);
-      return result;
+      return Type(Data(data_length_from_size(size)), size);
     } else {
       check_valid_size(size);
       return empty();
     }
   }
 
-  static Type zero() {
+  HYPERJET_INLINE static Type zero() {
     if constexpr (is_dynamic()) {
-      Data data(1);
-      Type result(data, 0);
-      return result;
+      return Type(Data(1), 0);
     } else {
-      Data data;
-      data.fill(0);
-      Type result(data);
+      // Filling in place rather than filling a local and copying it in: the
+      // copy was a second pass over the array, and variables() pays it once per
+      // variable.
+      Type result;
+      result.m_data.fill(0);
       return result;
     }
   }
@@ -524,9 +600,7 @@ public:
   static Type zero(const index size) {
     if constexpr (is_dynamic()) {
       check_valid_size(size);
-      const Data data(data_length_from_size(size), 0);
-      Type result(data, size);
-      return result;
+      return Type(Data(data_length_from_size(size), 0), size);
     } else {
       check_valid_size(size);
       return zero();
@@ -819,7 +893,7 @@ public:
 
   // --- neg
 
-  Type operator-() const {
+  HYPERJET_INLINE Type operator-() const {
     Type result = Type::empty(size());
 
     for (index i = 0; i < data_length(); i++) {
@@ -831,7 +905,7 @@ public:
 
   // --- add
 
-  Type operator+(const Type &b) const {
+  HYPERJET_INLINE Type operator+(const Type &b) const {
     check_equal_size(size(), b.size());
 
     Type result = Type::empty(size());
@@ -845,12 +919,12 @@ public:
     const auto dab = Zero();
     const auto dbb = Zero();
 
-    binary<false>(m_data, b.m_data, f, da, db, daa, dab, dbb, result.m_data);
+    binary(m_data, b.m_data, f, da, db, daa, dab, dbb, result.m_data);
 
     return result;
   }
 
-  Type operator+(const Scalar b) const {
+  HYPERJET_INLINE Type operator+(const Scalar b) const {
     Type result = *this;
 
     result.f() += b;
@@ -860,7 +934,7 @@ public:
 
   friend Type operator+(const Scalar a, const Type &b) { return b + a; }
 
-  Type &operator+=(const Type &b) {
+  HYPERJET_INLINE Type &operator+=(const Type &b) {
     check_equal_size(size(), b.size());
 
     for (index i = 0; i < length(m_data); i++) {
@@ -870,7 +944,7 @@ public:
     return *this;
   }
 
-  Type &operator+=(const Scalar &b) {
+  HYPERJET_INLINE Type &operator+=(const Scalar &b) {
     f() += b;
 
     return *this;
@@ -878,7 +952,7 @@ public:
 
   // --- sub
 
-  Type operator-(const Type &b) const {
+  HYPERJET_INLINE Type operator-(const Type &b) const {
     check_equal_size(size(), b.size());
 
     Type result = Type::empty(size());
@@ -892,12 +966,12 @@ public:
     const auto dab = Zero();
     const auto dbb = Zero();
 
-    binary<false>(m_data, b.m_data, f, da, db, daa, dab, dbb, result.m_data);
+    binary(m_data, b.m_data, f, da, db, daa, dab, dbb, result.m_data);
 
     return result;
   }
 
-  Type operator-(const Scalar b) const { return -b + *this; }
+  HYPERJET_INLINE Type operator-(const Scalar b) const { return -b + *this; }
 
   friend Type operator-(const Scalar a, const Type &b) {
     Type result = Type::empty(b.size());
@@ -911,7 +985,7 @@ public:
     return result;
   }
 
-  Type &operator-=(const Type &b) {
+  HYPERJET_INLINE Type &operator-=(const Type &b) {
     check_equal_size(size(), b.size());
 
     for (index i = 0; i < length(m_data); i++) {
@@ -921,7 +995,7 @@ public:
     return *this;
   }
 
-  Type &operator-=(const Scalar &b) {
+  HYPERJET_INLINE Type &operator-=(const Scalar &b) {
     f() -= b;
 
     return *this;
@@ -929,7 +1003,7 @@ public:
 
   // --- mul
 
-  Type operator*(const Type &b) const {
+  HYPERJET_INLINE Type operator*(const Type &b) const {
     check_equal_size(size(), b.size());
 
     Type result = Type::empty(size());
@@ -943,12 +1017,12 @@ public:
     const auto dab = One();
     const auto dbb = Zero();
 
-    binary<false>(m_data, b.m_data, f, da, db, daa, dab, dbb, result.m_data);
+    binary(m_data, b.m_data, f, da, db, daa, dab, dbb, result.m_data);
 
     return result;
   }
 
-  Type operator*(const Scalar b) const {
+  HYPERJET_INLINE Type operator*(const Scalar b) const {
     Type result = Type::empty(size());
 
     for (index i = 0; i < data_length(); i++) {
@@ -960,7 +1034,7 @@ public:
 
   friend Type operator*(const Scalar a, const Type &b) { return b * a; }
 
-  Type &operator*=(const Type &b) {
+  HYPERJET_INLINE Type &operator*=(const Type &b) {
     check_equal_size(size(), b.size());
 
     // aliased operands would be read again after being overwritten below
@@ -994,7 +1068,7 @@ public:
     return *this;
   }
 
-  Type &operator*=(const Scalar &b) {
+  HYPERJET_INLINE Type &operator*=(const Scalar &b) {
     for (index i = 0; i < length(m_data); i++) {
       m_data[i] = m_data[i] * b;
     }
@@ -1004,7 +1078,7 @@ public:
 
   // --- div
 
-  Type operator/(const Type &b) const {
+  HYPERJET_INLINE Type operator/(const Type &b) const {
     using std::pow;
 
     check_equal_size(size(), b.size());
@@ -1020,12 +1094,14 @@ public:
 
     Type result = Type::empty(size());
 
-    binary<false>(m_data, b.m_data, f, da, db, daa, dab, dbb, result.m_data);
+    binary(m_data, b.m_data, f, da, db, daa, dab, dbb, result.m_data);
 
     return result;
   }
 
-  Type operator/(const Scalar b) const { return Scalar(1) / b * (*this); }
+  HYPERJET_INLINE Type operator/(const Scalar b) const {
+    return Scalar(1) / b * (*this);
+  }
 
   friend Type operator/(const Scalar a, const Type &b) {
     using std::pow;
@@ -1036,12 +1112,12 @@ public:
     const auto db = -a / pow(b.f(), 2);
     const auto dbb = 2 * a / pow(b.f(), 3);
 
-    b.unary<false>(b.m_data, f, db, dbb, result.m_data);
+    b.unary(b.m_data, f, db, dbb, result.m_data);
 
     return result;
   }
 
-  Type &operator/=(const Type &b) {
+  HYPERJET_INLINE Type &operator/=(const Type &b) {
     using std::pow;
 
     check_equal_size(size(), b.size());
@@ -1060,12 +1136,12 @@ public:
     const auto dab = -1 / pow(b.f(), 2);
     const auto dbb = 2 * a_m_data[0] / pow(b.f(), 3);
 
-    binary<false>(a_m_data, b.m_data, f, da, db, daa, dab, dbb, m_data);
+    binary(a_m_data, b.m_data, f, da, db, daa, dab, dbb, m_data);
 
     return *this;
   }
 
-  Type &operator/=(const Scalar &b) {
+  HYPERJET_INLINE Type &operator/=(const Scalar &b) {
     operator*=(1 / b);
 
     return *this;
@@ -1073,7 +1149,7 @@ public:
 
   // --- arithmetic operations
 
-  Type pow(const double b) const {
+  HYPERJET_INLINE Type pow(const double b) const {
     using std::pow;
 
     Type result = Type::empty(size());
@@ -1082,12 +1158,12 @@ public:
     const auto da = b * pow(this->f(), b - 1);
     const auto daa = (b - 1) * b * pow(this->f(), b - 2);
 
-    unary<false>(m_data, f, da, daa, result.m_data);
+    unary(m_data, f, da, daa, result.m_data);
 
     return result;
   }
 
-  Type sqrt() const {
+  HYPERJET_INLINE Type sqrt() const {
     using std::pow;
     using std::sqrt;
 
@@ -1097,12 +1173,12 @@ public:
     const auto da = 1 / (2 * f);
     const auto daa = -da / (2 * this->f());
 
-    unary<false>(m_data, f, da, daa, result.m_data);
+    unary(m_data, f, da, daa, result.m_data);
 
     return result;
   }
 
-  Type cbrt() const {
+  HYPERJET_INLINE Type cbrt() const {
     using std::cbrt;
 
     Type result = Type::empty(size());
@@ -1111,26 +1187,26 @@ public:
     const auto da = 1 / (3 * f * f);
     const auto daa = -da * 2 / (3 * this->f());
 
-    unary<false>(m_data, f, da, daa, result.m_data);
+    unary(m_data, f, da, daa, result.m_data);
 
     return result;
   }
 
-  Type reciprocal() const {
+  HYPERJET_INLINE Type reciprocal() const {
     Type result = Type::empty(size());
 
     const auto f = 1 / this->f();
     const auto da = -f * f;
     const auto daa = -2 * f * da;
 
-    unary<false>(m_data, f, da, daa, result.m_data);
+    unary(m_data, f, da, daa, result.m_data);
 
     return result;
   }
 
   // --- trigonometric functions
 
-  Type cos() const {
+  HYPERJET_INLINE Type cos() const {
     using std::cos;
     using std::sin;
 
@@ -1140,12 +1216,12 @@ public:
     const auto da = -sin(this->f());
     const auto daa = -cos(this->f());
 
-    unary<false>(m_data, f, da, daa, result.m_data);
+    unary(m_data, f, da, daa, result.m_data);
 
     return result;
   }
 
-  Type sin() const {
+  HYPERJET_INLINE Type sin() const {
     using std::cos;
     using std::sin;
 
@@ -1155,12 +1231,12 @@ public:
     const auto da = cos(this->f());
     const auto daa = -sin(this->f());
 
-    unary<false>(m_data, f, da, daa, result.m_data);
+    unary(m_data, f, da, daa, result.m_data);
 
     return result;
   }
 
-  Type tan() const {
+  HYPERJET_INLINE Type tan() const {
     using std::tan;
 
     Type result = Type::empty(size());
@@ -1169,12 +1245,12 @@ public:
     const auto da = f * f + 1;
     const auto daa = da * 2 * f;
 
-    unary<false>(m_data, f, da, daa, result.m_data);
+    unary(m_data, f, da, daa, result.m_data);
 
     return result;
   }
 
-  Type acos() const {
+  HYPERJET_INLINE Type acos() const {
     using std::acos;
     using std::sqrt;
 
@@ -1186,12 +1262,12 @@ public:
     const auto da = -1 / sqrt(tmp);
     const auto daa = da * this->f() / tmp;
 
-    unary<false>(m_data, f, da, daa, result.m_data);
+    unary(m_data, f, da, daa, result.m_data);
 
     return result;
   }
 
-  Type asin() const {
+  HYPERJET_INLINE Type asin() const {
     using std::asin;
     using std::sqrt;
 
@@ -1203,12 +1279,12 @@ public:
     const auto da = 1 / sqrt(tmp);
     const auto daa = da * this->f() / tmp;
 
-    unary<false>(m_data, f, da, daa, result.m_data);
+    unary(m_data, f, da, daa, result.m_data);
 
     return result;
   }
 
-  Type atan() const {
+  HYPERJET_INLINE Type atan() const {
     using std::atan;
 
     Type result = Type::empty(size());
@@ -1217,12 +1293,12 @@ public:
     const auto da = 1 / (this->f() * this->f() + 1);
     const auto daa = -da * da * 2 * this->f();
 
-    unary<false>(m_data, f, da, daa, result.m_data);
+    unary(m_data, f, da, daa, result.m_data);
 
     return result;
   }
 
-  Type atan2(const Type &b) const {
+  HYPERJET_INLINE Type atan2(const Type &b) const {
     using std::atan2;
 
     Type result = Type::empty(size());
@@ -1236,7 +1312,7 @@ public:
     const auto dab = db * db - da * da;
     const auto dbb = -daa;
 
-    binary<false>(m_data, b.m_data, f, da, db, daa, dab, dbb, result.m_data);
+    binary(m_data, b.m_data, f, da, db, daa, dab, dbb, result.m_data);
 
     return result;
   }
@@ -1256,8 +1332,7 @@ public:
     const auto dab = -a.f() * b.f() / f3;
     const auto dbb = a.f() * a.f() / f3;
 
-    a.binary<false>(a.m_data, b.m_data, f, da, db, daa, dab, dbb,
-                    result.m_data);
+    a.binary(a.m_data, b.m_data, f, da, db, daa, dab, dbb, result.m_data);
 
     return result;
   }
@@ -1284,15 +1359,15 @@ public:
     const auto dbc = -(b.f() * c.f()) / f3;
     const auto dcc = (a2 + b2) / f3;
 
-    a.ternary<false>(a.m_data, b.m_data, c.m_data, f, da, db, dc, daa, dab, dac,
-                     dbb, dbc, dcc, result.m_data);
+    a.ternary(a.m_data, b.m_data, c.m_data, f, da, db, dc, daa, dab, dac, dbb,
+              dbc, dcc, result.m_data);
 
     return result;
   }
 
   // --- hyperbolic functions
 
-  Type cosh() const {
+  HYPERJET_INLINE Type cosh() const {
     using std::cosh;
     using std::sinh;
 
@@ -1302,12 +1377,12 @@ public:
     const auto da = sinh(this->f());
     const auto daa = f;
 
-    unary<false>(m_data, f, da, daa, result.m_data);
+    unary(m_data, f, da, daa, result.m_data);
 
     return result;
   }
 
-  Type sinh() const {
+  HYPERJET_INLINE Type sinh() const {
     using std::cosh;
     using std::sinh;
 
@@ -1317,12 +1392,12 @@ public:
     const auto da = cosh(this->f());
     const auto daa = f;
 
-    unary<false>(m_data, f, da, daa, result.m_data);
+    unary(m_data, f, da, daa, result.m_data);
 
     return result;
   }
 
-  Type tanh() const {
+  HYPERJET_INLINE Type tanh() const {
     using std::tanh;
 
     Type result = Type::empty(size());
@@ -1331,12 +1406,12 @@ public:
     const auto da = 1 - f * f;
     const auto daa = -2 * f * da;
 
-    unary<false>(m_data, f, da, daa, result.m_data);
+    unary(m_data, f, da, daa, result.m_data);
 
     return result;
   }
 
-  Type acosh() const {
+  HYPERJET_INLINE Type acosh() const {
     using std::acosh;
     using std::sqrt;
 
@@ -1346,12 +1421,12 @@ public:
     const auto da = 1 / (sqrt(this->f() - 1) * sqrt(this->f() + 1));
     const auto daa = -da * this->f() / ((this->f() - 1) * (this->f() + 1));
 
-    unary<false>(m_data, f, da, daa, result.m_data);
+    unary(m_data, f, da, daa, result.m_data);
 
     return result;
   }
 
-  Type asinh() const {
+  HYPERJET_INLINE Type asinh() const {
     using std::asinh;
     using std::sqrt;
 
@@ -1361,12 +1436,12 @@ public:
     const auto da = 1 / sqrt(1 + this->f() * this->f());
     const auto daa = -da * this->f() / (1 + this->f() * this->f());
 
-    unary<false>(m_data, f, da, daa, result.m_data);
+    unary(m_data, f, da, daa, result.m_data);
 
     return result;
   }
 
-  Type atanh() const {
+  HYPERJET_INLINE Type atanh() const {
     using std::atanh;
     using std::pow;
 
@@ -1376,14 +1451,14 @@ public:
     const auto da = 1 / (1 - this->f() * this->f());
     const auto daa = 2 * this->f() / pow(this->f() * this->f() - 1, 2);
 
-    unary<false>(m_data, f, da, daa, result.m_data);
+    unary(m_data, f, da, daa, result.m_data);
 
     return result;
   }
 
   // exponents and logarithms
 
-  Type exp() const {
+  HYPERJET_INLINE Type exp() const {
     using std::exp;
 
     Type result = Type::empty(size());
@@ -1392,12 +1467,12 @@ public:
     const auto da = f;
     const auto daa = f;
 
-    unary<false>(m_data, f, da, daa, result.m_data);
+    unary(m_data, f, da, daa, result.m_data);
 
     return result;
   }
 
-  Type log() const {
+  HYPERJET_INLINE Type log() const {
     using std::log;
 
     Type result = Type::empty(size());
@@ -1406,12 +1481,12 @@ public:
     const auto da = 1 / this->f();
     const auto daa = -da * da;
 
-    unary<false>(m_data, f, da, daa, result.m_data);
+    unary(m_data, f, da, daa, result.m_data);
 
     return result;
   }
 
-  Type log(const TScalar base) const {
+  HYPERJET_INLINE Type log(const TScalar base) const {
     using std::log;
 
     Type result = Type::empty(size());
@@ -1420,12 +1495,12 @@ public:
     const auto da = 1 / (this->f() * log(base));
     const auto daa = -da / this->f();
 
-    unary<false>(m_data, f, da, daa, result.m_data);
+    unary(m_data, f, da, daa, result.m_data);
 
     return result;
   }
 
-  Type log2() const {
+  HYPERJET_INLINE Type log2() const {
     using std::log;
     using std::log2;
 
@@ -1435,12 +1510,12 @@ public:
     const auto da = 1 / (this->f() * log(2));
     const auto daa = -da / this->f();
 
-    unary<false>(m_data, f, da, daa, result.m_data);
+    unary(m_data, f, da, daa, result.m_data);
 
     return result;
   }
 
-  Type log10() const {
+  HYPERJET_INLINE Type log10() const {
     using std::log;
     using std::log10;
 
@@ -1450,14 +1525,14 @@ public:
     const auto da = 1 / (this->f() * log(10));
     const auto daa = -da / this->f();
 
-    unary<false>(m_data, f, da, daa, result.m_data);
+    unary(m_data, f, da, daa, result.m_data);
 
     return result;
   }
 
   // abs
 
-  Type abs() const { return f() < 0 ? -(*this) : *this; }
+  HYPERJET_INLINE Type abs() const { return f() < 0 ? -(*this) : *this; }
 
   // comparison
 

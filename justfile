@@ -1,6 +1,6 @@
 # Format all C++ sources in place
 format:
-  uv run --only-group dev clang-format -i include/hyperjet/*.h python/src/*.h python/src/*.cpp test/src/*.cpp benchmark/src/*.cpp
+  uv run --only-group dev clang-format -i $(git ls-files '*.h' '*.hpp' '*.cpp')
 
 # Generate the compilation database that clang-tidy needs
 compile-db:
