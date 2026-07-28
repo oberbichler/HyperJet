@@ -252,6 +252,33 @@ TEST_CASE_TEMPLATE("variants: factories", T, D1, X1, D2, X2) {
   CHECK(vars[1].g(1) == doctest::Approx(1.0));
 }
 
+TEST_CASE_TEMPLATE("variants: argument-less factories", T, D1, X1, D2, X2) {
+  // The dynamic variants start out as scalars carrying no variables, while a
+  // static one is always its own size. Nothing about an arithmetic result
+  // depends on this, so it needs a case of its own -- the size returned by the
+  // argument-less factories was wrong once without a single C++ assertion
+  // noticing.
+  const index expected = T::is_dynamic() ? 0 : Size;
+
+  CHECK(T::empty().size() == expected);
+  CHECK(T::zero().size() == expected);
+  CHECK(T::constant(S).size() == expected);
+
+  const auto z = T::zero();
+
+  for (index i = 0; i < z.data_length(); i++) {
+    CHECK(z.data()[i] == doctest::Approx(0.0));
+  }
+
+  const auto c = T::constant(S);
+
+  CHECK(c.f() == doctest::Approx(S));
+
+  for (index i = 1; i < c.data_length(); i++) {
+    CHECK(c.data()[i] == doctest::Approx(0.0));
+  }
+}
+
 TEST_CASE_TEMPLATE("variants: neg", T, D1, X1, D2, X2) {
   check(-make<T>(A), NegA);
 }
